@@ -59,16 +59,16 @@ public class PolishTask extends ConditionalTask {
 	private StyleSheet styleSheet;
 	private ImportConverter importConverter;
 	private TextFile styleSheetFile;
+	private ResourceUtil resourceUtil;
 	
 	/**
 	 * Creates a new empty task 
 	 */
 	public PolishTask() {
 		// initialisation is done with the setter-methods.
-		// if you should use the PolishTask not within an ant-build.xm
+		// if you should use the PolishTask not within an ant-build.xml
 		// then make sure to set the project with .setProject(...)
-		
-		//this.quote = File.pathSeparatorChar == '/' ? '\'' : '"';
+		this.resourceUtil = new ResourceUtil( getClass().getClassLoader() );
 	}
 	
 	public void addConfiguredInfo( InfoSetting setting ) {
@@ -222,35 +222,46 @@ public class PolishTask extends ConditionalTask {
 		//	initialise the preprocessing-source-directories:
 		DirectoryScanner dirScanner = new DirectoryScanner();
 		dirScanner.setIncludes( new String[]{"**/*.java"} );
-		Source source = this.buildSetting.getSource();
-		String url = source.getUrl();
-		char splitChar = url.indexOf(':') != -1 ? ':' : ';';
-		String[] urls = TextUtil.splitAndTrim( url, splitChar );
-		if (source.getPolish() != null) {
-			this.sourceDirs = new File[ urls.length + 1];
-			this.sourceFiles = new TextFile[ urls.length + 1][]; 
-			File polishDir = new File( source.getPolish() );
-			if (!polishDir.exists()) {
-				throw new BuildException("The polish source-directory [" + source.getPolish() + "] does not exist. Please check your settings of the [polish] attribute in the <source> element of the <build> section.");
-			}
-			this.sourceDirs[ urls.length ] = polishDir;
+		File[] dirs = this.buildSetting.getSourceDirs();
+		this.sourceDirs = new File[ dirs.length + 1];
+		this.sourceFiles = new TextFile[ dirs.length + 1][];
+		if (this.buildSetting.getPolishDir() != null) {
+			// there is an explicit J2ME Polish directory:
+			File polishDir = this.buildSetting.getPolishDir();
+			this.sourceDirs[ 0 ] = polishDir;
 			dirScanner.setBasedir(polishDir);
 			dirScanner.scan();
-			this.sourceFiles[ urls.length ] = getTextFiles( source.getPolish(),  dirScanner.getIncludedFiles() );
+			this.sourceFiles[ 0 ] = getTextFiles( polishDir,  dirScanner.getIncludedFiles() );
 		} else {
-			this.sourceDirs = new File[ urls.length ];
-			this.sourceFiles = new TextFile[ urls.length][]; 
-		}
-		for (int i = 0; i < urls.length; i++) {
-			String dirName = urls[i];
-			File dir = new File( dirName );
-			if (!dir.exists()) {
-				throw new BuildException("The source-directory [" + urls[i] + "] does not exist. Please check your settings in the <source> element of the <build> section.");
+			// the J2ME Polish sources need to be loaded from the jar-file:
+			long lastModificationTime = 0;
+			File jarFile = new File("import/enough-j2mepolish-build.jar");
+			if (jarFile.exists()) {
+				lastModificationTime = jarFile.lastModified();
+			} else {
+				jarFile = new File("lib/enough-j2mepolish-build.jar");
+				if (jarFile.exists()) {
+					lastModificationTime = jarFile.lastModified();
+				}
 			}
-			this.sourceDirs[i] = dir; 
+			this.sourceDirs[ 0 ] = new File("src");
+			try {
+				String[] fileNames = this.resourceUtil.readTextFile("build/j2mepolish.index.txt");
+				this.sourceFiles[ 0 ] = getTextFiles( "src", fileNames, lastModificationTime );
+			} catch (IOException e) {
+				throw new BuildException("Unable to load the J2ME source files from enough-j2mepolish-build.jar: " + e.getMessage(), e );
+			}
+		}
+		// load the normal source files:
+		for (int i = 0; i < dirs.length; i++) {
+			File dir = dirs[i];
+			if (!dir.exists()) {
+				throw new BuildException("The source-directory [" + dir.getAbsolutePath() + "] does not exist. Please check your settings in the [sourceDir] attribute of the <build> element.");
+			}
+			this.sourceDirs[i+1] = dir; 
 			dirScanner.setBasedir(dir);
 			dirScanner.scan();
-			this.sourceFiles[i] = getTextFiles( dirName,  dirScanner.getIncludedFiles() );
+			this.sourceFiles[i+1] = getTextFiles( dir,  dirScanner.getIncludedFiles() );
 		}
 		if (this.buildSetting.usesPolishGui() && this.styleSheetFile == null) {
 			throw new BuildException("Did not find the file [StyleSheet.java] of the polish GUI framework. Please add the [polish] attribute to the <source> element of the <build> setting. The [polish]-attribute should point to the directory which contains the polish-Java-sources.");
@@ -303,13 +314,13 @@ public class PolishTask extends ConditionalTask {
 	 * @param fileNames The full names of the files.
 	 * @return an array of text-files
 	 */
-	private TextFile[] getTextFiles(String baseDir, String[] fileNames) 
+	private TextFile[] getTextFiles(File baseDir, String[] fileNames) 
 	{
 		TextFile[] files = new TextFile[ fileNames.length ];
 		for (int i = 0; i < fileNames.length; i++) {
 			String fileName = fileNames[i];
 			try {
-				TextFile file = new TextFile( baseDir, fileName );
+				TextFile file = new TextFile( baseDir.getAbsolutePath(), fileName );
 				if ("de/enough/polish/ui/StyleSheet.java".equals(fileName)) {
 					this.styleSheetFile = file;
 				}
@@ -321,6 +332,28 @@ public class PolishTask extends ConditionalTask {
 		return files;
 	}
 
+	/**
+	 * Creates an array of text files and loads them from the jar-file.
+	 * 
+	 * @param baseDir The base directory.
+	 * @param fileNames The full names of the files.
+	 * @param lastModificationTime the time of the last modification of the files
+	 * @return an array of text-files
+	 */
+	private TextFile[] getTextFiles(String baseDir, String[] fileNames, long lastModificationTime) 
+	{
+		TextFile[] files = new TextFile[ fileNames.length ];
+		for (int i = 0; i < fileNames.length; i++) {
+			String fileName = fileNames[i];
+			TextFile file = new TextFile( baseDir, fileName, lastModificationTime, this.resourceUtil );
+			if ("de/enough/polish/ui/StyleSheet.java".equals(fileName)) {
+				this.styleSheetFile = file;
+			}
+			files[i] = file;
+		}
+		return files;
+	}
+	
 	/**
 	 * Selects the actual devices for which optimal applications should be generated.
 	 */
@@ -344,8 +377,9 @@ public class PolishTask extends ConditionalTask {
 	 * @param device The device for which the preprocessing should be done.
 	 */
 	private void preprocess( Device device ) {
-		System.out.println("now preprocessing for device [" +  device.getIdentifier() + "]." );
+		System.out.println("preprocessing for device [" +  device.getIdentifier() + "]." );
 		try {
+			int numberOfChangedFiles = 0;
 			String targetDir = this.buildSetting.getWorkDir().getAbsolutePath() 
 				+ File.separatorChar + device.getVendorName() 
 				+ File.separatorChar + device.getName();
@@ -445,6 +479,7 @@ public class PolishTask extends ConditionalTask {
 							{
 								//System.out.println( "preprocessed [" + className + "]." );
 								file.saveToDir(targetDir, sourceCode.getArray(), false );
+								numberOfChangedFiles++;
 							//} else {
 							//	System.out.println("not saving " + file.getFileName() );
 							}
@@ -478,11 +513,13 @@ public class PolishTask extends ConditionalTask {
 					styleSheetCode.reset();
 					cssConverter.convertStyleSheet(styleSheetCode, this.preprocessor.getStyleSheet() ); 				
 					this.styleSheetFile.saveToDir(targetDir, styleSheetCode.getArray(), false );
+					numberOfChangedFiles++;
 				//} else {
 				//	System.out.println("CSSS is not new - last CSS modification == " + lastCssModification + " <= StyleSheet.java.lastModified() == " + targetFile.lastModified() );
 				}
 				
 			}
+			device.setNumberOfChangedFiles( numberOfChangedFiles );
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			throw new BuildException( e.getMessage() );
@@ -582,27 +619,7 @@ public class PolishTask extends ConditionalTask {
 	 * @param device The device for which the source code should be compiled.
 	 */
 	private void compile( Device device ) {
-		Javac javac = new Javac();
-		javac.setProject( this.project );
-		javac.setTaskName(getTaskName() + "-javac-" + device.getIdentifier() );
-		//javac.target=1.1 is needed for the preverification:
-		javac.setTarget("1.1");
-		
-		System.out.println("now compiling for device [" +  device.getIdentifier() + "]." );
-		String targetDirName = device.getBaseDir() + File.separatorChar + "classes";
-		device.setClassesDir( targetDirName );
-		File targetDir = new File( targetDirName );
-		if (!targetDir.exists()) {
-			targetDir.mkdirs();
-		}
-		javac.setDestdir( targetDir );
-		javac.setSrcdir(new Path( this.project,  device.getSourceDir() ) );
-		if (device.isMidp1()) {
-			javac.setBootclasspath(this.midp1BootClassPath);
-		} else {
-			javac.setBootclasspath(this.midp2BootClassPath);
-		}
-		
+		// SETTING OF CLASSPATH:
 		// check for each supported api, if the appropriate path-property
 		// has been set: mmapi = ${polish.api.mmapi}
 		// when this has not been defined, just look in the import-dir
@@ -643,11 +660,40 @@ public class PolishTask extends ConditionalTask {
 			}
 		}
 		if (classPath != null) {
-			javac.setClasspath( new Path(this.project, classPath ) );
 			device.setClassPath(classPath);
 			//System.out.println( "using classpath [" + classPath.toString().substring(1) + "]." );
 		}
+		// setting target directory:
+		String targetDirName = device.getBaseDir() + File.separatorChar + "classes";
+		device.setClassesDir( targetDirName );
 		
+		if (device.getNumberOfChangedFiles() == 0) {
+			System.out.println("nothing to compile for device [" +  device.getIdentifier() + "]." );
+			return;			
+		}
+		System.out.println("compiling for device [" +  device.getIdentifier() + "]." );
+		
+		// init javac task:
+		Javac javac = new Javac();
+		javac.setProject( this.project );
+		javac.setTaskName(getTaskName() + "-javac-" + device.getIdentifier() );
+		//javac.target=1.1 is needed for the preverification:
+		javac.setTarget("1.1");
+		File targetDir = new File( targetDirName );
+		if (!targetDir.exists()) {
+			targetDir.mkdirs();
+		}
+		javac.setDestdir( targetDir );
+		javac.setSrcdir(new Path( this.project,  device.getSourceDir() ) );
+		javac.setSourcepath(new Path( this.project,  "" ));
+		if (device.isMidp1()) {
+			javac.setBootclasspath(this.midp1BootClassPath);
+		} else {
+			javac.setBootclasspath(this.midp2BootClassPath);
+		}
+		if (classPath != null) {
+			javac.setClasspath( new Path(this.project, classPath ) );
+		}
 		// start compile:
 		try {
 			javac.execute();
@@ -658,26 +704,6 @@ public class PolishTask extends ConditionalTask {
 		}
 		
 	}
-
-
-
-	/**
-	 * Adds quotes around a path when it contains whitespace.
-	 *
-	 * @param path The path
-	 * @return The path with quotes when it contains whitespace or without quotes
-     * 		   when it does not contain whitespace.
-	private String addQuotes(String path) {
-		if (true) {
-			return path;
-		}
-		if (path.indexOf(' ') != -1) {
-			return this.quote + path + this.quote;
-		} else {
-			return path;
-		}
-	}
-	 */
 
 
 	/**
@@ -779,7 +805,7 @@ public class PolishTask extends ConditionalTask {
 	 * @param device The device for which the code should be jared.
 	 */
 	private void jar( Device device ) {
-		System.out.println("creating jar for device [" + device.getIdentifier() + "]." );
+		System.out.println("creating JAR for device [" + device.getIdentifier() + "]." );
 		File classesDir = new File( device.getClassesDir() );
 		//copy resources:
 		File resourceDir = this.buildSetting.getResDir();
@@ -796,7 +822,7 @@ public class PolishTask extends ConditionalTask {
 				files = resourceDir.listFiles( cssFilter );
 				FileUtil.copy( files, classesDir );
 			}
-			// 3.: copy group resources:
+			// 3. copy group resources:
 			String[] groups = device.getGroupNames();
 			for (int i = 0; i < groups.length; i++) {
 				String group = groups[i];
@@ -889,7 +915,7 @@ public class PolishTask extends ConditionalTask {
 		infoProperties.put( "polish.jarName", jarName );
 		
 		// now create the JAD file:
-		System.out.println("Now creating JAD file for device [" + device.getIdentifier() + "].");
+		System.out.println("creating JAD for device [" + device.getIdentifier() + "].");
 		Jad jad = new Jad();
 		Variable[] jadAttributes = this.infoSetting.getJadAttributes();
 		for (int i = 0; i < jadAttributes.length; i++) {

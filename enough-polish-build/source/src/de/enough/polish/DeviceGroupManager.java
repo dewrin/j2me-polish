@@ -8,16 +8,13 @@ package de.enough.polish;
 
 import de.enough.polish.exceptions.InvalidComponentException;
 
+import org.apache.tools.ant.BuildException;
 import org.jdom.*;
-import org.jdom.Document;
-import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
-import java.util.HashMap;
-import java.util.List;
 
 /**
  * <p>Manages all known groups of devices.</p>
@@ -36,33 +33,37 @@ public class DeviceGroupManager {
 	/**
 	 * Creates a new group manager.
 	 * 
-	 * @param groupsFile the file containing the groups definitions.
+	 * @param groupsIS the InputStream containing the groups definitions.
 	 * 			Usally this is the groups.xml file in the current directory.
 	 * @throws JDOMException when there are syntax errors in groups.xml
 	 * @throws IOException when groups.xml could not be read
 	 * @throws InvalidComponentException when a group definition has errors
 	 */
-	public DeviceGroupManager( File groupsFile ) 
+	public DeviceGroupManager( InputStream groupsIS ) 
 	throws InvalidComponentException, JDOMException, IOException 
 	{
 		this.groups = new HashMap();
-		loadGroups( groupsFile );
+		loadGroups( groupsIS );
+		groupsIS.close();
 	}
 	
 	/**
 	 * Loads all group definitions.
 	 * 
-	 * @param groupsFile the file containing the groups definitions.
+	 * @param groupsIS the InputStream containing the groups definitions.
 	 * 			Usally this is the groups.xml file in the current directory.
 	 * @throws JDOMException when there are syntax errors in groups.xml
 	 * @throws IOException when groups.xml could not be read
 	 * @throws InvalidComponentException when a group definition has errors
 	 */
-	private void loadGroups(File groupsFile) 
+	private void loadGroups(InputStream groupsIS) 
 	throws InvalidComponentException, JDOMException, IOException 
 	{
+		if (groupsIS == null) {
+			throw new BuildException("Unable to load groups.xml, no file found.");
+		}
 		SAXBuilder builder = new SAXBuilder( false );
-		Document document = builder.build( groupsFile );
+		Document document = builder.build( groupsIS );
 		List xmlList = document.getRootElement().getChildren();
 		for (Iterator iter = xmlList.iterator(); iter.hasNext();) {
 			Element deviceElement = (Element) iter.next();

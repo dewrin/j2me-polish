@@ -22,7 +22,8 @@
 <!-- task definitions -->
 
 <taskdef name="polish" classname="de.enough.polish.ant.PolishTask" classpath="bin/classes:import/jdom.jar:import/proguard.jar"/>
-
+<taskdef name="indexWriter" classname="de.enough.polish.ant.WriteFileListTask" classpath="bin/classes"/>
+	
 
 <!-- build targets, each target can be called via "ant [name]", e.g. "ant clean" -->
 
@@ -171,7 +172,25 @@
 	</jar>
 </target>
 
-<target name="test" depends="dist">
+<target name="bin-dist" depends="init">
+	<!-- create a list of all J2ME source files: -->
+	<indexWriter 
+		target="build/j2mepolish.index.txt"
+		>
+		<fileset dir="../enough-polish-j2me/source/src" includes="**/*.java" />
+	</indexWriter>
+	<!-- create the binary jar distribution -->
+	<jar destfile="dist/enough-j2mepolish-build.jar"
+	     basedir="bin/classes"
+		 excludes="**/*.html"
+		 index="true"
+	     >
+		<fileset dir="." includes="apis.xml,vendors.xml,groups.xml,devices.xml, build/j2mepolish.index.txt" />
+		<fileset dir="../enough-polish-j2me/source" includes="src/**/*.java" />
+	</jar>
+</target>
+		
+<target name="test" depends="bin-dist">
 	<copy file="dist/enough-j2mepolish-build.jar" todir="../enough-polish-dict/import/" />
 	<copy file="dist/enough-j2mepolish-build.jar" todir="../enough-polish-example/import/" />
 </target>

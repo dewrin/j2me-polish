@@ -27,6 +27,7 @@ public class TextFile {
 	private File file;
 	private long lastModified;
 	private String[] content;
+	private ResourceUtil resourceUtil;
 
 	/**
 	 * Creates a new text file.
@@ -47,6 +48,25 @@ public class TextFile {
 		}
 	}
 	
+	/**
+	 * Creates a new TextFile which can be loaded from the JAR file.
+	 *  
+	 * @param baseDir the directory within the jar file
+	 * @param fileName the name of the file
+	 * @param lastModificationTime the modification time of the corresponding jar
+	 * @param resourceUtil the jar-loader utility
+	 */
+	public TextFile(String baseDir, 
+			String fileName, 
+			long lastModificationTime, 
+			ResourceUtil resourceUtil) 
+	{
+		this.resourceUtil = resourceUtil;
+		this.lastModified = lastModificationTime;
+		this.fileName = fileName;
+		this.baseDir = baseDir;
+	}
+
 	/**
 	 * @return Returns the name and relative path of this text file.
 	 */
@@ -73,7 +93,11 @@ public class TextFile {
 	throws IOException 
 	{
 		if (this.content == null ) {
-			this.content = FileUtil.readTextFile( this.file );
+			if (this.resourceUtil != null) {
+				this.content = this.resourceUtil.readTextFile( this.baseDir + "/" + this.fileName );
+			} else {
+				this.content = FileUtil.readTextFile( this.file );
+			}
 		}
 		String[] copy = (String[]) this.content.clone();
 		return copy;

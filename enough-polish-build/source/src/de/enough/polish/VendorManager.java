@@ -8,16 +8,13 @@ package de.enough.polish;
 
 import de.enough.polish.exceptions.InvalidComponentException;
 
+import org.apache.tools.ant.BuildException;
 import org.jdom.*;
-import org.jdom.Document;
-import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
-import java.util.HashMap;
-import java.util.List;
 
 /**
  * <p>Manages all known vendors.</p>
@@ -37,32 +34,36 @@ public class VendorManager {
 	 * Creates a new vendor manager.
 	 * 
 	 * @param project The j2me project settings.
-	 * @param vendorsFile The file containing the vendor-definitions. This is usually "./vendors.xml".
+	 * @param vendorsIS The input stream containing the vendor-definitions. This is usually "./vendors.xml".
 	 * @throws JDOMException when there are syntax errors in devices.xml
 	 * @throws IOException when devices.xml could not be read
 	 * @throws InvalidComponentException when a vendor definition has errors
 	 */
-	public VendorManager( PolishProject project, File vendorsFile ) 
+	public VendorManager( PolishProject project, InputStream vendorsIS ) 
 	throws JDOMException, IOException, InvalidComponentException 
 	{
 		this.vendors = new HashMap();
-		loadVendors( project, vendorsFile );
+		loadVendors( project, vendorsIS );
+		vendorsIS.close();
 	}
 	
 	/**
 	 * Loads all known vendors from the given file.
 	 * 
 	 * @param project The j2me project settings.
-	 * @param vendorsFile The file containing the vendor-definitions. This is usually "./vendors.xml".
+	 * @param vendorsIS The input stream containing the vendor-definitions. This is usually "./vendors.xml".
 	 * @throws JDOMException when there are syntax errors in devices.xml
 	 * @throws IOException when devices.xml could not be read
 	 * @throws InvalidComponentException when a vendor definition has errors
 	 */
-	private void loadVendors(PolishProject project, File vendorsFile) 
+	private void loadVendors(PolishProject project, InputStream vendorsIS) 
 	throws JDOMException, IOException, InvalidComponentException 
 	{
+		if (vendorsIS == null) {
+			throw new BuildException("Unable to load vendors.xml, no file found.");
+		}
 		SAXBuilder builder = new SAXBuilder( false );
-		Document document = builder.build( vendorsFile );
+		Document document = builder.build( vendorsIS );
 		List xmlList = document.getRootElement().getChildren();
 		for (Iterator iter = xmlList.iterator(); iter.hasNext();) {
 			Element deviceElement = (Element) iter.next();

@@ -7,11 +7,16 @@
 package de.enough.polish.ant.build;
 
 import de.enough.polish.*;
+import de.enough.polish.util.ResourceUtil;
+import de.enough.polish.util.TextUtil;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 
+import java.io.*;
 import java.io.File;
+import java.io.InputStream;
+import java.util.ArrayList;
 
 /**
  * <p>Represents the build settings of a polish J2ME project.</p>
@@ -35,6 +40,7 @@ public class BuildSetting {
 	private File apiDir;
 	private File destDir;
 	private File resDir;
+	private File sourceDir;
 	private String symbols;
 	private String imageLoadStrategy;
 	private FullScreenSetting fullScreenSetting;
@@ -42,13 +48,15 @@ public class BuildSetting {
 	private File vendors;
 	private File groups;
 	private Variable[] variables;
-	private Source source;
 	private boolean usePolishGui;
 	private File midp1Path;
 	private File midp2Path;
 	private File preverify;
 	private Project project;
 	private boolean includeAntProperties;
+	private ResourceUtil resourceUtil;
+	private ArrayList sourceDirs;
+	private File polishDir;
 	
 	/**
 	 * Creates a new build setting.
@@ -57,16 +65,15 @@ public class BuildSetting {
 	 */
 	public BuildSetting( Project project ) {
 		this.project = project;
-		this.workDir = new File("./build");
-		this.destDir = new File("./dist");
-		this.apiDir = new File("./import");
-		this.resDir = new File ("./resources");
-		this.devices = new File("./devices.xml");
-		this.vendors = new File("./vendors.xml");
-		this.groups = new File("./groups.xml");
-		this.midp1Path = new File( "./import/midp1.jar" );
-		this.midp2Path = new File( "./import/midp2.jar" );
+		this.workDir = new File("build");
+		this.destDir = new File("dist");
+		this.apiDir = new File("import");
+		this.resDir = new File ("resources");
+		this.sourceDirs = new ArrayList();
+		this.midp1Path = new File( "import/midp1.jar" );
+		this.midp2Path = new File( "import/midp2.jar" );
 		this.imageLoadStrategy = IMG_LOAD_FOREGROUND;
+		this.resourceUtil = new ResourceUtil( this.getClass().getClassLoader() );
 	}
 	
 	public void addConfiguredObfuscator( ObfuscatorSetting setting ) {
@@ -116,17 +123,6 @@ public class BuildSetting {
 	 */
 	public boolean includeAntProperties() {
 		return this.includeAntProperties;
-	}
-
-	public void addConfiguredSource( Source src ) {
-		if (src.getUrl() == null) {
-			throw new BuildException("The nested element <source> needs to define the attribute [url].");
-		}
-		this.source = src;
-	}
-	
-	public Source getSource() {
-		return this.source;
 	}
 	
 	public void setSymbols( String symbols ) {
@@ -224,26 +220,6 @@ public class BuildSetting {
 	}
 	
 	/**
-	 * @return Returns the xml file containing the devices-data.
-	 */
-	public File getDevices() {
-		if (!this.devices.exists()) {
-			throw new BuildException("Did not find [devices.xml] in the default path [" + this.devices.getAbsolutePath() + "]. Please specify the [devices]-attribute of the <build> element or copy [devices.xml] to this path.");
-		}
-		return this.devices;
-	}
-	
-	/**
-	 * @param devices The path to the devices.xml
-	 */
-	public void setDevices(File devices) {
-		if (!devices.exists()) {
-			throw new BuildException("The [devices]-attribute of the <build> element points to a non existing file: [" + devices.getAbsolutePath() + "].");
-		}
-		this.devices = devices;
-	}
-	
-	/**
 	 * Retrieves the working directory.
 	 * The default working directory is "./build".
 	 * If the working directory does not exist, it will be created now.
@@ -314,8 +290,96 @@ public class BuildSetting {
 	 * @param resDir The directory containing the resources.
 	 */
 	public void setResDir( File resDir ) {
+		if (!resDir.exists()) {
+			throw new BuildException("The resource directory [" + resDir.getAbsolutePath() + 
+					"] does not exist. Please correct the attribute [resDir] " +
+					"of the <build> element.");
+		}
 		this.resDir = resDir;
 	}
+	
+	/**
+	 * Sets the directory containing the J2ME source code of polish.
+	 * 
+	 * @param polishDir the directory containing the J2ME source code of polish.
+	 */
+	public void setPolishDir( File polishDir ) {
+		if (!polishDir.exists()) {
+			throw new BuildException("The polish directory [" + polishDir.getAbsolutePath() + 
+					"] does not exist. " +
+					"Please correct the [polishDir] attribute of the <build> element.");
+		}
+		this.polishDir = polishDir;
+	}
+	
+	/**
+	 * Retrieves the directory containing the J2ME source code of polish.
+	 * 
+	 * @return the directory containing the J2ME source code of polish
+	 */
+	public File getPolishDir() {
+		return this.polishDir;
+	}
+
+	public void setSrcdir( String srcDir ) {
+		setSourceDir( srcDir );
+	}
+	public void setSrcDir( String srcDir ) {
+		setSourceDir( srcDir );
+	}
+	/**
+	 * Sets the source directory in which the source files for the application reside.
+	 * 
+	 * @param srcDir the source directory
+	 */
+	public void setSourceDir( String srcDir ) {
+		String[] paths = TextUtil.split( srcDir, ':');
+		if (paths.length == 1) {
+			paths = TextUtil.split( srcDir, ';' );
+		}
+		for (int i = 0; i < paths.length; i++) {
+			String path = paths[i];
+			File dir = new File( path );
+			if (!dir.exists()) {
+				throw new BuildException("The source directory [" + path + "] does not exist. " +
+						"Please correct the attribute [sourceDir] of the <build> element.");
+			}
+			this.sourceDirs.add( dir );
+		}
+	}
+	
+	/**
+	 * Retrieves all external source directories.
+	 * 
+	 * @return an arrray with at least one source directory.
+	 */
+	public File[] getSourceDirs() {
+		if (this.sourceDirs.size() == 0) {
+			// add default directory: either source/src, scr or source:
+			File src = new File("source/src");
+			if (src.exists()) {
+				this.sourceDirs.add( src );
+			} else {
+				src = new File("src");
+				if (src.exists()) {
+					this.sourceDirs.add( src );
+				} else {
+					src = new File("source");
+					if (src.exists()) {
+						this.sourceDirs.add( src );
+					} else {
+						throw new BuildException("Did not find any of the default " +
+								"source directories [source/src], [src] or [source]. " +
+								"Please specify the [sourceDir]-attribute of the " +
+								"<build> element.");
+					}
+				}
+			}
+		}
+		File[] dirs = (File[]) this.sourceDirs.toArray( new File[ this.sourceDirs.size()]);
+		return dirs;
+	}
+	
 
 	/**
 	 * @return Returns the the directory which contains device specific libraries.
@@ -340,13 +404,35 @@ public class BuildSetting {
 	}
 	
 	/**
+	 * @return Returns the xml file containing the devices-data.
+	 */
+	public InputStream getDevices() {
+		try {
+			return getResource( this.devices, "devices.xml" );
+		} catch (FileNotFoundException e) {
+			throw new BuildException("Unable to open devices.xml: " + e.getMessage(), e );
+		}
+	}
+	
+	/**
+	 * @param devices The path to the devices.xml
+	 */
+	public void setDevices(File devices) {
+		if (!devices.exists()) {
+			throw new BuildException("The [devices]-attribute of the <build> element points to a non existing file: [" + devices.getAbsolutePath() + "].");
+		}
+		this.devices = devices;
+	}
+	
+	/**
 	 * @return Returns the groups.
 	 */
-	public File getGroups() {
-		if (!this.groups.exists()) {
-			throw new BuildException("Did not find [groups.xml] in the default path [" + this.groups.getAbsolutePath() + "]. Please specify the [groups]-attribute of the <build> element or copy [groups.xml] to this path.");
+	public InputStream getGroups() {
+		try {
+			return getResource( this.groups, "groups.xml" );
+		} catch (FileNotFoundException e) {
+			throw new BuildException("Unable to open devices.xml: " + e.getMessage(), e );
 		}
-		return this.groups;
 	}
 	/**
 	 * @param groups The groups to set.
@@ -361,11 +447,12 @@ public class BuildSetting {
 	/**
 	 * @return Returns the vendors.
 	 */
-	public File getVendors() {
-		if (!this.vendors.exists()) {
-			throw new BuildException("Did not find [vendors.xml] in the default path [" + this.vendors.getAbsolutePath() + "]. Please specify the [vendors]-attribute of the <build> element or copy [vendors.xml] to this path.");
+	public InputStream getVendors() {
+		try {
+			return getResource( this.vendors, "vendors.xml" );
+		} catch (FileNotFoundException e) {
+			throw new BuildException("Unable to open devices.xml: " + e.getMessage(), e );
 		}
-		return this.vendors;
 	}
 	
 	/**
@@ -525,4 +612,28 @@ public class BuildSetting {
 		this.obfuscatorSetting.setEnable( obfuscate );
 	}
 
+	/**
+	 * Retrieves the specified resource as an input stream.
+	 * The caller is responsible for closing the returned input stream.
+	 * 
+	 * @param file the file which has been set. When the file is not null,
+	 * 		  it needs to exists as well.
+	 * @param name the name of the resource
+	 * @return the input stream for the specified resource.
+	 * @throws FileNotFoundException when the resource could not be found.
+	 */
+	private InputStream getResource(File file, String name) 
+	throws FileNotFoundException 
+	{
+		if (file != null ) {
+			try {
+				return new FileInputStream( file );
+			} catch (FileNotFoundException e) {
+				throw new BuildException("Unable to open [" + file.getAbsolutePath() + "]: " + e.getMessage(), e );
+			}
+		}
+		return this.resourceUtil.open( name );
+	}
+
+	
 }

@@ -10,6 +10,7 @@ import de.enough.polish.exceptions.InvalidComponentException;
 
 import org.jdom.JDOMException;
 
+import java.io.*;
 import java.io.File;
 import java.io.IOException;
 
@@ -33,9 +34,9 @@ public class DeviceManagerTest extends TestCase {
 	
 	public void testInitialisation() throws JDOMException, IOException, InvalidComponentException 
 	{	
-		VendorManager vendorManager = new VendorManager( null, new File("./definitions/vendors.xml"));
-		DeviceGroupManager groupManager = new DeviceGroupManager( new File("./definitions/groups.xml"));
-		DeviceManager manager = new DeviceManager( vendorManager, groupManager, new File("./definitions/devices.xml"));
+		VendorManager vendorManager = new VendorManager( null, new FileInputStream( new File("vendors.xml") ));
+		DeviceGroupManager groupManager = new DeviceGroupManager( new FileInputStream( new File("groups.xml")));
+		DeviceManager manager = new DeviceManager( vendorManager, groupManager, new FileInputStream( new File("devices.xml")));
 		System.out.println("initialisation done.");
 		Device[] devices = manager.getDevices();
 		for (int i = 0; i < devices.length; i++) {
