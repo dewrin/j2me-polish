@@ -647,7 +647,7 @@ public class Preprocessor {
 			return true;
 		} catch (IllegalArgumentException e) {
 			throw new PreprocessException( className + " line " + (lines.getCurrentIndex() +1)
-					+ ": unable to include file [" + argument + "]: " + e.getMessage()  );
+					+ ": unable to preprocess //#= in line [" + argument + "]: " + e.getMessage()  );
 		}
 	}
 
