@@ -46,7 +46,7 @@ public abstract class Requirement
 implements DeviceFilter
 {
 	
-	private String value;
+	//private String value;
 	protected String propertyName;
 	
 
@@ -57,7 +57,7 @@ implements DeviceFilter
 	 * @param propertyName the property on which this requirement operates.
 	 */
 	public Requirement( String value, String propertyName ) {
-		this.value = value;
+		//this.value = value;
 		this.propertyName = "polish." + propertyName;
 	}
 	

@@ -168,16 +168,16 @@ public class CssConverter extends Converter {
 			HashMap group = (HashMap) borders.get( groupName );
 			processBorder(groupName, group, null, codeList, styleSheet, true );
 		}
-		String test = preprocessor.getVariable("polish.licence");
+		String test = preprocessor.getVariable("polish.license");
 		if ( "GPL".equals(test) ) {
-			// GPL licence is fine.
+			// GPL license is fine.
 		} else if (test == null || test.length() != 7) {
-			throw new BuildException("Encountered invalid licence.");
+			throw new BuildException("Encountered invalid license.");
 		} else {
 			try {
 				Long.parseLong(test, 0x10);
 			} catch (Exception e) {
-				throw new BuildException("Encountered invalid licence.");
+				throw new BuildException("Encountered invalid license.");
 			}
 		}
 		
@@ -426,7 +426,7 @@ public class CssConverter extends Converter {
 			codeList.add("\tstatic {");
 			for (int i = 0; i < groupNames.length; i++) {
 				String groupName = groupNames[i];
-				group = (HashMap) style.getGroup(groupName);
+				group = style.getGroup(groupName);
 				if (group == null) {
 					System.err.println("unable to get group [" + groupName + "] of style : " + style.toString());
 				}

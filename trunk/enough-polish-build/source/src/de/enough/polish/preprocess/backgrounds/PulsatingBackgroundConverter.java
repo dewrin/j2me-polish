@@ -94,7 +94,7 @@ public class PulsatingBackgroundConverter extends BackgroundConverter {
 		double addBlue = ((double)(startBlue - endBlue ) / (double) steps);
 		int[] colors = new int[ steps ];
 		for (int i = 0; i < steps; i++) {
-			double count = (double) i;
+			double count = i;
 			int red = startRed - (int)(count * addRed);
 			int green = startGreen - (int)(count * addGreen );
 			int blue = startBlue - (int)(count * addBlue);

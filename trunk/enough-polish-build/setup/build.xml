@@ -6,8 +6,11 @@
 
 <taskdef name="j2mepolish" classname="de.enough.polish.ant.PolishTask" classpath="import/enough-j2mepolish-build.jar:import/jdom.jar:import/proguard.jar:import/retroguard.jar"/>
 
-<!-- optional J2ME apis -->
-<property name="polish.api.bluetooth" location="~/Nokia/Devices/Series_60_MIDP_Concept_SDK_Beta_0_3_1_Nokia_edition/lib/ext/bluetooth.zip" />
+  <!-- optional J2ME apis -->
+  <!-- in the alpha release the apis.xml file is not used yet.
+       Please adjust the paths to your system -->
+  <property name="polish.api.bluetooth" location="/home/enough/Nokia/Devices/Series_60_MIDP_Concept_SDK_Beta_0_3_1_Nokia_edition/lib/ext/bluetooth.zip" />
+  <property name="polish.api.btapi" location="/home/enough/Nokia/Devices/Series_60_MIDP_Concept_SDK_Beta_0_3_1_Nokia_edition/lib/ext/bluetooth.zip" />
 	
 <!-- build targets, each target can be called via "ant [name]", 
 	 e.g. "ant clean", "ant notest j2mepolish" or just "ant" for calling the default-target -->
@@ -25,7 +28,7 @@
 	<j2mepolish>
 	    <!-- general settings -->
 		<info
-			licence="GPL"
+			license="GPL"
 			name="SimpleMenu"
 			version="1.3.4"
 			description="A test project"
@@ -46,15 +49,20 @@
 			<requirement name="BitsPerPixel" value="4+" />
 		</deviceRequirements>
 	    <!-- build settings -->
+		<!-- You need to adjust the path to the preverify executable.
+		     Also you could set the resDir attribute to "resources" 
+		     for an alternative design.
+		 -->
 		<build
 			symbols="ExampleSymbol, AnotherExample"
 			imageLoadStrategy="background"
 			fullscreen="menu"
 			usePolishGui="true"
 			preverify="/home/enough/dev/WTK2.1/bin/preverify"
+			resDir="resources2"
 			>
 			<!-- midlets definition -->
-			<midlet class="MenuMidlet" name="Example" />
+			<midlet class="de.enough.polish.example.MenuMidlet" name="Example" />
 			<!-- project-wide variables - used for preprocessing  -->
 			<variables>
 				<variable name="update-url" value="http://www.enough.de/update" />

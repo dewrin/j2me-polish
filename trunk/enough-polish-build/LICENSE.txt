@@ -1,10 +1,27 @@
-Polish is dual licensed under the open source licence "GNU General Public License" as well as the 
-enough-commercial-license for commercial use.
+==== Overview ====
 
-If you want to use Polish for commercial projects, you need to obtain a commercial license.
-Please register in this case at www.enough.de/polish/commercial.html.
+J2ME Polish is dual licensed under the open source license "GNU General Public License" 
+as well as commercial-licenses for commercial use.
 
-For projects which are published under the  "GNU General Public License" no registration is needed.
+If you want to use J2ME Polish for commercial (closed source) projects, 
+you need to obtain a commercial license. 
+Please register in this case at www.j2mepolish.org
+
+For projects which are published under the  "GNU General Public License" 
+no registration is needed.
+
+
+==== Third Party Tools ====
+
+J2ME Polish includes the ProGuard obfuscator. ProGuard is licensed under the GNU General
+Public License. More information and the latest version can be found at 
+http://proguard.sourceforge.net.
+Also the RetroGuard obfuscator is included. RetroGuard is licensed under
+the GNU Lesser General Public License. RetroGuard can be found at
+http://www.retrologic.com.
+
+
+==== GPL License ====
 
 The "GNU General Public License" has the following licensing terms:
 

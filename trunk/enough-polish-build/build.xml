@@ -17,7 +17,8 @@
   <property name="polish.api.wmapi" location="/home/enough/Nokia/Devices/Series_60_MIDP_Concept_SDK_Beta_0_3_1_Nokia_edition/lib/ext/wma.zip" />
   <property name="polish.api.nokia-ui" location="/home/enough/Nokia/Devices/Series_60_MIDP_Concept_SDK_Beta_0_3_1_Nokia_edition/lib/ext/nokiaui.zip" />
   <property name="polish.api.bluetooth" location="/home/enough/Nokia/Devices/Series_60_MIDP_Concept_SDK_Beta_0_3_1_Nokia_edition/lib/ext/bluetooth.zip" />
-
+  <property name="polish.api.btapi" location="/home/enough/Nokia/Devices/Series_60_MIDP_Concept_SDK_Beta_0_3_1_Nokia_edition/lib/ext/bluetooth.zip" />
+	
 
 <!-- task definitions -->
 
@@ -194,15 +195,22 @@
 		 depends="bin-dist"
 		 description="creates the j2mepolish.zip used for setup." 
 	>
+	<delete dir="tmp" />
 	<mkdir dir="tmp/import" />
 	<!-- create the installation zip file -->
 	<copy todir="tmp/" >
-		<fileset dir="." includes="apis.xml,vendors.xml,groups.xml,devices.xml,LICENSE.txt" />
+		<fileset dir="." includes="apis.xml,vendors.xml,groups.xml,devices.xml,LICENSE.txt,INSTALL.txt" />
 		<fileset dir="setup" />
-	</copy>
+		<fileset dir="../enough-polish-example" includes="resources/**/*.css,resources/**/*.png" />
+		<fileset dir="../enough-polish-example" includes="resources2**/*.css,resources2/**/*.png" />
+			</copy>
 	<copy todir="tmp/import">
-		<fileset dir="import" includes="jdom.jar,proguard.jar,retroguard.jar" />
+		<fileset dir="import" includes="jdom.jar,proguard.jar,retroguard.jar,midp1.jar,midp2.jar,wmapi.jar,nokia-ui.jar,mmapi.jar" />
 		<fileset dir="dist" includes="*.jar" />
+	</copy>
+	<mkdir dir="tmp/source" />
+	<copy todir="tmp/source">
+		<fileset dir="../enough-polish-example/source/src" includes="**/*.java" />
 	</copy>
 	<!-- create ZIP file -->
 	<zip destfile="dist/j2mepolish.zip" 

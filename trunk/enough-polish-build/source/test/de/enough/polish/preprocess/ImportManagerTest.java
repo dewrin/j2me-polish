@@ -52,8 +52,8 @@ public class ImportManagerTest extends TestCase {
 		StringList code = new StringList( new String[] {
 			"/*",
 			"* Created on 20-Feb-2004 at 20:09:42.",
-			"* This source code is published under the GNU General Public Licence and",
-			"* the enough-software-licence for commercial use.",
+			"* This source code is published under the GNU General Public license and",
+			"* the enough-software-license for commercial use.",
 			"* Please refer to accompanying LICENSE.txt or visit www.enough.de for details.",
 			"*/",
 			"package de.enough.polish.dict;",
@@ -86,8 +86,8 @@ public class ImportManagerTest extends TestCase {
 		code = new StringList( new String[] {
 				"/*",
 				"* Created on 20-Feb-2004 at 20:09:42.",
-				"* This source code is published under the GNU General Public Licence and",
-				"* the enough-software-licence for commercial use.",
+				"* This source code is published under the GNU General Public license and",
+				"* the enough-software-license for commercial use.",
 				"* Please refer to accompanying LICENSE.txt or visit www.enough.de for details.",
 				"*/",
 				"package de.enough.polish.dict;",

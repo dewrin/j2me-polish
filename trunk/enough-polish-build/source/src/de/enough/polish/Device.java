@@ -190,21 +190,25 @@ public class Device extends PolishComponent {
 		String bitsPerPixelStr = this.getCapability( BITS_PER_PIXEL );
 		if (bitsPerPixelStr != null ) {
 			int bitsPerPixel = Integer.parseInt(bitsPerPixelStr);
-			if (bitsPerPixel > 4) {
+			if (bitsPerPixel >= 4) {
 				groupNamesList.add( "BitsPerPixel.4+" );
 				groupsList.add( groupManager.getGroup( "BitsPerPixel.4+", true ) ); 
 			}
-			if (bitsPerPixel > 8) {
+			if (bitsPerPixel >= 8) {
 				groupNamesList.add( "BitsPerPixel.8+" );
 				groupsList.add( groupManager.getGroup( "BitsPerPixel.8+", true ) ); 
 			}
-			if (bitsPerPixel > 12) {
+			if (bitsPerPixel >= 12) {
 				groupNamesList.add( "BitsPerPixel.12+" );
 				groupsList.add( groupManager.getGroup( "BitsPerPixel.12+", true ) ); 
 			}
-			if (bitsPerPixel > 16) {
+			if (bitsPerPixel >= 16) {
 				groupNamesList.add( "BitsPerPixel.16+" );
 				groupsList.add( groupManager.getGroup( "BitsPerPixel.16+", true ) ); 
+			}
+			if (bitsPerPixel >= 24) {
+				groupNamesList.add( "BitsPerPixel.24+" );
+				groupsList.add( groupManager.getGroup( "BitsPerPixel.24+", true ) ); 
 			}
 			groupNamesList.add( "BitsPerPixel." + bitsPerPixelStr );
 			groupsList.add( groupManager.getGroup( "BitsPerPixel." + bitsPerPixelStr, true ) );

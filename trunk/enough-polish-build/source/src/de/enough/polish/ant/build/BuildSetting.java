@@ -59,7 +59,6 @@ public class BuildSetting {
 	private File apiDir;
 	private File destDir;
 	private File resDir;
-	private File sourceDir;
 	private String symbols;
 	private String imageLoadStrategy;
 	private FullScreenSetting fullScreenSetting;
