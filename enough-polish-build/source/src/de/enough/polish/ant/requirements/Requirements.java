@@ -7,6 +7,9 @@
 package de.enough.polish.ant.requirements;
 
 import de.enough.polish.Device;
+import de.enough.polish.ant.ConditionalElement;
+
+import org.apache.tools.ant.Project;
 
 import java.util.ArrayList;
 
@@ -24,12 +27,14 @@ public class Requirements
 extends AndRelation
 {
 	
+	ConditionalElement condition;
 
 	/**
 	 * Creates a new device requirements list.
 	 */
 	public Requirements() {
 		super();
+		this.condition = new ConditionalElement();
 	}
 	
 	//TODO rob addConfiguredGroup( OrRelation orRelation )
@@ -53,4 +58,33 @@ extends AndRelation
 		return (Device[]) deviceList.toArray( new Device[ deviceList.size() ] );
 	}
 
+	/**
+	 * Sets the ant-property which needs to be defined to allow the execution of this task.
+	 *  
+	 * @param ifExpr the ant-property which needs to be defined 
+	 */
+	public void setIf(String ifExpr) {
+		this.condition.setIf( ifExpr );
+	}
+	
+	/**
+	 * Sets the ant-property which must not be defined to allow the execution of this task.
+	 * 
+	 * @param unlessExpr the ant-property which must not be defined 
+	 */
+	public void setUnless(String unlessExpr) {
+		this.condition.setUnless( unlessExpr );
+	}
+
+	/**
+	 * Checks if this element should be used.
+	 * 
+	 * @param project The project to which this nested element belongs to.
+	 * @return true when this element is valid
+	 */
+	public boolean isActive( Project project ) {
+		return this.condition.isActive( project );
+	}
+
+	
 }

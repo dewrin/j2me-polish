@@ -19,7 +19,7 @@ import de.enough.polish.preprocess.*;
  * </pre>
  * @author Robert Virkus, robert@enough.de
  */
-public class Project extends PolishComponent {
+public class PolishProject extends PolishComponent {
 	
 	private boolean usesPolishGui;
 	private boolean isDebugEnabled;
@@ -32,7 +32,7 @@ public class Project extends PolishComponent {
 	 * @param isDebugEnabled true when debugging is enabled at all.
 	 * @param debugManager manages specific debugging settings.
 	 */
-	public Project( boolean usesPolishGui, boolean isDebugEnabled, DebugManager debugManager ) {
+	public PolishProject( boolean usesPolishGui, boolean isDebugEnabled, DebugManager debugManager ) {
 		this.usesPolishGui = usesPolishGui;
 		this.isDebugEnabled = isDebugEnabled;
 		this.debugManager = debugManager;

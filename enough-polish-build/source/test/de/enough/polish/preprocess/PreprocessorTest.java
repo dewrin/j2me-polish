@@ -6,7 +6,7 @@
  */
 package de.enough.polish.preprocess;
 
-import de.enough.polish.Project;
+import de.enough.polish.PolishProject;
 import de.enough.polish.util.StringList;
 
 import java.io.File;
@@ -54,7 +54,7 @@ public class PreprocessorTest extends TestCase {
 		manager.addDebugSetting( "com.company.package.MyClass", "debug" );
 		manager.addDebugSetting( "com.company.package.MyOtherClass", "visual" );
 		
-		Project project = new Project( true, true, manager );
+		PolishProject project = new PolishProject( true, true, manager );
 		
 		HashMap symbols = new HashMap();
 		symbols.put( "test1", Boolean.TRUE );

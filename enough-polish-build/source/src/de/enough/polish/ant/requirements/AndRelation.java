@@ -26,6 +26,7 @@ public class AndRelation extends RequirementContainer {
 	public AndRelation() {
 		super();
 	}
+	
 	/* (non-Javadoc)
 	 * @see de.enough.polish.ant.requirements.DeviceFilter#isMet(de.enough.polish.Device)
 	 */

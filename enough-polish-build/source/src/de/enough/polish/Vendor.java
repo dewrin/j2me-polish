@@ -31,7 +31,7 @@ public class Vendor extends PolishComponent {
 	 * @param definition the XML definition of this vendor.
 	 * @throws InvalidComponentException when the given definition contains errors
 	 */
-	public Vendor( Project parent, Element definition )
+	public Vendor( PolishProject parent, Element definition )
 	throws InvalidComponentException
 	{
 		super( parent );
