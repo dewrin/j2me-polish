@@ -83,6 +83,7 @@ public class Preprocessor {
 		this.newExtension = newExt;
 		this.styleSheet = new StyleSheet();
 		this.booleanEvaluator = new BooleanEvaluator( symbols );
+		this.destinationDir = destinationDir;
 		this.withinIfDirectives = new HashMap();
 		this.withinIfDirectives.put( "elifdef", Boolean.TRUE );
 		this.withinIfDirectives.put( "elifndef", Boolean.TRUE );
@@ -102,6 +103,36 @@ public class Preprocessor {
 		this.supportedDirectives.put( "include", Boolean.TRUE );
 		this.supportedDirectives.put( "define", Boolean.TRUE );
 		this.supportedDirectives.put( "undefine", Boolean.TRUE );
+	}
+
+	/**
+	 * Sets the direcotry to which the preprocessed files should be copied to.
+	 * 
+	 * @param path The target path. 
+	 */
+	public void setTargetDir(String path) {
+		this.destinationDir = new File( path );
+		if (!this.destinationDir.exists()) {
+			this.destinationDir.mkdirs();
+		}
+	}
+
+	/**
+	 * Sets the symbols.
+	 * 
+	 * @param symbols the symbols.
+	 */
+	public void setSymbols(HashMap symbols) {
+		this.symbols = symbols;
+	}
+	
+	/**
+	 * Sets the variables.
+	 * 
+	 * @param variables the variables.
+	 */
+	public void setVariables(HashMap variables) {
+		this.variables = variables;
 	}
 	
 	/**
@@ -126,6 +157,7 @@ public class Preprocessor {
 	public boolean preprocess( File sourceDir, String fileName ) 
 	throws FileNotFoundException, IOException, PreprocessException
 	{
+		this.ifDirectiveCount = 0;
 		File sourceFile = new File( sourceDir.getAbsolutePath()  + "/" + fileName );
 		String[] sourceLines = FileUtil.readTextFile( sourceFile );
 		StringList lines = new StringList( sourceLines );
@@ -153,6 +185,7 @@ public class Preprocessor {
 				// create backup:
 				destinationFile.renameTo( new File( destinationFile.getAbsoluteFile() + ".bak") );
 			}
+			// create necessary directories:
 			FileUtil.writeTextFile( destinationFile, lines.getArray() );
 			return true;
 		} else {
@@ -746,4 +779,6 @@ public class Preprocessor {
 		Matcher matcher = DIRECTIVE_PATTERN.matcher( line );
 		return matcher.find();
 	}
+
+
 }

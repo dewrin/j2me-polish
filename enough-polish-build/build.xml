@@ -1,6 +1,6 @@
 <project 
 	name="enough-polish-build" 
-	default="test">
+	default="polish">
 
 <!-- global properties -->
 
@@ -13,7 +13,7 @@
 
 <!-- task definitions -->
 
-<taskdef name="polish" classname="de.enough.polish.ant.PolishTask" classpath="bin/classes"/>
+<taskdef name="polish" classname="de.enough.polish.ant.PolishTask" classpath="bin/classes:/import/jdom.jar"/>
 
 
 <!-- build targets, each target can be called via "ant [name]", e.g. "ant clean" -->
@@ -45,7 +45,7 @@
     	doctitle="the polish build framework"/>
 </target>
     
-<target name="test" >
+<target name="polish" >
 	<polish>
 	    <!-- info settings -->
 		<info
@@ -72,13 +72,20 @@
 	    </info>
 		<!-- selection of supported devices -->
 		<deviceRequirements>
+			<requirement name="JavaPackage" value="nokia-ui" />
+			<!--
 			<requirement name="ScreenSize" value="100+ x 100+" />
 			<requirement name="BitsPerPixel" value="4+" />
-			<requirement name="JavaPackage" value="nokia-ui, mmapi" />
+			<or>
+				<requirement name="JavaPackage" value="nokia-ui, mmapi" />
+				<and>
+					<requirement name="JavaPackage" value="mmapi" />
+					<requirement name="JavaPlatform" value="MIDP/2.0+" />
+				</and>
+			</or>
 			<requirement name="Vendor" value="Nokia, SonyEricsson" />
 			<requirement name="Identifier" value="Nokia/6600, SonyEricsson/P900" />
 			<requirement name="JavaProtocol" value="https, socket" />
-			<!--
 			<requirement name="JavaPlatform" value="MIDP/1.0+" />
 			<requirement name="HeapSize" value="500+kb" />
 			-->
@@ -90,6 +97,10 @@
 			imageLoadStrategy="background"
 			fullscreen="menu"
 			usePolishGui="true"
+			devices="definitions/devices.xml"
+			vendors="definitions/vendors.xml"
+			groups="definitions/groups.xml"
+			targetDir="build"
 			>
 			<!-- midlets definition -->
 			<midlets>
@@ -106,9 +117,14 @@
 			</variables>
 			<!-- sources -->
 			<source
-				url="source/src"
-				polish="/home/user/j2me/polish/source/src"
+				url="/home/enough/workspace/enough-polish-j2me/source/src"
 				/>
+			<!--
+			<source
+				url="./source/src"
+				polish="/home/enough/workspace/enough-polish-j2me/source/src"
+				/>
+			-->
 			<!-- debug settings -->
 			<debug enable="true" visual="true" verbose="false" level="error">
 				<filter pattern="com.company.package.*" level="info" />

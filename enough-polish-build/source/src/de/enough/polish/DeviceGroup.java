@@ -6,6 +6,10 @@
  */
 package de.enough.polish;
 
+import de.enough.polish.exceptions.InvalidComponentException;
+
+import org.jdom.Element;
+
 
 /**
  * <p>Respresents a group to which a device belongs to.</p>
@@ -23,20 +27,40 @@ package de.enough.polish;
  */
 public class DeviceGroup extends PolishComponent {
 
-	/**
-	 * Creates a new device group.
-	 */
-	public DeviceGroup() {
-		super("group");
-	}
+
+	private String name;
+	private String parentName;
 
 	/**
 	 * Creates a new device group.
 	 * 
-	 * @param parent the group to which this group belongs to.
+	 * @param definition The xml definition of this group.
+	 * @throws InvalidComponentException when the given definition contains errors.
 	 */
-	public DeviceGroup( DeviceGroup parent ) {
-		super("group", parent );
+	public DeviceGroup( Element definition ) 
+	throws InvalidComponentException 
+	{
+		super("polish.group", null );
+		this.name = definition.getChildTextTrim( "name" );
+		if (this.name == null) {
+			throw new InvalidComponentException("A group needs to have the element <name> defined. Please check your [groups.xml] file.");
+		}
+		this.parentName  = definition.getChildTextTrim( "parent" );
+		loadCapabilities(definition, this.name, "groups.xml");
 	}
 	
+	/**
+	 * @return Returns the name of this group.
+	 */
+	public String getName() {
+		return this.name;
+	}
+	
+	/**
+	 * @return The name of the parent of this group.
+	 */
+	public String getParentName() {
+		return this.parentName;
+	}
+
 }

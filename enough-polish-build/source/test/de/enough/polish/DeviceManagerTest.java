@@ -6,7 +6,7 @@
  */
 package de.enough.polish;
 
-import de.enough.polish.exceptions.InvalidDeviceException;
+import de.enough.polish.exceptions.InvalidComponentException;
 
 import org.jdom.JDOMException;
 
@@ -31,9 +31,11 @@ public class DeviceManagerTest extends TestCase {
 		super(name);
 	}
 	
-	public void testInitialisation() throws JDOMException, IOException, InvalidDeviceException 
-	{
-		DeviceManager manager = new DeviceManager( null, new File("./definitions/devices.xml"));
+	public void testInitialisation() throws JDOMException, IOException, InvalidComponentException 
+	{	
+		VendorManager vendorManager = new VendorManager( null, new File("./definitions/vendors.xml"));
+		DeviceGroupManager groupManager = new DeviceGroupManager( new File("./definitions/groups.xml"));
+		DeviceManager manager = new DeviceManager( vendorManager, groupManager, new File("./definitions/devices.xml"));
 		System.out.println("initialisation done.");
 		Device[] devices = manager.getDevices();
 		for (int i = 0; i < devices.length; i++) {

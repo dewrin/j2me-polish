@@ -7,13 +7,10 @@
 package de.enough.polish;
 
 import de.enough.polish.ant.requirements.MemoryMatcher;
-import de.enough.polish.exceptions.InvalidDeviceException;
+import de.enough.polish.exceptions.InvalidComponentException;
 import de.enough.polish.util.TextUtil;
 
 import org.jdom.Element;
-
-import java.util.Iterator;
-import java.util.List;
 
 
 /**
@@ -31,9 +28,13 @@ public class Device extends PolishComponent {
 	public static final String IDENTIFIER = "Identifier";
 	public static final String VENDOR = "Vendor";
 	public static final String NAME = "Name";
-	public static final String SCREEN_SIZE= "ScreenSize";
+	public static final String SCREEN_SIZE = "ScreenSize";
+	public static final String SCREEN_WIDTH = "ScreenWidth";
+	public static final String SCREEN_HEIGHT = "ScreenHeigth";
+	public static final String CANVAS_SIZE = "CanvasSize";
+	public static final String CANVAS_WIDTH = "CanvasWidth";
+	public static final String CANVAS_HEIGHT = "CanvasHeigth";
 	public static final String BITS_PER_PIXEL = "BitsPerPixel";
-	public static final String CANVAS_SIZE= "CanvasSize";
 	public static final String JAVA_PLATFORM = "JavaPlatform";
 	public static final String JAVA_PROTOCOL = "JavaProtocol";
 	public static final String JAVA_PACKAGE= "JavaPackage";
@@ -56,62 +57,59 @@ public class Device extends PolishComponent {
 	 * @param parent the manufacturer of this device.
 	 */
 	public Device(Vendor parent) {
-		super("device", parent);
+		super("polish.device", parent);
 	}
 
 	/**
 	 * Creates a new device.
 	 * 
 	 * @param definition the xml definition of this device.
-	 * @throws InvalidDeviceException when the given definition has errors
+	 * @param vendorManager The manager of the device-manufacturers
+	 * @param groupManager The manager for device-groups.
+	 * @throws InvalidComponentException when the given definition has errors
 	 */
-	public Device(Element  definition ) throws InvalidDeviceException {
-		super( "device", null );
-		this.identifier = definition.getChildText( "identifier");
+	public Device(Element  definition,  VendorManager vendorManager, DeviceGroupManager groupManager ) 
+	throws InvalidComponentException {
+		super( "device.polish", null );
+		this.identifier = definition.getChildTextTrim( "identifier");
 		if (this.identifier == null) {
-			throw new InvalidDeviceException("unable to initialise device. Every device needs to define either its [identifier] or its [name] and [vendor]. Check your [devices.xml].");
+			throw new InvalidComponentException("Unable to initialise device. Every device needs to define either its [identifier] or its [name] and [vendor]. Check your [devices.xml].");
 		}
 		String[] chunks = TextUtil.split( this.identifier, '/');
 		if (chunks.length != 2) {
 			//TODO there could be several device definitions in one xml-block
-			throw new InvalidDeviceException("The device [" + this.identifier + "] has an invalid [identifier] - every identifier needs to consists of the vendor and the name, e.g. \"Nokia/6600\". Please check you [devices.xml].");
+			throw new InvalidComponentException("The device [" + this.identifier + "] has an invalid [identifier] - every identifier needs to consists of the vendor and the name, e.g. \"Nokia/6600\". Please check you [devices.xml].");
 		}
 		this.vendorName = chunks[0];
 		this.name = chunks[1];
 		addCapability( NAME, this.name );
 		addCapability( VENDOR, this.vendorName );
 		addCapability( IDENTIFIER, this.identifier );
+		Vendor vendor = vendorManager.getVendor( this.vendorName );
+		if (vendor == null) {
+			throw new InvalidComponentException("The device [" + this.name + "] defines the vendor [" + this.vendorName + "] which is not defined within [vendors.xml] - please check your settings.");
+		}
+		addComponent(vendor);
 		
-		// read capabilities:
-		List capabilitiesList = definition.getChildren("capability");
-		for (Iterator iter = capabilitiesList.iterator(); iter.hasNext();) {
-			Element element = (Element) iter.next();
-			String capName = element.getAttributeValue( "name" );
-			if (capName == null) {
-				capName = element.getChildText("capability-name");
-			}
-			if (capName == null) {
-				throw new InvalidDeviceException("The device [" + this.identifier + "] has an invalid [capability] - every capability needs to define the attribute [name]. Please check you [devices.xml].");
-			}
-			String capValue = element.getAttributeValue( "value" );
-			if (capValue == null) {
-				capValue = element.getChildText("capability-value");
-			}
-			if (capName == null) {
-				throw new InvalidDeviceException("The device [" + this.identifier + "] has an invalid [capability] - every capability needs to define the attribute [value]. Please check you [devices.xml].");
-			}
-			// add the capability:
-			addCapability( capName, capValue );
-		} // end of reading all capabilties
+		// load capabilities and features:
+		loadCapabilities( definition, this.identifier, "devices.xml" );
 		
-		// TODO add groups, be careful with 
-		//    - api/JavaPackage definition
-		//    - JavaProtocol
-		// - they need to concatenated!
+		//add groups:
+		String groupsDefinition = definition.getChildTextTrim( "groups");
+		if (groupsDefinition != null) {
+			String[] groups = TextUtil.splitAndTrim(groupsDefinition, ',');
+			for (int i = 0; i < groups.length; i++) {
+				DeviceGroup group = groupManager.getGroup( groups[i] );
+				if (group == null) {
+					throw new InvalidComponentException("The device [" + this.identifier + "] contains the undefined group [" + groups[i] + "] - please check either [devices.xml] or [groups.xml].");
+				}
+				addComponent(group);
+			}
+		}
 		
 		// set specific features:
 		// set api-support:
-		String supportedApisStr = getCapability( JAVA_PACKAGE );
+		String supportedApisStr = getCapability( "polish." + JAVA_PACKAGE );
 		if (supportedApisStr != null) {
 			String[] supportedApis = TextUtil.splitAndTrim( supportedApisStr, ',' );
 			for (int i = 0; i < supportedApis.length; i++) {
@@ -120,7 +118,11 @@ public class Device extends PolishComponent {
 			}
 		}
 		// set midp-version:
-		String midp = getCapability( JAVA_PLATFORM ).toUpperCase();
+		String midp = getCapability( "polish." + JAVA_PLATFORM );
+		if (midp == null) {
+			throw new InvalidComponentException("The device [" + this.identifier + "] does not define the needed element [" + JAVA_PLATFORM + "].");
+		}
+		midp = midp.toUpperCase();
 		if (midp.startsWith("MIDP/1.")) {
 			addFeature( "midp1");
 		} else if (midp.startsWith("MIDP/2.")) {
@@ -153,6 +155,7 @@ public class Device extends PolishComponent {
 		}
 	}
 	
+
 	/**
 	 * Determines whether this device supports the polish-gui-framework.
 	 * Usually this is the case when the device meets some capabilities like

@@ -6,6 +6,10 @@
  */
 package de.enough.polish;
 
+import de.enough.polish.exceptions.InvalidComponentException;
+
+import org.jdom.Element;
+
 
 /**
  * <p>Represents a manufacturer of J2ME devices like Nokia, Sony-Ericsson, Motorola and so on.</p>
@@ -19,13 +23,34 @@ package de.enough.polish;
  */
 public class Vendor extends PolishComponent {
 
+	private String name;
+
 	/**
 	 * Creates a new Vendor.
 	 * 
-	 * @param parent the project to which this definition of a manufacturer belongs to.
+	 * @param parent the project to which this vendor manufacturer belongs to.
+	 * @param definition the XML definition of this vendor.
+	 * @throws InvalidComponentException when the given definition contains errors
 	 */
-	public Vendor( Project parent ) {
-		super("manufacturer", parent );
+	public Vendor( Project parent, Element definition )
+	throws InvalidComponentException
+	{
+		super("polish.vendor", parent );
+		this.name = definition.getChildTextTrim( "name");
+		if (this.name == null) {
+			throw new InvalidComponentException("Every vendor needs to define the element <name> - please check your vendors.xml.");
+		}
+		// load all capabilities:
+		loadCapabilities(definition, this.name, "vendors.xml");
+	}
+
+	/**
+	 * Retrieves the name of this vendor.
+	 * 
+	 * @return The name of this vendor, e.g. "Nokia". 
+	 */
+	public String getName() {
+		return this.name;
 	}
 
 

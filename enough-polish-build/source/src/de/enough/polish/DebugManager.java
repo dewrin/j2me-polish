@@ -6,6 +6,8 @@
  */
 package de.enough.polish;
 
+import de.enough.polish.ant.build.DebugSetting;
+import de.enough.polish.ant.build.Filter;
 import de.enough.polish.preprocess.PreprocessException;
 
 import java.util.HashMap;
@@ -82,11 +84,36 @@ public class DebugManager {
 	 * @see #FATAL
 	 */
 	public DebugManager( int debugLevel, boolean verbose ) {
-		this.verbose = verbose;
 		init();
+		this.verbose = verbose;
 		this.debugLevel = debugLevel;
 	}
 	
+	/**
+	 * Creates a new debug manager.
+	 * 
+	 * @param setting The settings for this manager.
+	 * 
+	 * @throws PreprocessException when the pattern of an included debug-filter is invalid
+	 */
+	public DebugManager(DebugSetting setting) throws PreprocessException {
+		init();
+		this.verbose = setting.isVerbose();
+		Integer level = (Integer) this.levelOrder.get( setting.getLevel() );
+		if (level != null) {
+			this.debugLevel = level.intValue();
+		} else {
+			this.levelOrder.put( setting.getLevel(), new Integer( USER_DEFINED ));
+			this.debugLevel = USER_DEFINED;
+		}
+		Filter[] filters = setting.getFilters();
+		for (int i = 0; i < filters.length; i++) {
+			Filter filter = filters[i];
+			addDebugSetting( filter.getPattern(), filter.getLevel() );
+		}
+		// TODO take isVisual into account!
+	}
+
 	/**
 	 * Adds a debug setting for a specific class or class-pattern.
 	 * 

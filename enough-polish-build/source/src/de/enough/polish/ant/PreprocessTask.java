@@ -288,8 +288,8 @@ public class PreprocessTask extends ConditionalTask {
 		// vendor.colors.focus
 		
 		// basic class: ValueContainer
-		//#prerequisite polish.midp1
-		//#! polish.midp1
+		// # prerequisite polish.midp1
+		// # ! polish.midp1
 	}
 
 }

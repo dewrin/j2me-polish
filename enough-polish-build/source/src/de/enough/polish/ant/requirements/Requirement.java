@@ -39,7 +39,7 @@ implements DeviceFilter
 	 */
 	public Requirement( String value, String propertyName ) {
 		this.value = value;
-		this.propertyName = propertyName;
+		this.propertyName = "polish." + propertyName;
 	}
 	
 	/**
@@ -49,14 +49,7 @@ implements DeviceFilter
 	 * @return the property-value or null when no such property is defined.
 	 */
 	public String getProperty( Device device ) {
-		String property = device.getCapability( this.propertyName );
-		if (property == null) {
-			property = device.getCapability( "SoftwarePlatform." + this.propertyName );
-		}
-		if (property == null) {
-			property = device.getCapability( "HardwarePlatform." + this.propertyName );
-		}
-		return property;
+		return device.getCapability( this.propertyName );
 	}
 	
 	/**

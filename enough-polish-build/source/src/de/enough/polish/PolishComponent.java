@@ -7,7 +7,10 @@
 package de.enough.polish;
 
 
+import de.enough.polish.exceptions.InvalidComponentException;
 import de.enough.polish.util.TextUtil;
+
+import org.jdom.Element;
 
 import java.util.*;
 
@@ -56,6 +59,85 @@ public class PolishComponent {
 		if (parent != null) {
 			this.capabilities.putAll( parent.getCapabilities() );
 			this.features.putAll(  parent.getFeatures() );
+		}
+	}
+
+	/**
+	 * Loads all found capabilities of this component.
+	 * 
+	 * @param definition The xml definition.
+	 * @param componentName The name of the component, e.g. "Nokia/3650" for a device.
+	 * @param fileName The name of the source-file, e.g. "devices.xml".
+	 * @throws InvalidComponentException when the defintion contains errors.
+	 */
+	protected void loadCapabilities(Element definition, String componentName, String fileName ) 
+	throws InvalidComponentException 
+	{
+		// read capabilities:
+		List capDefinitions = definition.getChildren("capability");
+		for (Iterator iter = capDefinitions.iterator(); iter.hasNext();) {
+			Element element = (Element) iter.next();
+			String capName = element.getAttributeValue( "name" );
+			if (capName == null) {
+				capName = element.getChildTextTrim("capability-name");
+			}
+			if (capName == null) {
+				throw new InvalidComponentException("The component [" + componentName + "] has an invalid [capability] - every capability needs to define the attribute [name]. Please check you [" + fileName + "].");
+			}
+			String capValue = element.getAttributeValue( "value" );
+			if (capValue == null) {
+				capValue = element.getChildTextTrim("capability-value");
+			}
+			if (capName == null) {
+				throw new InvalidComponentException("The component [" + componentName + "] has an invalid [capability] - every capability needs to define the attribute [value]. Please check you [" + fileName + "].");
+			}
+			// add the capability:
+			addCapability( capName, capValue );
+		} // end of reading all capabilties
+		
+		// now set features:
+		String featureDefinition = definition.getChildTextTrim( "features");
+		if (featureDefinition != null) {
+			String[] definedFeatures = TextUtil.splitAndTrim( featureDefinition, ',');
+			for (int i = 0; i < definedFeatures.length; i++) {
+				addFeature( definedFeatures[i] );
+			}
+		}
+	}
+
+	/**
+	 * Adds a sub-component to this component.
+	 * All capabilities will only be set when they have not been defined so far.
+	 * JavaPackage- and JavaProtocol-definitions will be added, though.
+	 * 
+	 * @param component The component which definitions should be added 
+	 */
+	public void addComponent(PolishComponent component ) {
+		// 1. set the capabilities:
+		HashMap caps = component.getCapabilities();
+		for (Iterator iter = caps.keySet().iterator(); iter.hasNext();) {
+			String key = (String) iter.next();
+			String currentValue = (String) this.capabilities.get( key); 
+			String componentValue = (String) caps.get( key );
+			int dotPos = key.lastIndexOf('.');
+			if (dotPos != -1) {
+				key = key.substring( dotPos + 1);
+			}
+			if (currentValue == null) {
+				// okay, this capability has not been defined so far:
+				addCapability( key, componentValue );
+			} else if ( ("JavaPackage".equals(key) ) || ("JavaProtocol".equals(key)) ) {
+				// add additional package/protocol definitions:
+				String newValue = currentValue + "," + componentValue;
+				addCapability(key, newValue);
+			} // else do not overwrite weaker capability
+		}
+		
+		// 2. set all features (overwriting will do no harm):
+		Set feats = component.getFeatures().keySet();
+		for (Iterator iter = feats.iterator(); iter.hasNext();) {
+			String feature = (String) iter.next();
+			this.features.put( feature, Boolean.TRUE );
 		}
 	}
 	
@@ -121,7 +203,7 @@ public class PolishComponent {
 	 * @param name the name of the capability
 	 * @param value the value of the capability
 	 */
-	protected void addCapability( String name, String value ) {
+	public void addCapability( String name, String value ) {
 		addSingleCapability( name, value );
 		
 		// when the capability starts with "SoftwarePlatform." or similiar, 
@@ -171,7 +253,7 @@ public class PolishComponent {
 	 * 
 	 * @param feature the name of the feature
 	 */
-	protected void addFeature( String feature ) {
+	public void addFeature( String feature ) {
 		this.features.put( "polish." + feature, Boolean.TRUE );
 		this.features.put( this.preprocessName + "." + feature, Boolean.TRUE );
 	}

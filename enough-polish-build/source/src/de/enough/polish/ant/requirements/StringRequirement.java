@@ -21,7 +21,8 @@ import de.enough.polish.util.TextUtil;
  */
 public class StringRequirement extends Requirement {
 
-	private StringMatcher matcher;
+	private String[] features;
+	private boolean or;
 	
 	/**
 	 * Creates a new requirement for a specific string.
@@ -41,15 +42,33 @@ public class StringRequirement extends Requirement {
 	 */
 	public StringRequirement(String value, String propertyName, boolean or ) {
 		super(value, propertyName);
-		String[] apis = TextUtil.split( value, ',');
-		this.matcher = new StringMatcher( apis, or );
+		this.or = or;
+		String[] neededFeatures = TextUtil.split( value, ',');
+		this.features = new String[ neededFeatures.length ];
+		for (int i = 0; i < neededFeatures.length; i++) {
+			this.features[i] = "polish." + propertyName + "." + neededFeatures[i];
+		}
+	}
+	
+	public boolean isMet( Device device ) {
+		for (int i = 0; i < this.features.length; i++) {
+			if (device.hasFeature( this.features[i])) {
+				if (this.or) {
+					return true;
+				}
+			} else if (!this.or) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/* (non-Javadoc)
 	 * @see de.enough.polish.ant.requirements.Requirement#isMet(de.enough.polish.build.Device, java.lang.String)
 	 */
 	protected boolean isMet(Device device, String property) {
-		return this.matcher.matches( property );
+		// not needed since isMet( Device ) is used instead
+		return false;
 	}
 	
 	
