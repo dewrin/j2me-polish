@@ -47,7 +47,7 @@ public class StyleSheet {
 	// some CSS classes which are NOT dynamic classes (like p, a, or form) 
 	private static final HashMap PSEUDO_CLASSES = new HashMap();
 	static {
-		PSEUDO_CLASSES.put("focussed", Boolean.TRUE );
+		PSEUDO_CLASSES.put("focused", Boolean.TRUE );
 		PSEUDO_CLASSES.put("title", Boolean.TRUE );
 		PSEUDO_CLASSES.put("default", Boolean.TRUE );
 		PSEUDO_CLASSES.put("menu", Boolean.TRUE );

@@ -226,13 +226,13 @@ public class CssConverter extends Converter {
 		}
 
 		
-		// create focussed style if necessary:
-		Style focussedStyle = styleSheet.getStyle("focussed"); 
-		if (focussedStyle == null) {
-			System.out.println("Warning: CSS-Style [focussed] not found, now using the default style instead. If you use Forms or Lists, you should define the style [focussed].");
-			codeList.add( STANDALONE_MODIFIER + "Style focussedStyle = defaultStyle;\t// the focussed-style is not defined.");
+		// create focused style if necessary:
+		Style focusedStyle = styleSheet.getStyle("focused"); 
+		if (focusedStyle == null) {
+			System.out.println("Warning: CSS-Style [focused] not found, now using the default style instead. If you use Forms or Lists, you should define the style [focused].");
+			codeList.add( STANDALONE_MODIFIER + "Style focusedStyle = defaultStyle;\t// the focused-style is not defined.");
 		} else {
-			processStyle( focussedStyle, codeList, styleSheet );
+			processStyle( focusedStyle, codeList, styleSheet );
 		}
 		
 		// generate general warnings and hints:
