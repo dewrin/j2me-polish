@@ -97,6 +97,11 @@ extends Canvas
 	protected Container container;
 	protected boolean isLayoutVCenter;
 	protected boolean isInitialised;
+	//#if polish.useFullScreen && polish.api.nokia-ui 
+		private boolean isInPaintMethod;
+		private long lastPaintTime;
+		private boolean repaintRequested;
+	//#endif
 	//#if polish.useMenuFullScreen && polish.classes.fullscreen:defined
 		//#define tmp.menuFullScreen
 		private Command menuSingleCommand;
@@ -232,7 +237,12 @@ extends Canvas
 		if (this.background != null) {
 			animated = this.background.animate();
 		}
-		if (animated) {
+		//#if polish.useFullScreen && polish.api.nokia-ui 
+		if (animated || this.repaintRequested) {
+			this.repaintRequested = false;
+		//#else
+			//# if (animated) {
+		//#endif
 			repaint();
 			return true;
 		} else {
@@ -244,6 +254,9 @@ extends Canvas
 	 * @see javax.microedition.lcdui.Canvas#paint(javax.microedition.lcdui.Graphics)
 	 */
 	public final void paint(Graphics g) {
+		//#if polish.useFullScreen && polish.api.nokia-ui 
+			this.isInPaintMethod = true;
+		//#endif
 		try {
 			if (!this.isInitialised) {
 				init();
@@ -344,10 +357,14 @@ extends Canvas
 			g.setColor( 0 );
 			String msg = e.toString();
 			g.drawString( msg, 10, 10, Graphics.TOP | Graphics.LEFT );
-			Debug.debug( "unable to paint screen: " + e.toString(), e );
+			Debug.debug( "unable to paint screen", e );
 			//#enddebug
 			throw e;
 		}
+		//#if polish.useFullScreen && polish.api.nokia-ui 
+			this.lastPaintTime = System.currentTimeMillis();
+			this.isInPaintMethod = false;
+		//#endif
 		//TODO rob paint the ticker
 	}
 	
@@ -451,34 +468,34 @@ extends Canvas
 	protected void keyPressed(int keyCode) {
 		int gameAction = getGameAction(keyCode);
 		//#ifdef tmp.menuFullScreen
-		if (keyCode == FullCanvas.KEY_SOFTKEY1) {
-			if ( this.menuSingleCommand != null) {
-				callCommandListener( this.menuSingleCommand );
-				return;
-			} else {
-				if (!this.menuOpened) {
-					this.menuOpened = true;
-					repaint();
+			if (keyCode == FullCanvas.KEY_SOFTKEY1) {
+				if ( this.menuSingleCommand != null) {
+					callCommandListener( this.menuSingleCommand );
 					return;
 				} else {
-					gameAction = Canvas.FIRE;
+					if (!this.menuOpened) {
+						this.menuOpened = true;
+						repaint();
+						return;
+					} else {
+						gameAction = Canvas.FIRE;
+					}
 				}
 			}
-		}
-		if (this.menuOpened) {
-			if (keyCode == FullCanvas.KEY_SOFTKEY2 ) {
-				this.menuOpened = false;
-			} else  if ( gameAction == Canvas.FIRE ) {
-				int focusedIndex = this.menuContainer.getFocusedIndex();
-				Command cmd = (Command) this.menuCommands.get( focusedIndex );
-				this.menuOpened = false;
-				callCommandListener( cmd );
-			} else { 
-				this.menuContainer.handleKeyPressed(keyCode, gameAction);
+			if (this.menuOpened) {
+				if (keyCode == FullCanvas.KEY_SOFTKEY2 ) {
+					this.menuOpened = false;
+				} else  if ( gameAction == Canvas.FIRE ) {
+					int focusedIndex = this.menuContainer.getFocusedIndex();
+					Command cmd = (Command) this.menuCommands.get( focusedIndex );
+					this.menuOpened = false;
+					callCommandListener( cmd );
+				} else { 
+					this.menuContainer.handleKeyPressed(keyCode, gameAction);
+				}
+				repaint();
+				return;
 			}
-			repaint();
-			return;
-		}
 		//#endif
 		boolean processed = handleKeyPressed(keyCode, gameAction);
 		if (!processed) {
@@ -490,7 +507,11 @@ extends Canvas
 			System.out.println("unable to handle key [" + keyCode + "].");
 		}
 		if (processed) {
-			repaint();
+			//#if polish.useFullScreen && polish.api.nokia-ui
+				requestRepaint();
+			//#else
+				repaint();
+			//#endif
 		}
 	}
 		
@@ -611,4 +632,21 @@ extends Canvas
 		return this.screenHeight - this.titleHeight;
 	}
 	 
+	//#if polish.useFullScreen && polish.api.nokia-ui 
+	/**
+	 * Requests a repaint of the screen.
+	 * This request is ignored when the paint method is currently called.
+	 * J2ME Polish needs to implement this method because the
+	 * Nokia FullCanvas implementation crashes sometimes when calling repaint() in
+	 * the middlet of the paint method.
+	 * This method is only available when the Nokia FullCanvas is used. 
+	 */
+	public void requestRepaint() {
+		if (this.isInPaintMethod  || (System.currentTimeMillis() - this.lastPaintTime) < 100) {
+			this.repaintRequested = true;
+			return;
+		}
+		repaint();
+	}
+	//#endif
 }

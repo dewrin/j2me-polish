@@ -927,19 +927,26 @@ public abstract class Item extends Object
 		}
 		Screen scr = getScreen();
 		if (scr != null && scr == StyleSheet.currentScreen) {
-			scr.repaint();
+			//#if polish.useFullScreen && polish.api.nokia-ui 
+				scr.requestRepaint();
+			//#else
+				scr.repaint();
+			//#endif
 		}
 	}
 	
 	/**
 	 * Requests that this item and all its parents are to be re-initialised at the next repainting.
-	 * 
 	 * All parents of this item are notified, too.
+	 * This method should be called when an item changes its size more than
+	 * usual.
 	 */
 	protected void requestInit() {
 		this.isInitialised = false;
-		if (this.parent != null) {
-			this.parent.requestInit();
+		Item p = this.parent;
+		while ( p != null) {
+			p.isInitialised = false;
+			p = p.parent;
 		}
 	}
 	
@@ -952,7 +959,11 @@ public abstract class Item extends Object
 		if (this.screen != null) {
 			return this.screen;
 		} else if (this.parent != null) {
-			return this.parent.getScreen();
+			Item p = this.parent;
+			while (p.parent != null) {
+				p = p.parent;
+			}
+			return p.screen;
 		} else {
 			return null;
 		}
