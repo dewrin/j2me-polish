@@ -75,7 +75,7 @@
 			symbols="ExampleSymbol, AnotherExample"
 			imageLoadStrategy="background"
 			fullscreen="menu"
-			usePolishGui="true"
+			usePolishGui="false"
 			midp1Path="/home/enough/dev/WTK2.1/wtklib/emptyapi.zip"
 			midp2Path="/home/enough/dev/WTK2.1/wtklib/emptyapi.zip"
 			preverify="${polish.preverify}"
@@ -89,24 +89,18 @@
 				<variable name="update-url" value="http://www.enough.de/update" />
 			</variables>
 			<!-- obfuscator settings -->
-			<obfuscator name="ProGuard" enable="true" >
-				<!--
+			<obfuscator enable="true" name="ProGuard" >
+				<!-- just an example how to preserve classes which are loaded dynamically: -->
 				<keep class="de.enough.polish.dict.UnusedClass" />
-				-->
 			</obfuscator>
 			<!-- sources -->
 			<source
 				url="./source/src"
+				polish="../enough-polish-j2me/source/src"
 				/>
-			<!--
-			<source
-				url="./source/src"
-				polish="/home/enough/workspace/enough-polish-j2me/source/src"
-				/>
-			-->
 			<!-- debug settings -->
 			<debug enable="true" visual="true" verbose="false" level="error">
-				<filter pattern="de.enough.dict.*" level="debug" />
+				<filter pattern="de.enough.polish.dict.*" level="debug" />
 			</debug>
 		</build>
 	</polish>
