@@ -204,13 +204,9 @@ public class List extends Screen implements Choice
 	//TODO rob i18n cmd.list.select
 	public static final Command SELECT_COMMAND = new Command( "Select", Command.ITEM, 1 );
 
-	//following variables are implicitely defined by getter- or setter-methods:
-	private int selectedIndex;
-	private boolean[] selectedFlags;
 	private Command selectCommand = SELECT_COMMAND;
-	private int fitPolicy;
-
 	private int listType;
+	private ChoiceGroup choiceGroup;
 
 	/**
 	 * Creates a new, empty <code>List</code>, specifying its title
@@ -320,20 +316,18 @@ public class List extends Screen implements Choice
 	public List( String title, int listType, String[] stringElements, Image[] imageElements, Style style)
 	{
 		super( title, style );
+		if (listType != Choice.EXCLUSIVE && listType != Choice.MULTIPLE && listType != Choice.IMPLICIT ) {
+			throw new IllegalArgumentException("invalid list-type: " + listType );
+		}
 		this.listType = listType;
-		if (imageElements == null) {
-			imageElements = new Image[ stringElements.length ];
-		}
-		for (int i = 0; i < stringElements.length; i++) {
-			String str = stringElements[i];
-			Image image = imageElements[i];
-			append(str, image);
-		}
+		this.choiceGroup = new ChoiceGroup( null, this.listType, stringElements, imageElements, style, true  );
+		this.container = this.choiceGroup;
+		//this.container.screen = this;
 		if (this.listType == IMPLICIT) {
 			addCommand( SELECT_COMMAND );
 		}
 	}
-	
+		
 	/**
 	 * Gets the number of elements in the <code>List</code>.
 	 * 
@@ -357,8 +351,7 @@ public class List extends Screen implements Choice
 	 */
 	public String getString(int elementNum)
 	{
-		IconItem item = (IconItem) this.container.get( elementNum );
-		return item.getText();
+		return this.choiceGroup.getString( elementNum );
 	}
 
 	/**
@@ -373,8 +366,7 @@ public class List extends Screen implements Choice
 	 */
 	public Image getImage( int elementNum )
 	{
-		IconItem item = (IconItem) this.container.get( elementNum );
-		return item.getImage();
+		return this.choiceGroup.getImage( elementNum );
 	}
 
 	/**
@@ -388,7 +380,7 @@ public class List extends Screen implements Choice
 	 */
 	public int append( String stringPart, Image imagePart)
 	{
-		return append( stringPart, imagePart, null );
+		return this.choiceGroup.append( stringPart, imagePart, null );
 	}
 	/**
 	 * Appends an element to the <code>List</code>.
@@ -402,9 +394,7 @@ public class List extends Screen implements Choice
 	 */
 	public int append( String stringPart, Image imagePart, Style elementStyle )
 	{
-		IconItem icon = new IconItem( stringPart, imagePart, elementStyle );
-		this.container.add(icon);
-		return this.container.size() - 1;
+		return this.choiceGroup.append( stringPart, imagePart, elementStyle );
 	}
 	
 	/**
@@ -419,7 +409,7 @@ public class List extends Screen implements Choice
 	 */
 	public void insert(int elementNum, String stringPart, Image imagePart)
 	{
-		insert( elementNum, stringPart, imagePart, null );
+		this.choiceGroup.insert( elementNum, stringPart, imagePart, null );
 	}
 	
 	/**
@@ -435,8 +425,7 @@ public class List extends Screen implements Choice
 	 */
 	public void insert(int elementNum, String stringPart, Image imagePart, Style elementStyle )
 	{
-		IconItem icon = new IconItem( stringPart, imagePart, elementStyle );
-		this.container.add(elementNum, icon);
+		this.choiceGroup.insert( elementNum, stringPart, imagePart, elementStyle );
 	}
 
 	/**
@@ -453,7 +442,7 @@ public class List extends Screen implements Choice
 	 */
 	public void set(int elementNum, String stringPart, Image imagePart)
 	{
-		set( elementNum, stringPart, imagePart, null );
+		this.choiceGroup.insert( elementNum, stringPart, imagePart, null );
 	}
 
 	/**
@@ -471,8 +460,7 @@ public class List extends Screen implements Choice
 	 */
 	public void set(int elementNum, String stringPart, Image imagePart, Style elementStyle )
 	{
-		IconItem icon = new IconItem( stringPart, imagePart, elementStyle );
-		this.container.add(elementNum, icon);
+		this.choiceGroup.insert( elementNum, stringPart, imagePart, elementStyle );
 	}
 
 	/**
@@ -507,8 +495,7 @@ public class List extends Screen implements Choice
 	 */
 	public boolean isSelected(int elementNum)
 	{
-		return false;
-		//TODO implement isSelected
+		return this.choiceGroup.isSelected(elementNum);
 	}
 
 	/**
@@ -521,7 +508,7 @@ public class List extends Screen implements Choice
 	 */
 	public int getSelectedIndex()
 	{
-		return this.container.getFocussedIndex();
+		return this.choiceGroup.getSelectedIndex();
 	}
 
 	/**
@@ -538,8 +525,7 @@ public class List extends Screen implements Choice
 	 */
 	public int getSelectedFlags(boolean[] selectedArray_return)
 	{
-		return 0;
-		//TODO implement getSelectedFlags
+		return this.choiceGroup.getSelectedFlags(selectedArray_return);
 	}
 
 	/**
@@ -553,12 +539,7 @@ public class List extends Screen implements Choice
 	 */
 	public void setSelectedIndex(int elementNum, boolean selected)
 	{
-		if (selected) {
-			this.container.focus( elementNum );
-			if (this.listType == IMPLICIT) {
-				callCommandListener(this.selectCommand);
-			}
-		}
+		this.choiceGroup.setSelectedIndex(elementNum, selected);
 	}
 
 	/**
@@ -572,7 +553,7 @@ public class List extends Screen implements Choice
 	 */
 	public void setSelectedFlags(boolean[] selectedArray)
 	{
-		this.selectedFlags = selectedArray;
+		this.choiceGroup.setSelectedFlags(selectedArray);
 	}
 
 	/**
@@ -675,6 +656,7 @@ public class List extends Screen implements Choice
 			removeCommand( this.selectCommand );
 			this.selectCommand = command;
 			addCommand( command );
+			this.choiceGroup.setSelectCommand( command );
 		}
 	}
 
@@ -695,7 +677,7 @@ public class List extends Screen implements Choice
 	 */
 	public void setFitPolicy(int fitPolicy)
 	{
-		this.fitPolicy = fitPolicy;
+		this.choiceGroup.setFitPolicy(fitPolicy);
 	}
 
 	/**
@@ -712,7 +694,7 @@ public class List extends Screen implements Choice
 	 */
 	public int getFitPolicy()
 	{
-		return this.fitPolicy;
+		return this.choiceGroup.getFitPolicy();
 	}
 
 	/**
@@ -738,7 +720,7 @@ public class List extends Screen implements Choice
 	 */
 	public void setFont(int elementNum, Font font)
 	{
-		// style settings are ignored - this is done via the CSS design
+		this.choiceGroup.setFont(elementNum, font);
 	}
 
 	/**
@@ -762,8 +744,7 @@ public class List extends Screen implements Choice
 	 */
 	public Font getFont(int elementNum)
 	{
-		IconItem icon = (IconItem) this.container.get( elementNum );
-		return icon.getFont();
+		return this.choiceGroup.getFont(elementNum);
 	}
 
 
@@ -776,29 +757,4 @@ public class List extends Screen implements Choice
 	}
 	//#endif	
 
-
-
-	/* (non-Javadoc)
-	 * @see de.enough.polish.ui.Screen#handleKeyPressed(int, int)
-	 */
-	protected boolean handleKeyPressed(int keyCode, int gameAction) {
-		if (keyCode >= Canvas.KEY_NUM1 && keyCode <= Canvas.KEY_NUM9) {
-			int index = keyCode - Canvas.KEY_NUM1;
-			if (index < this.container.size()) {
-				setSelectedIndex( index, true );
-				return true;
-			}
-		}
-		
-		if (this.container.handleKeyPressed(keyCode, gameAction)) {
-			return true;
-		}
-		
-		if (gameAction == Canvas.FIRE ){
-			//TODO rob trigger selected state when current entry is already selected
-			setSelectedIndex( this.container.getFocussedIndex(), true);
-			return true;
-		}
-		return false;		
-	}
 }

@@ -78,7 +78,7 @@ implements ImageConsumer
 	public IconItem( String text, Image image ) {
 		this( text, image, null );
 	}
-
+	
 	/**
 	 * Creates a new icon.
 	 * 
@@ -88,7 +88,7 @@ implements ImageConsumer
 	 */
 	public IconItem( String text, Image image, Style style) {
 		super(null, text, Item.HYPERLINK, style);
-		if (image != null && this.image == null) {
+		if (image != null) {
 			setImage( image );
 		}
 	}
@@ -100,6 +100,7 @@ implements ImageConsumer
 	protected String createCssSelector() {
 		return "icon";
 	}
+	
 	/* (non-Javadoc)
 	 * @see de.enough.polish.ui.Item#initItem()
 	 */
@@ -108,7 +109,10 @@ implements ImageConsumer
 			super.initContent(firstLineWidth, lineWidth);
 			return;
 		} 
+		this.imageWidth = this.image.getWidth();
+		this.imageHeight = this.image.getHeight();
 		if (this.imageAlign == Graphics.LEFT || this.imageAlign == Graphics.RIGHT ) {
+			this.imageWidth += this.paddingHorizontal;
 			firstLineWidth -= this.imageWidth;
 			lineWidth -= this.imageWidth;
 			super.initContent(firstLineWidth, lineWidth);
@@ -118,8 +122,12 @@ implements ImageConsumer
 			} else {
 				this.yAdjust = 0;
 			}
+			if (this.isLayoutExpand && this.imageAlign == Graphics.RIGHT) {
+				this.contentWidth = firstLineWidth;
+			}
 			this.contentWidth += this.imageWidth;
 		} else {
+			this.imageHeight += this.paddingVertical;
 			super.initContent(firstLineWidth, lineWidth);
 			this.contentHeight += this.imageHeight;   
 			if (this.imageWidth > this.contentWidth) {
@@ -139,7 +147,7 @@ implements ImageConsumer
 				leftBorder += this.imageWidth;
 				y += this.yAdjust;
 			} else if (this.imageAlign == Graphics.RIGHT ) {
-				g.drawImage(this.image, rightBorder, y, Graphics.TOP | Graphics.RIGHT );
+				g.drawImage(this.image, x + this.contentWidth, y, Graphics.TOP | Graphics.RIGHT );
 				rightBorder -= this.imageWidth;
 				y += this.yAdjust;
 			} else if (this.imageAlign == Graphics.TOP ) {
@@ -172,7 +180,7 @@ implements ImageConsumer
 	 */
 	public void setStyle(Style style) {
 		super.setStyle(style);
-		String align = (String) style.getProperty("icon-image-align");
+		String align = style.getProperty("icon-image-align");
 		if (align == null) {
 			// keep align setting
 		} else if ("left".equals(align)) {
@@ -187,7 +195,7 @@ implements ImageConsumer
 			this.imageAlign = DEFAULT_ALIGN;
 		}
 		if (this.image == null) {
-			String imageName = (String) style.getProperty("icon-image");
+			String imageName = style.getProperty("icon-image");
 			if (imageName != null) {
 				if (this.parent instanceof Container) {
 					imageName = ((Container) this.parent).parseIndexUrl( imageName, this );
@@ -200,6 +208,23 @@ implements ImageConsumer
 				}
 			}
 		}
+	}
+
+	/**
+	 * Loads the specified image.
+	 * 
+	 * @param url the local URL of the image
+	 */
+	public void setImage( String url ) {
+		try {
+			Image img = StyleSheet.getImage(url, this, false);
+			if (img != null) {
+				setImage( img );
+			}
+		} catch (IOException e) {
+			//#debug error
+			Debug.debug("unable to load image [" + url + "]: " + e.toString(), e);
+		}		
 	}
 
 	//#ifdef polish.images.backgroundLoad
@@ -220,18 +245,15 @@ implements ImageConsumer
 	public void setImage( Image image ) {
 		this.isInitialised = false;
 		this.image = image;
-		if (image != null) {
-			if (this.imageAlign == Graphics.LEFT || this.imageAlign == Graphics.RIGHT ) {
-				this.imageWidth = this.image.getWidth() + this.paddingHorizontal;
-				this.imageHeight = this.image.getHeight();
-			} else {
-				this.imageWidth = this.image.getWidth();
-				this.imageHeight = this.image.getHeight() + this.paddingVertical;
-			}
-		} else {
-			this.imageWidth = 0;
-			this.imageHeight = 0;
-		}
-		
+	}
+	
+	/**
+	 * Sets the image align for this icon.
+	 * 
+	 * @param imageAlign either Graphics.TOP, Graphics.LEFT, Graphics.BOTTOM or Graphics.RIGHT
+	 */
+	public void setImageAlign( int imageAlign ) {
+		this.imageAlign = imageAlign;
+		this.isInitialised = false;
 	}
 }

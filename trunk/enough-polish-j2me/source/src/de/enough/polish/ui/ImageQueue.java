@@ -44,6 +44,7 @@ public class ImageQueue {
 	public boolean cache;
 	private int pos = 1;
 	private ImageConsumer[] consumers = new ImageConsumer[5];
+	
 	public ImageQueue( ImageConsumer consumer, boolean cache ) {
 		this.consumers[0] = consumer;
 		this.cache = cache;
@@ -60,7 +61,7 @@ public class ImageQueue {
 				this.consumers[i].setImage(name, image );
 			} catch (Exception e) {
 				//#debug error
-				Debug.debug( "Unable to notify ImageConsumer about picture [" + name + "]: " + e.getMessage(), e );
+				Debug.debug( "Unable to notify ImageConsumer about image [" + name + "]: " + e.getMessage(), e );
 			}
 		}
 	}

@@ -46,12 +46,20 @@ import javax.microedition.lcdui.Image;
  * @author Robert Virkus, robert@enough.de
  * @since MIDP 1.0
  */
-public class ChoiceGroup extends Item implements Choice
+public class ChoiceGroup extends Container implements Choice
 {
-	//following variables are implicitely defined by getter- or setter-methods:
+	private static Image popupImage;
 	private int selectedIndex;
-	private boolean[] selectedFlags;
-	private int fitPolicy;
+	//private boolean isExclusive;
+	private boolean isMultiple;
+	private boolean isPopup;
+	private int choiceType;
+	private boolean isImplicit;
+	private Command selectCommand;
+	private int popupColor = 0xFFFFFF;
+	private IconItem popupItem;
+	private boolean isPopupClosed;
+	
 
 	/**
 	 * Creates a new, empty <code>ChoiceGroup</code>, specifying its
@@ -61,14 +69,33 @@ public class ChoiceGroup extends Item implements Choice
 	 * <code>IMPLICIT</code>
 	 * choice type is not allowed within a <code>ChoiceGroup</code>.
 	 * 
-	 * @param label - the item's label (see Item)
-	 * @param choiceType - EXCLUSIVE, MULTIPLE,  or POPUP
+	 * @param label the item's label (see Item)
+	 * @param choiceType EXCLUSIVE, MULTIPLE,  or POPUP
 	 * @throws IllegalArgumentException - if choiceType is not one of EXCLUSIVE, MULTIPLE, or POPUP
 	 * @see Choice#EXCLUSIVE, Choice.MULTIPLE, Choice.IMPLICIT, Choice.POPUP
 	 */
 	public ChoiceGroup( String label, int choiceType)
 	{
-		//TODO implement ChoiceGroup
+		this( label, choiceType, new String[0], null, null, false );
+	}
+
+	/**
+	 * Creates a new, empty <code>ChoiceGroup</code>, specifying its
+	 * title and its type.
+	 * The type must be one of <code>EXCLUSIVE</code>,
+	 * <code>MULTIPLE</code>, or <code>POPUP</code>. The
+	 * <code>IMPLICIT</code>
+	 * choice type is not allowed within a <code>ChoiceGroup</code>.
+	 * 
+	 * @param label the item's label (see Item)
+	 * @param choiceType EXCLUSIVE, MULTIPLE,  or POPUP
+	 * @param style the CSS style for this item
+	 * @throws IllegalArgumentException if choiceType is not one of EXCLUSIVE, MULTIPLE, or POPUP
+	 * @see Choice#EXCLUSIVE, Choice.MULTIPLE, Choice.IMPLICIT, Choice.POPUP
+	 */
+	public ChoiceGroup( String label, int choiceType, Style style)
+	{
+		this( label, choiceType, new String[0], null, style, false );
 	}
 
 	/**
@@ -103,115 +130,255 @@ public class ChoiceGroup extends Item implements Choice
 	 * <code>imageElements</code> array may refer to mutable or
 	 * immutable images.</p>
 	 * 
-	 * @param label - the item's label (see Item)
-	 * @param choiceType - EXCLUSIVE, MULTIPLE, or POPUP
-	 * @param stringElements - set of strings specifying the string parts of the ChoiceGroup elements
-	 * @param imageElements - set of images specifying the image parts of the ChoiceGroup elements
-	 * @throws NullPointerException - if stringElements is null or if the stringElements array contains any null elements
-	 * @throws IllegalArgumentException - if the imageElements array is non-null and has a different length from the stringElements array
+	 * @param label the item's label (see Item)
+	 * @param choiceType EXCLUSIVE, MULTIPLE, or POPUP
+	 * @param stringElements set of strings specifying the string parts of the ChoiceGroup elements
+	 * @param imageElements set of images specifying the image parts of the ChoiceGroup elements
+	 * @throws NullPointerException if stringElements is null or if the stringElements array contains any null elements
+	 * @throws IllegalArgumentException if the imageElements array is non-null and has a different length from the stringElements array
 	 *   			 or  if choiceType is not one of EXCLUSIVE, MULTIPLE, or POPUP
 	 * @see Choice#EXCLUSIVE, Choice#MULTIPLE, Choice#IMPLICIT, Choice#POPUP
 	 */
 	public ChoiceGroup( String label, int choiceType, String[] stringElements, Image[] imageElements)
 	{
-		//TODO implement ChoiceGroup
+		this( label, choiceType, stringElements, imageElements, null, false );
 	}
 
 	/**
-	 * Returns the number of elements in the <code>ChoiceGroup</code>.
+	 * Creates a new <code>ChoiceGroup</code>, specifying its title,
+	 * the type of the
+	 * <code>ChoiceGroup</code>, and an array of <code>Strings</code>
+	 * and <code>Images</code> to be used as its
+	 * initial contents.
 	 * 
-	 * @return the number of elements in the ChoiceGroup
-	 * @see Choice#size() in interface Choice
+	 * <p>The type must be one of <code>EXCLUSIVE</code>,
+	 * <code>MULTIPLE</code>, or <code>POPUP</code>.  The
+	 * <code>IMPLICIT</code>
+	 * type is not allowed for <code>ChoiceGroup</code>.</p>
+	 * 
+	 * <p>The <code>stringElements</code> array must be non-null and
+	 * every array element
+	 * must also be non-null.  The length of the
+	 * <code>stringElements</code> array
+	 * determines the number of elements in the <code>ChoiceGroup</code>.  The
+	 * <code>imageElements</code> array
+	 * may be <code>null</code> to indicate that the
+	 * <code>ChoiceGroup</code> elements have no images.
+	 * If the
+	 * <code>imageElements</code> array is non-null, it must be the
+	 * same length as the
+	 * <code>stringElements</code> array.  Individual elements of the
+	 * <code>imageElements</code> array
+	 * may be <code>null</code> in order to indicate the absence of an
+	 * image for the
+	 * corresponding <code>ChoiceGroup</code> element.  Non-null elements
+	 * of the
+	 * <code>imageElements</code> array may refer to mutable or
+	 * immutable images.</p>
+	 * 
+	 * @param label the item's label (see Item)
+	 * @param choiceType EXCLUSIVE, MULTIPLE, or POPUP
+	 * @param stringElements set of strings specifying the string parts of the ChoiceGroup elements
+	 * @param imageElements set of images specifying the image parts of the ChoiceGroup elements
+	 * @param style The CSS style for this item
+	 * @throws NullPointerException if stringElements is null or if the stringElements array contains any null elements
+	 * @throws IllegalArgumentException if the imageElements array is non-null and has a different length from the stringElements array
+	 *   			 or  if choiceType is not one of EXCLUSIVE, MULTIPLE, or POPUP
+	 * @see Choice#EXCLUSIVE, Choice#MULTIPLE, Choice#IMPLICIT, Choice#POPUP
 	 */
-	public int size()
+	public ChoiceGroup( String label, int choiceType, String[] stringElements, Image[] imageElements, Style style )
 	{
-		return 0;
-		//TODO implement size
+		this( label, choiceType, stringElements, imageElements, style, false );
+	}
+	
+	/**
+	 * Creates a new <code>ChoiceGroup</code>, specifying its title,
+	 * the type of the
+	 * <code>ChoiceGroup</code>, and an array of <code>Strings</code>
+	 * and <code>Images</code> to be used as its
+	 * initial contents.
+	 * 
+	 * <p>The type must be one of <code>EXCLUSIVE</code>,
+	 * <code>MULTIPLE</code>, or <code>POPUP</code>.  The
+	 * <code>IMPLICIT</code>
+	 * type is not allowed for <code>ChoiceGroup</code>.</p>
+	 * 
+	 * <p>The <code>stringElements</code> array must be non-null and
+	 * every array element
+	 * must also be non-null.  The length of the
+	 * <code>stringElements</code> array
+	 * determines the number of elements in the <code>ChoiceGroup</code>.  The
+	 * <code>imageElements</code> array
+	 * may be <code>null</code> to indicate that the
+	 * <code>ChoiceGroup</code> elements have no images.
+	 * If the
+	 * <code>imageElements</code> array is non-null, it must be the
+	 * same length as the
+	 * <code>stringElements</code> array.  Individual elements of the
+	 * <code>imageElements</code> array
+	 * may be <code>null</code> in order to indicate the absence of an
+	 * image for the
+	 * corresponding <code>ChoiceGroup</code> element.  Non-null elements
+	 * of the
+	 * <code>imageElements</code> array may refer to mutable or
+	 * immutable images.</p>
+	 * 
+	 * @param label the item's label (see Item)
+	 * @param choiceType EXCLUSIVE, MULTIPLE, or POPUP
+	 * @param stringElements set of strings specifying the string parts of the ChoiceGroup elements
+	 * @param imageElements set of images specifying the image parts of the ChoiceGroup elements
+	 * @param style The CSS style for this item
+	 * @param allowImplicit true when the Choice.IMPLICIT choiceType is also allowed
+	 * @throws NullPointerException if stringElements is null or if the stringElements array contains any null elements
+	 * @throws IllegalArgumentException if the imageElements array is non-null and has a different length from the stringElements array
+	 *   			 or  if choiceType is not one of EXCLUSIVE, MULTIPLE, or POPUP (unless allowImplicit is defined)
+	 * @see Choice#EXCLUSIVE, Choice#MULTIPLE, Choice#IMPLICIT, Choice#POPUP
+	 */
+	public ChoiceGroup( String label, int choiceType, String[] stringElements, Image[] imageElements, Style style, boolean allowImplicit )
+	{
+		super( label, false, style, -1, -1 );
+		if (choiceType == Choice.EXCLUSIVE) {
+			//this.isExclusive = true;
+		} else if (choiceType == Choice.MULTIPLE) {
+			this.isMultiple = true;
+		} else if (choiceType == Choice.POPUP) {
+			this.isPopup = true;
+			this.isPopupClosed = true;
+			this.popupItem = new IconItem( null, createPopupImage(), this.style );
+			this.popupItem.setImageAlign( Graphics.RIGHT );
+			this.popupItem.setAppearanceMode( BUTTON );
+		} else if (choiceType == Choice.IMPLICIT && allowImplicit ) {
+			this.isImplicit = true;
+			this.focusFirstElement = true;
+		} else {
+			throw new IllegalArgumentException("invalid choiceType [" + choiceType + "] - IMPLICIT=" + Choice.IMPLICIT + ".");
+		}
+		if (imageElements != null && imageElements.length != stringElements.length) {
+			throw new IllegalArgumentException("imageElements need to have the same length as the stringElements.");
+		}
+		this.choiceType = choiceType;
+		for (int i = 0; i < stringElements.length; i++) {
+			Image img = null;
+			if (imageElements != null) {
+				img = imageElements[i];
+			}
+			append( stringElements[i], img, style );
+		}
+	}
+	
+	/**
+	 * Creates or returns the default image for popup groups.
+	 * 
+	 * @return the default popup image
+	 */
+	protected Image createPopupImage() {
+		if (popupImage == null) {
+			popupImage = Image.createImage( 11, 11 );
+			Graphics g = popupImage.getGraphics();
+			g.setColor( 0 );
+			g.fillRect(0, 0, 12, 12 );
+			g.setColor( this.popupColor );
+			g.drawLine(0, 0, 6, 9 );
+			g.drawLine( 10, 0, 6, 9 );	
+		}
+		return popupImage;
 	}
 
 	/**
 	 * Gets the <code>String</code> part of the element referenced by
 	 * <code>elementNum</code>.
 	 * 
-	 * @param elementNum - the index of the element to be queried
+	 * @param elementNum the index of the element to be queried
 	 * @return the string part of the element
-	 * @throws IndexOutOfBoundsException - if elementNum is invalid
+	 * @throws IndexOutOfBoundsException if elementNum is invalid
 	 * @see Choice#getString(int) in interface Choice
 	 * @see #getImage(int)
 	 */
 	public String getString(int elementNum)
 	{
-		return null;
-		//TODO implement getString
+		ChoiceItem item = (ChoiceItem) this.itemsList.get( elementNum );
+		return item.getText();
 	}
 
 	/**
 	 * Gets the <code>Image</code> part of the element referenced by
 	 * <code>elementNum</code>.
 	 * 
-	 * @param elementNum - the number of the element to be queried
+	 * @param elementNum the number of the element to be queried
 	 * @return the image part of the element, or null if there is no image
-	 * @throws IndexOutOfBoundsException - if elementNum is invalid
+	 * @throws IndexOutOfBoundsException if elementNum is invalid
 	 * @see Choice#getImage(int) in interface Choice
 	 * @see #getString(int)
 	 */
 	public Image getImage(int elementNum)
 	{
-		return null;
-		//TODO implement getImage
+		ChoiceItem item = (ChoiceItem) this.itemsList.get( elementNum );
+		return item.getImage();
 	}
 
 	/**
 	 * Appends an element to the <code>ChoiceGroup</code>.
 	 * 
-	 * @param stringPart - the string part of the element to be added
-	 * @param imagePart - the image part of the element to be added, or null if there is no image part
+	 * @param stringPart the string part of the element to be added
+	 * @param imagePart the image part of the element to be added, or null if there is no image part
 	 * @return the assigned index of the element
-	 * @throws NullPointerException - if stringPart is null
+	 * @throws NullPointerException if stringPart is null
 	 * @see Choice#append( String, Image) in interface Choice
 	 */
 	public int append( String stringPart, Image imagePart)
 	{
-		return 0;
-		//TODO implement append
+		return append( stringPart, imagePart, null );
+	}
+	
+	/**
+	 * Appends an element to the <code>ChoiceGroup</code>.
+	 * 
+	 * @param stringPart the string part of the element to be added
+	 * @param imagePart the image part of the element to be added, or null if there is no image part
+	 * @param elementStyle the style for the appended ChoiceItem
+	 * @return the assigned index of the element
+	 * @throws NullPointerException if stringPart is null
+	 * @see Choice#append( String, Image) in interface Choice
+	 */
+	public int append( String stringPart, Image imagePart, Style elementStyle )
+	{
+		ChoiceItem item = new ChoiceItem( stringPart, imagePart, this.choiceType, elementStyle );
+		add( item );
+		return this.itemsList.size() - 1;
 	}
 
 	/**
 	 * Inserts an element into the <code>ChoiceGroup</code> just prior to
 	 * the element specified.
 	 * 
-	 * @param elementNum - the index of the element where insertion is to occur
-	 * @param stringPart - the string part of the element to be inserted
-	 * @param imagePart - the image part of the element to be inserted, or null if there is no image part
-	 * @throws IndexOutOfBoundsException - if elementNum is invalid
-	 * @throws NullPointerException - if stringPart is null
+	 * @param elementNum the index of the element where insertion is to occur
+	 * @param stringPart the string part of the element to be inserted
+	 * @param imagePart the image part of the element to be inserted, or null if there is no image part
+	 * @throws IndexOutOfBoundsException if elementNum is invalid
+	 * @throws NullPointerException if stringPart is null
 	 * @see Choice#insert(int, String, Image)  in interface Choice
 	 */
 	public void insert(int elementNum, String stringPart, Image imagePart)
 	{
-		//TODO implement insert
+		insert( elementNum, stringPart, imagePart );
 	}
 
 	/**
-	 * Deletes the element referenced by <code>elementNum</code>.
+	 * Inserts an element into the <code>ChoiceGroup</code> just prior to
+	 * the element specified.
 	 * 
-	 * @param elementNum - the index of the element to be deleted
-	 * @throws IndexOutOfBoundsException - if elementNum is invalid
-	 * @see Choice#delete(int) in interface Choice
+	 * @param elementNum the index of the element where insertion is to occur
+	 * @param stringPart the string part of the element to be inserted
+	 * @param imagePart the image part of the element to be inserted, or null if there is no image part
+	 * @param elementStyle the style for the inserted ChoiceItem
+	 * @throws IndexOutOfBoundsException if elementNum is invalid
+	 * @throws NullPointerException if stringPart is null
+	 * @see Choice#insert(int, String, Image)  in interface Choice
 	 */
-	public void delete(int elementNum)
+	public void insert(int elementNum, String stringPart, Image imagePart, Style elementStyle)
 	{
-		//TODO implement delete
-	}
-
-	/**
-	 * Deletes all elements from this <code>ChoiceGroup</code>.
-	 * 
-	 * @see Choice#deleteAll() in interface Choice
-	 */
-	public void deleteAll()
-	{
-		//TODO implement deleteAll
+		ChoiceItem item = new ChoiceItem( stringPart, imagePart, this.choiceType, elementStyle );
+		add(elementNum, item);
 	}
 
 	/**
@@ -228,21 +395,63 @@ public class ChoiceGroup extends Item implements Choice
 	 */
 	public void set(int elementNum, String stringPart, Image imagePart)
 	{
-		//TODO implement set
+		set( elementNum, stringPart, imagePart, null );
 	}
 
 	/**
+	 * Sets the <code>String</code> and <code>Image</code> parts of the
+	 * element referenced by <code>elementNum</code>,
+	 * replacing the previous contents of the element.
+	 * 
+	 * @param elementNum the index of the element to be set
+	 * @param stringPart the string part of the new element
+	 * @param imagePart the image part of the element, or null if there is no image part
+	 * @param elementStyle the style for the new list element.
+	 * @throws IndexOutOfBoundsException if elementNum is invalid
+	 * @throws NullPointerException if stringPart is null
+	 * @see Choice#set(int, String, Image) in interface Choice
+	 */
+	public void set(int elementNum, String stringPart, Image imagePart, Style elementStyle )
+	{
+		ChoiceItem item = new ChoiceItem( stringPart, imagePart, this.choiceType, elementStyle );
+		set(elementNum, item);
+	}
+
+	/**
+	 * Deletes the element referenced by <code>elementNum</code>.
+	 * 
+	 * @param elementNum the index of the element to be deleted
+	 * @throws IndexOutOfBoundsException if elementNum is invalid
+	 * @see Choice#delete(int) in interface Choice
+	 */
+	public void delete(int elementNum)
+	{
+		remove(elementNum);
+	}
+
+	/**
+	 * Deletes all elements from this <code>ChoiceGroup</code>.
+	 * 
+	 * @see Choice#deleteAll() in interface Choice
+	 */
+	public void deleteAll()
+	{
+		clear();
+	}
+
+	
+	/**
 	 * Gets a boolean value indicating whether this element is selected.
 	 * 
-	 * @param elementNum - the index of the element to be queried
+	 * @param elementNum the index of the element to be queried
 	 * @return selection state of the element
-	 * @throws IndexOutOfBoundsException - if elementNum is invalid
+	 * @throws IndexOutOfBoundsException if elementNum is invalid
 	 * @see Choice#isSelected(int) in interface Choice
 	 */
 	public boolean isSelected(int elementNum)
 	{
-		return false;
-		//TODO implement isSelected
+		ChoiceItem item = (ChoiceItem) this.itemsList.get( elementNum );
+		return item.isSelected;
 	}
 
 	/**
@@ -269,6 +478,9 @@ public class ChoiceGroup extends Item implements Choice
 	 */
 	public int getSelectedIndex()
 	{
+		if (this.isMultiple || this.itemsList.size() == 0) {
+			return -1;
+		}
 		return this.selectedIndex;
 	}
 
@@ -291,17 +503,30 @@ public class ChoiceGroup extends Item implements Choice
 	 * exactly one element will be selected, unless there are
 	 * zero elements in the <code>ChoiceGroup</code>. </p>
 	 * 
-	 * @param selectedArray_return - array to contain the results
+	 * @param selectedArray_return array to contain the results
 	 * @return the number of selected elements in the ChoiceGroup
-	 * @throws IllegalArgumentException - if selectedArray_return is shorter than the size of the ChoiceGroup
-	 * @throws NullPointerException - if selectedArray_return is null
+	 * @throws IllegalArgumentException if selectedArray_return is shorter than the size of the ChoiceGroup
+	 * @throws NullPointerException if selectedArray_return is null
 	 * @see Choice#getSelectedFlags(boolean[]) in interface Choice
 	 * @see #setSelectedFlags(boolean[])
 	 */
 	public int getSelectedFlags(boolean[] selectedArray_return)
 	{
-		return 0;
-		//TODO implement getSelectedFlags
+		if (this.itemsList.size() != selectedArray_return.length) {
+			throw new IllegalArgumentException("length or return array is invalid");
+		}
+		ChoiceItem[] myItems = (ChoiceItem[]) this.itemsList.toArray( new ChoiceItem[ this.itemsList.size() ] );
+		int selectedItems = 0;
+		for (int i = 0; i < myItems.length; i++) {
+			ChoiceItem item = myItems[i];
+			if (item.isSelected) {
+				selectedArray_return[i] = true;
+				selectedItems++;
+			} else {
+				selectedArray_return[i] = false;
+			}
+		}
+		return selectedItems;
 	}
 
 	/**
@@ -321,15 +546,41 @@ public class ChoiceGroup extends Item implements Choice
 	 * the range
 	 * <code>[0..size()-1]</code>, inclusive. </p>
 	 * 
-	 * @param elementNum - the number of the element. Indexing of the elements is zero-based
-	 * @param selected - the new state of the element true=selected, false=not selected
-	 * @throws IndexOutOfBoundsException - if elementNum is invalid
+	 * @param elementNum the number of the element. Indexing of the elements is zero-based
+	 * @param selected the new state of the element true=selected, false=not selected
+	 * @throws IndexOutOfBoundsException if elementNum is invalid
 	 * @see Choice#setSelectedIndex(int, boolean) in interface Choice
 	 * @see #getSelectedIndex()
 	 */
 	public void setSelectedIndex(int elementNum, boolean selected)
 	{
-		//TODO implement setSelectedIndex
+		if (this.isMultiple) {
+			ChoiceItem item = (ChoiceItem) this.itemsList.get( elementNum );
+			item.select( selected );
+		} else {
+			if (selected == false) {
+				return; // ignore this call
+			}
+			ChoiceItem oldSelected = (ChoiceItem) this.itemsList.get( this.selectedIndex );
+			oldSelected.select( false );
+			ChoiceItem newSelected = (ChoiceItem) this.itemsList.get( elementNum );
+			newSelected.select( true );
+			this.selectedIndex = elementNum;
+			if (this.isPopup) {
+				this.popupItem.setText( newSelected.getText() );
+			} else if (this.isImplicit) {
+				// call command listener:
+				Screen scr = getScreen();
+				if (scr != null) {
+					Command selectCmd = this.selectCommand;
+					if (selectCmd == null) {
+						selectCmd = List.SELECT_COMMAND;
+					}
+					scr.callCommandListener( selectCmd );
+				}
+			}
+		}
+		repaint();
 	}
 
 	/**
@@ -356,52 +607,75 @@ public class ChoiceGroup extends Item implements Choice
 	 * implementation will choose the first <code>true</code> element
 	 * and select it. <p>
 	 * 
-	 * @param selectedArray - an array in which the method collect the selection status
-	 * @throws IllegalArgumentException - if selectedArray is shorter than the size of the ChoiceGroup
-	 * @throws NullPointerException - if the selectedArray is null
+	 * @param selectedArray an array in which the method collect the selection status
+	 * @throws IllegalArgumentException if selectedArray is shorter than the size of the ChoiceGroup
+	 * @throws NullPointerException if the selectedArray is null
 	 * @see Choice#setSelectedFlags(boolean[]) in interface Choice
 	 * @see #getSelectedFlags(boolean[])
 	 */
 	public void setSelectedFlags(boolean[] selectedArray)
 	{
-		this.selectedFlags = selectedArray;
+		if (selectedArray.length < this.itemsList.size()) {
+			throw new IllegalArgumentException("length of selectedArray is too small");
+		}
+		if (this.isMultiple) {
+			ChoiceItem[] myItems = (ChoiceItem[]) this.itemsList.toArray( new ChoiceItem[ this.itemsList.size() ] );
+			for (int i = 0; i < myItems.length; i++) {
+				ChoiceItem item = myItems[i];
+				item.select( selectedArray[i]);
+			}
+		} else {
+			int index = 0;
+			for (int i = 0; i < selectedArray.length; i++) {
+				if (selectedArray[i]) {
+					index = i;
+					break;
+				}
+			}
+			if (index > this.itemsList.size()) {
+				index = 0;
+			}
+			setSelectedIndex( index, true );
+		}
+		repaint();
 	}
 
 	/**
 	 * Sets the application's preferred policy for fitting
-	 * <code>Choice</code> element
-	 * contents to the available screen space. The set policy applies for all
+	 * <code>Choice</code> element contents to the available screen space. The set policy applies for all
 	 * elements of the <code>Choice</code> object.  Valid values are
-	 * <A HREF="../../../javax/microedition/lcdui/Choice.html#TEXT_WRAP_DEFAULT"><CODE>Choice.TEXT_WRAP_DEFAULT</CODE></A>, <A HREF="../../../javax/microedition/lcdui/Choice.html#TEXT_WRAP_ON"><CODE>Choice.TEXT_WRAP_ON</CODE></A>,
-	 * and <A HREF="../../../javax/microedition/lcdui/Choice.html#TEXT_WRAP_OFF"><CODE>Choice.TEXT_WRAP_OFF</CODE></A>. Fit policy is a hint, and the
+	 * <CODE>Choice.TEXT_WRAP_DEFAULT</CODE>, 
+	 * <CODE>Choice.TEXT_WRAP_ON</CODE>,
+	 * and <CODE>Choice.TEXT_WRAP_OFF</CODE>. 
+	 * Fit policy is a hint, and the
 	 * implementation may disregard the application's preferred policy.
+	 * The J2ME Polish implementation always uses the TEXT_WRAP_ON policy.
 	 * 
-	 * @param fitPolicy - preferred content fit policy for choice elements
-	 * @throws IllegalArgumentException - if fitPolicy is invalid
+	 * @param fitPolicy preferred content fit policy for choice elements
 	 * @see Choice#setFitPolicy(int) in interface Choice
 	 * @see #getFitPolicy()
 	 * @since  MIDP 2.0
 	 */
 	public void setFitPolicy(int fitPolicy)
 	{
-		this.fitPolicy = fitPolicy;
+		//this.fitPolicy = fitPolicy;
+		// ignore hint
 	}
 
 	/**
 	 * Gets the application's preferred policy for fitting
-	 * <code>Choice</code> element
-	 * contents to the available screen space.  The value returned is the
+	 * <code>Choice</code> element contents to the available screen space.  The value returned is the
 	 * policy that had been set by the application, even if that value had
 	 * been disregarded by the implementation.
 	 * 
-	 * @return one of Choice.TEXT_WRAP_DEFAULT, Choice.TEXT_WRAP_ON, or Choice.TEXT_WRAP_OFF
+	 * @return always Choice.TEXT_WRAP_ON
 	 * @see Choice#getFitPolicy() in interface Choice
 	 * @see #setFitPolicy(int)
 	 * @since  MIDP 2.0
 	 */
 	public int getFitPolicy()
 	{
-		return this.fitPolicy;
+		return Choice.TEXT_WRAP_ON;
 	}
 
 	/**
@@ -409,25 +683,20 @@ public class ChoiceGroup extends Item implements Choice
 	 * rendering the specified element of this <code>Choice</code>.
 	 * An element's font is a hint, and the implementation may disregard
 	 * the application's preferred font.
+	 * The J2ME Polish implementation uses the font defined by the appropriate
+	 * CSS style and ignores the font which is set here.
 	 * 
-	 * <p> The <code>elementNum</code> parameter must be within the range
-	 * <code>[0..size()-1]</code>, inclusive.</p>
-	 * 
-	 * <p> The <code>font</code> parameter must be a valid <code>Font</code>
-	 * object or <code>null</code>. If the <code>font</code> parameter is
-	 * <code>null</code>, the implementation must use its default font
-	 * to render the element.</p>
-	 * 
-	 * @param elementNum - the index of the element, starting from zero
-	 * @param font - the preferred font to use to render the element
-	 * @throws IndexOutOfBoundsException - if elementNum is invalid
+	 * @param elementNum the index of the element, starting from zero
+	 * @param font the preferred font to use to render the element
+	 * @throws IndexOutOfBoundsException if elementNum is invalid
 	 * @see Choice#setFont(int, Font) in interface Choice
 	 * @see #getFont(int)
 	 * @since  MIDP 2.0
 	 */
 	public void setFont(int elementNum, Font font)
 	{
-		//TODO implement setFont
+		ChoiceItem item = (ChoiceItem) this.itemsList.get( elementNum );
+		item.setPreferredFont( font );
 	}
 
 	/**
@@ -442,33 +711,52 @@ public class ChoiceGroup extends Item implements Choice
 	 * <p> The <code>elementNum</code> parameter must be within the range
 	 * <code>[0..size()-1]</code>, inclusive.</p>
 	 * 
-	 * @param elementNum - the index of the element, starting from zero
+	 * @param elementNum the index of the element, starting from zero
 	 * @return the preferred font to use to render the element
-	 * @throws IndexOutOfBoundsException - if elementNum is invalid
+	 * @throws IndexOutOfBoundsException if elementNum is invalid
 	 * @see Choice#getFont(int) in interface Choice
 	 * @see #setFont(int elementNum, Font font)
 	 * @since  MIDP 2.0
 	 */
 	public Font getFont(int elementNum)
 	{
-		return null;
-		//TODO implement getFont
+		ChoiceItem item = (ChoiceItem) this.itemsList.get( elementNum );
+		Font font = item.preferredFont;
+		if (font == null) {
+			font = item.font;
+		}
+		return font;
 	}
 
 	/* (non-Javadoc)
 	 * @see de.enough.polish.ui.Item#paint(int, int, javax.microedition.lcdui.Graphics)
 	 */
 	public void paintContent(int x, int y, int leftBorder, int rightBorder, Graphics g) {
-		// TODO Auto-generated method stub
-		
+		if (this.isPopup && this.isPopupClosed) {
+			this.popupItem.paintContent(x, y, leftBorder, rightBorder, g);
+		} else {
+			super.paintContent(x, y, leftBorder, rightBorder, g );
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see de.enough.polish.ui.Item#initItem()
 	 */
 	protected void initContent(int firstLineWidth, int lineWidth) {
-		// TODO enough implement initItem
-		
+		super.initContent(firstLineWidth, lineWidth);
+		if (this.isPopup && this.isPopupClosed) {
+			if (this.popupItem.getText() == null && this.itemsList.size() > 0) {
+				ChoiceItem selectedItem = (ChoiceItem) this.itemsList.get( 0 );
+				this.popupItem.setText( selectedItem.getText() );
+			}
+			if (!this.popupItem.isInitialised) {
+				int noneContentWidth = this.marginLeft + this.borderWidth + this.paddingLeft
+							+ this.marginRight + this.borderWidth + this.paddingRight;
+				this.popupItem.init(firstLineWidth + noneContentWidth, lineWidth + noneContentWidth);
+			}
+			this.contentWidth = this.popupItem.contentWidth;			
+			this.contentHeight = this.popupItem.contentHeight;
+		}
 	}
 
 	//#ifdef polish.useDynamicStyles
@@ -476,8 +764,104 @@ public class ChoiceGroup extends Item implements Choice
 	 * @see de.enough.polish.ui.Item#getCssSelector()
 	 */
 	protected String createCssSelector() {
-		// TODO enough implement getCssSelector
-		return null;
+		return "choicegroup";
 	}
 	//#endif
+	
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#handleKeyPressed(int, int)
+	 */
+	protected boolean handleKeyPressed(int keyCode, int gameAction) {
+		boolean processed = false;
+		if (!(this.isPopup && this.isPopupClosed)) {
+			processed = super.handleKeyPressed(keyCode, gameAction);
+		}
+		if (!processed) {
+			if (gameAction == Canvas.FIRE) {
+				if (this.isMultiple) {
+					ChoiceItem item = (ChoiceItem) this.focusedItem;
+					item.toggleSelect();
+				} else if (this.isPopup){
+					if (this.isPopupClosed) {
+						this.isPopupClosed = false;
+						focus( this.selectedIndex );
+					} else {
+						this.isPopupClosed = true;
+						setSelectedIndex(this.focusedIndex, true);
+					}
+					requestInit();
+				} else {
+					setSelectedIndex(this.focusedIndex, true);
+				}
+				return true;
+			} else {
+				if (keyCode >= Canvas.KEY_NUM1 && keyCode <= Canvas.KEY_NUM9) {
+					int index = keyCode - Canvas.KEY_NUM1;
+					if (index < this.itemsList.size()) {
+						if (!this.isPopup || !this.isPopupClosed) {
+							setSelectedIndex( index, true );
+							if (this.isPopup) {
+								this.isPopupClosed = true;
+								requestInit();
+							}
+						}
+						return true;
+					}
+				} else if (this.isPopup && (this.isPopupClosed == false)) {
+					this.isPopupClosed = true;
+					requestInit();
+					return true;
+				}
+			}
+		}
+		return processed;
+	}
+
+	/**
+	 * Sets the select command for this choice group.
+	 * This will be ignored unless this group has the type IMPLICIT.
+	 *
+	 * @param command the new select command
+	 */
+	protected void setSelectCommand(Command command) {
+		this.selectCommand = command;
+	}
+	
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#defocus(de.enough.polish.ui.Style)
+	 */
+	protected void defocus(Style originalStyle) {
+		if (this.isPopup && this.isPopupClosed) {
+			this.popupItem.setStyle( originalStyle );
+			setStyle( originalStyle );
+		} else {
+			super.defocus(originalStyle);
+		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#focus(de.enough.polish.ui.Style)
+	 */
+	protected Style focus(Style focusStyle) {
+		if (this.isPopup && this.isPopupClosed) {
+			Style original = this.style;
+			this.popupItem.setStyle( focusStyle );
+			setStyle( focusStyle );
+			return original;
+		} else {
+			return super.focus(focusStyle);
+		}
+	}
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Container#setStyle(de.enough.polish.ui.Style, boolean)
+	 */
+	public void setStyle(Style style, boolean ignoreBackground) {
+		super.setStyle(style, ignoreBackground);
+		if (this.isPopup) {
+			String url = style.getProperty("popup-image");
+			if (url != null ) {
+				this.popupItem.setImage( url );
+			}
+		}
+	}
 }

@@ -26,6 +26,7 @@
 package de.enough.polish.ui;
 
 import de.enough.polish.util.ArrayList;
+import de.enough.polish.util.Debug;
 
 import javax.microedition.lcdui.*;
 import javax.microedition.lcdui.Command;
@@ -642,6 +643,7 @@ public abstract class Item extends Object
 	protected int yTopPos;
 	protected int xRightPos;
 	protected int yBottomPos;
+	protected boolean isFocused;
 	
 	//#ifdef polish.useBeforeStyle
 	private int beforeWidth;
@@ -923,8 +925,36 @@ public abstract class Item extends Object
 		if (this.parent instanceof Container) {
 			((Container) this.parent).isInitialised = false;
 		}
-		if (this.screen != null && this.screen == StyleSheet.currentScreen) {
-			this.screen.repaint();
+		Screen scr = getScreen();
+		if (scr != null && scr == StyleSheet.currentScreen) {
+			scr.repaint();
+		}
+	}
+	
+	/**
+	 * Requests that this item is re-initialised at the next repainting.
+	 * 
+	 * All parents of this item are notified, too.
+	 */
+	protected void requestInit() {
+		this.isInitialised = false;
+		if (this.parent != null) {
+			this.parent.requestInit();
+		}
+	}
+	
+	/**
+	 * Retrieves the screen to which this item belongs to.
+	 * 
+	 * @return either the corresponding screen or null when no screen could be found 
+	 */
+	protected Screen getScreen() {
+		if (this.screen != null) {
+			return this.screen;
+		} else if (this.parent != null) {
+			return this.parent.getScreen();
+		} else {
+			return null;
 		}
 	}
 
@@ -1312,6 +1342,8 @@ public abstract class Item extends Object
 	 * @param lineWidth the maximum width of any following lines
 	 */
 	protected final void init( int firstLineWidth, int lineWidth ) {
+		//#debug
+		Debug.debug("intialising item " + this.getClass().getName() );
 		if (this.style != null && !this.isStyleInitialised) {
 			setStyle( this.style );
 		}
@@ -1413,6 +1445,7 @@ public abstract class Item extends Object
 	 * @see #preferredHeight
 	 */
 	protected abstract void initContent(int firstLineWidth, int lineWidth);
+	
 	/*
 	 * Problem: values wie firstLineStart, lineStart und lineEnd
 	 * koennen erst eingerechnet werden, wenn das Item gemalt wird,
@@ -1532,4 +1565,27 @@ public abstract class Item extends Object
 		return false;
 	}
 
+	/**
+	 * Focuses this item.
+	 * 
+	 * @param focusedStyle the style which is used to indicate the focused state
+	 * @return the current style of this item
+	 */
+	protected Style focus(Style focusedStyle ) {
+		Style oldStyle = this.style;
+		setStyle( focusedStyle );
+		this.isFocused = true;
+		return oldStyle;
+	}
+	
+	/**
+	 * Removes the focus from this item.
+	 * 
+	 * @param originalStyle the original style which will be restored.
+	 */
+	protected void defocus( Style originalStyle ) {
+		setStyle( originalStyle );
+		this.isFocused = false;
+	}
+	
 }

@@ -44,7 +44,6 @@ public class RoundRectBorder extends Border {
 	private int color;
 	private int arcWidth;
 	private int arcHeight;
-	private int borderColor; 
 
 	/**
 	 * Creates a new round rectangle border.

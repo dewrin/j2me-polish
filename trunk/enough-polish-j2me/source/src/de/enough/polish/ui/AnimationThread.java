@@ -73,8 +73,9 @@ public class AnimationThread extends Thread {
 		while ( true ) {
 			try {
 				Thread.sleep(sleeptime);
-				if (StyleSheet.currentScreen != null) {
-					if (StyleSheet.currentScreen.animate()) {
+				Screen screen = StyleSheet.currentScreen;
+				if (screen != null ) {
+					if (screen.animate()) {
 						sleeptime = ANIMATION_INTERVAL;
 						animationCounter = 0;
 					} else {
@@ -85,6 +86,7 @@ public class AnimationThread extends Thread {
 						}
 					}
 				}
+				/*
 				if (StyleSheet.gauge != null) {
 					//TODO rob double check if the StyleSheet.gauge is still visible
 					if (StyleSheet.gauge.animate()) {
@@ -97,6 +99,7 @@ public class AnimationThread extends Thread {
 						StyleSheet.gauge = null;
 					}
 				}
+				*/
 			} catch (InterruptedException e) {
 				// ignore
 			} catch (Exception e) {
