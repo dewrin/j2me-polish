@@ -32,6 +32,7 @@ public class ColorConverter {
 	 * maroon, purple, fuchsia, olive, yellow, navy, teal and aqua. 
 	 */
 	public static final HashMap COLORS = new HashMap();
+	public static final String TRANSPARENT = "Item.TRANSPARENT"; 
 	static {
 		COLORS.put("red",  	 	"0xFF0000");
 		COLORS.put("lime",  	"0x00FF00");
@@ -51,7 +52,7 @@ public class ColorConverter {
 		COLORS.put("aqua",  	"0x00FFFF");
 	}
 	
-	private HashMap tempColors; 
+	private HashMap tempColors;
 	
 	/**
 	 * Creates a new colors parser.
@@ -76,7 +77,7 @@ public class ColorConverter {
 	 */
 	public String parseColor( String definition ) {
 		if ("transparent".equals(definition)) {
-			return "Item.TRANSPARENT";
+			return TRANSPARENT;
 		}
 		
 		// the definition could be a color which has been defined earlier:
