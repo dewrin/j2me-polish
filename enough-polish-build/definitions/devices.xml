@@ -3,6 +3,8 @@
       xml format used in the J2EE client provisioning mechanism
       is a more flexible approach, even though it is not really
       human readable anymore (everything is just a capability) 
+      Questions: 
+      	- does screen describe the physical capabilities or the size of the canvas?
       -->
 <devices>
 <!-- Nokia devices -->
@@ -33,5 +35,9 @@
 	</device>
 
 <!-- Siemens devices -->
-
+	<device 
+		polish-capable="yes">
+		<identifier>Siemens/SX1</identifier>
+		<vendor>Siemens</vendor>
+	</device>
 </devices>

@@ -4,7 +4,7 @@
  * the enough-software-licence for commercial use.
  * Please refer to accompanying LICENSE.txt or visit www.enough.de for details.
  */
-package de.enough.polish.build.util;
+package de.enough.polish.ant.build;
 
 /**
  * <p>Variable provides the definition of a name-value pair.</p>

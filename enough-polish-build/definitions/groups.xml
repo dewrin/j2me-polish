@@ -9,7 +9,8 @@
 		</variables>
 	</group>
 
-	<group>
+	<group
+		polish-capable="yes">
 		<name>Series60</name>
 		<parent>Nokia-UI</parent>
 	</group>

@@ -1,4 +1,4 @@
-package de.enough.polish.build.util;
+package de.enough.polish.util;
 import junit.framework.TestCase;
 
 /*
@@ -75,6 +75,26 @@ public class TextUtilTest extends TestCase {
 		assertEquals( "12345a12345a", replacement );
 		replacement= TextUtil.replace( original, "6", "abc" );
 		assertEquals( "12345abc12345abc", replacement );		
+	}
+	
+	public void testReplaceFirst() {
+		String input = "abc defg hijkl defg abc";
+		String replacement = TextUtil.replaceFirst( input, "defg", "1234" );
+		assertEquals( "abc 1234 hijkl defg abc", replacement );		
+		replacement = TextUtil.replaceFirst( input, "defg", "1" );
+		assertEquals( "abc 1 hijkl defg abc", replacement );		
+		replacement = TextUtil.replaceFirst( input, "defg", "1234567" );
+		assertEquals( "abc 1234567 hijkl defg abc", replacement );
+		
+		replacement = TextUtil.replaceFirst( input, "abc", "123" );
+		assertEquals( "123 defg hijkl defg abc", replacement );		
+		replacement = TextUtil.replaceFirst( input, "abc", "1" );
+		assertEquals( "1 defg hijkl defg abc", replacement );		
+		replacement = TextUtil.replaceFirst( input, "abc", "1234567" );
+		assertEquals( "1234567 defg hijkl defg abc", replacement );
+		
+		replacement = TextUtil.replaceFirst( input, "XXX", "123" );
+		assertEquals( "abc defg hijkl defg abc", replacement );		
 	}
 	
 	public void testSplitWithChar() {

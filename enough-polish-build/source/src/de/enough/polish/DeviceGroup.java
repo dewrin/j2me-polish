@@ -4,7 +4,8 @@
  * the enough-software-licence for commercial use.
  * Please refer to accompanying LICENSE.txt or visit www.enough.de for details.
  */
-package de.enough.polish.build;
+package de.enough.polish;
+
 
 /**
  * <p>Respresents a group to which a device belongs to.</p>
