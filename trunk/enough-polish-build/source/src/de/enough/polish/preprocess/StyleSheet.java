@@ -255,6 +255,9 @@ public class StyleSheet {
 			int extendsPos = selector.indexOf(" extends ");
 			if (extendsPos != -1) {
 				parent = selector.substring( extendsPos + 9).trim();
+				if (parent.charAt(0) == '.') {
+					parent = parent.substring(1);
+				}
 				selector = selector.substring(0, extendsPos ).trim();
 				if ("default".equals(selector ) ) {
 					throw new BuildException( "Invalid CSS code: The style [default] must not extend any other style.");
