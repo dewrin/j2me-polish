@@ -23,8 +23,7 @@ import org.jdom.Element;
  */
 public class Vendor extends PolishComponent {
 
-	private String name;
-
+	
 	/**
 	 * Creates a new Vendor.
 	 * 
@@ -35,22 +34,14 @@ public class Vendor extends PolishComponent {
 	public Vendor( Project parent, Element definition )
 	throws InvalidComponentException
 	{
-		super("polish.vendor", parent );
-		this.name = definition.getChildTextTrim( "name");
-		if (this.name == null) {
+		super( parent );
+		this.identifier = definition.getChildTextTrim( "name");
+		//System.out.println("\ninitialising vendor " + this.identifier);
+		if (this.identifier == null) {
 			throw new InvalidComponentException("Every vendor needs to define the element <name> - please check your vendors.xml.");
 		}
 		// load all capabilities:
-		loadCapabilities(definition, this.name, "vendors.xml");
-	}
-
-	/**
-	 * Retrieves the name of this vendor.
-	 * 
-	 * @return The name of this vendor, e.g. "Nokia". 
-	 */
-	public String getName() {
-		return this.name;
+		loadCapabilities(definition, this.identifier, "vendors.xml");
 	}
 
 

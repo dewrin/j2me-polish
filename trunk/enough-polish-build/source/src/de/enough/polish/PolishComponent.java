@@ -26,31 +26,26 @@ import java.util.*;
  */
 public class PolishComponent {
 	
-	protected String preprocessName;
+	protected String identifier;
 	protected PolishComponent parent;
 	private HashMap features;
 	private ArrayList featuresList;
 	private HashMap capabilities;
 	private ArrayList capabilitiesList;
-
-	/**
-	 * Creates a new component.
-	 * 
-	 * @param preprocessName the specific name used for symbols and variables, e.g. "device"
-	 */
-	public PolishComponent( String preprocessName ) {
-		this( preprocessName, null );
-	}
 	
 	/**
 	 * Creates a new component.
+	 */
+	public PolishComponent() {
+		this( null );
+	}
+	/**
+	 * Creates a new component.
 	 * 
-	 * @param preprocessName the specific name used for symbols and variables, e.g. "device"
 	 * @param parent the parent, e.g. is the parent of a vendor a project,
 	 *              the parent of a device is a vendor.
 	 */
-	public PolishComponent( String preprocessName, PolishComponent parent ) {
-		this.preprocessName = preprocessName;
+	public PolishComponent( PolishComponent parent ) {
 		this.parent = parent;
 		this.capabilities = new HashMap();
 		this.capabilitiesList = new ArrayList();
@@ -117,16 +112,15 @@ public class PolishComponent {
 		HashMap caps = component.getCapabilities();
 		for (Iterator iter = caps.keySet().iterator(); iter.hasNext();) {
 			String key = (String) iter.next();
-			String currentValue = (String) this.capabilities.get( key); 
+			//System.out.println("adding component-key " + key);
+			String currentValue = (String) this.capabilities.get( key);
+			//System.out.println("current value: " + currentValue);
 			String componentValue = (String) caps.get( key );
-			int dotPos = key.lastIndexOf('.');
-			if (dotPos != -1) {
-				key = key.substring( dotPos + 1);
-			}
+			//System.out.println("component value: " + componentValue);
 			if (currentValue == null) {
 				// okay, this capability has not been defined so far:
 				addCapability( key, componentValue );
-			} else if ( ("JavaPackage".equals(key) ) || ("JavaProtocol".equals(key)) ) {
+			} else if ( (Device.JAVA_PACKAGE.equals(key) ) || (Device.JAVA_PROTOCOL.equals(key)) ) {
 				// add additional package/protocol definitions:
 				String newValue = currentValue + "," + componentValue;
 				addCapability(key, newValue);
@@ -204,15 +198,16 @@ public class PolishComponent {
 	 * @param value the value of the capability
 	 */
 	public void addCapability( String name, String value ) {
-		addSingleCapability( name, value );
-		
+		//System.out.println("adding capability " + name + " with value " + value );
 		// when the capability starts with "SoftwarePlatform." or similiar, 
 		// make it also accessible without it:
-		int dotPos = name.lastIndexOf('.');
-		if (dotPos != -1) {
-			name = name.substring( dotPos + 1);
-			addSingleCapability( name, value );
+		if (name.startsWith("SoftwarePlatform.")) {
+			name = name.substring( 17 );
+		} else if (name.startsWith("HardwarePlatform.")) {
+			name = name.substring( 17 );
 		}
+		addSingleCapability( name, value );
+		
 		// when the capability is a size, then also add a height and a width:
 		if (name.endsWith("Size") && value.indexOf('x') > 0) {
 			String[] values = TextUtil.splitAndTrim( value, 'x' );
@@ -240,12 +235,20 @@ public class PolishComponent {
 	 * @param value the value of the capability
 	 */
 	private void addSingleCapability( String name, String value ) {
-		String polishName = "polish." + name;
-		String componentName = this.preprocessName + "." + name; 
-		this.capabilities.put( polishName, value );
-		this.capabilities.put( componentName, value );
-		this.features.put( polishName + ":defined", Boolean.TRUE );
-		this.features.put( componentName + ":defined" , Boolean.TRUE );
+		if (!name.startsWith("polish.")) {
+			name = "polish." + name;
+		}
+		this.capabilities.put( name, value );
+		this.features.put( name + ":defined", Boolean.TRUE );
+	}
+	
+	/**
+	 * Adds a capability without changing it to this component.
+	 * 
+	 * @param capability The capability which should be added
+	 */
+	public void addDirectCapability(Capability capability) {
+		this.capabilities.put( capability.getName(), capability.getValue() );
 	}
 	
 	/**
@@ -255,7 +258,15 @@ public class PolishComponent {
 	 */
 	public void addFeature( String feature ) {
 		this.features.put( "polish." + feature, Boolean.TRUE );
-		this.features.put( this.preprocessName + "." + feature, Boolean.TRUE );
+	}
+	
+	/**
+	 * Adds a feature without inserting a ".polish" before the feature-name.
+	 * 
+	 * @param feature The feature which should be added.
+	 */
+	public void addDirectFeature( String feature ) {
+		this.features.put( feature, Boolean.TRUE );
 	}
 
 	/**
@@ -278,6 +289,16 @@ public class PolishComponent {
 	public String getCapability(String key) {
 		return (String) this.capabilities.get( key );
 	}
+
+	/**
+	 * Retrieves the identifier or name of this component.
+	 * 
+	 * @return The identifier of this component, e.g. "Nokia". 
+	 */
+	public String getIdentifier() {
+		return this.identifier;
+	}
+
 
 	
 }

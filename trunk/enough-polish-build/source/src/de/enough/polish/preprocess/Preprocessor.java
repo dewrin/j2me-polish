@@ -212,6 +212,7 @@ public class Preprocessor {
 	protected boolean preprocess(String className, StringList lines) 
 	throws PreprocessException 
 	{
+		//TODO throw existing SkipException.INSTANCE when #! is not fulfilled
 		boolean changed = false;
 		try {
 			while (lines.next()) {
