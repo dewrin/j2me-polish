@@ -283,7 +283,8 @@ public class Container extends Item {
 				
 			if (itemYBottom > this.yBottom) {
 				// this item is too low:
-				this.yOffset -= ( itemYBottom - this.yBottom ); 
+				this.yOffset -= ( itemYBottom - this.yBottom );
+				System.out.println("adjusting yOffset: itemYBottom=" + itemYBottom + "  container.yBottom=" + this.yBottom );
 			} else if (itemYTop < this.yTop) {
 				// this item is too high:
 				this.yOffset += ( this.yTop - itemYTop ); 

@@ -928,10 +928,12 @@ public abstract class Item extends Object
 		}
 		Screen scr = getScreen();
 		if (scr != null && scr == StyleSheet.currentScreen) {
+			scr.repaint();
+			//TODO change back 
 			//#if polish.useFullScreen && polish.api.nokia-ui 
-				scr.requestRepaint();
+				//scr.requestRepaint();
 			//#else
-				scr.repaint();
+				//scr.repaint();
 			//#endif
 		}
 	}
