@@ -93,14 +93,15 @@ implements ImageConsumer
 			firstLineWidth -= this.imageWidth;
 			lineWidth -= this.imageWidth;
 			super.initContent(firstLineWidth, lineWidth);
-			this.contentWidth += this.imageWidth;
 			if (this.imageHeight > this.contentHeight) {
 				this.yAdjust = (this.imageHeight - this.contentHeight) / 2;
 				this.contentHeight = this.imageHeight;
 			} else {
 				this.yAdjust = 0;
 			}
+			this.contentWidth += this.imageWidth;
 		} else {
+			super.initContent(firstLineWidth, lineWidth);
 			this.contentHeight += this.imageHeight;   
 			if (this.imageWidth > this.contentWidth) {
 				this.contentWidth = this.imageWidth;
@@ -112,12 +113,28 @@ implements ImageConsumer
 	 * @see de.enough.polish.ui.Item#paintContent(int, int, javax.microedition.lcdui.Graphics)
 	 */
 	public void paintContent(int x, int y, int leftBorder, int rightBorder, Graphics g) {
-		// TODO enough consider the imagePosition
 		if (this.image != null) {
-			g.drawImage(this.image, x, y, Graphics.TOP | Graphics.LEFT );
-			x += this.imageWidth;
-			leftBorder += this.imageWidth;
-			y += this.yAdjust;
+			if (this.imageAlign == Graphics.LEFT ) {
+				g.drawImage(this.image, x, y, Graphics.TOP | Graphics.LEFT );
+				x += this.imageWidth;
+				leftBorder += this.imageWidth;
+				y += this.yAdjust;
+			} else if (this.imageAlign == Graphics.RIGHT ) {
+				g.drawImage(this.image, rightBorder, y, Graphics.TOP | Graphics.RIGHT );
+				rightBorder -= this.imageWidth;
+				y += this.yAdjust;
+			} else if (this.imageAlign == Graphics.TOP ) {
+				int centerX = leftBorder + ((rightBorder - leftBorder) / 2);
+				//System.out.println("left: " + leftBorder + "  right: " + rightBorder + "  contentWidth: " + this.contentWidth);
+				//System.out.println("x: " + x + "  centerX: " + centerX );
+				g.drawImage(this.image, centerX, y, Graphics.TOP | Graphics.HCENTER );
+				y += this.imageHeight;
+			} else {
+				// imageAlign == Graphics.BOTTOM
+				int centerX = leftBorder + ((rightBorder - leftBorder) / 2);
+				int bottomY = y + this.contentHeight;
+				g.drawImage(this.image, centerX, bottomY, Graphics.BOTTOM | Graphics.HCENTER );
+			}
 		}
 		super.paintContent(x, y, leftBorder, rightBorder, g);
 	}
@@ -138,7 +155,7 @@ implements ImageConsumer
 		super.setStyle(style);
 		String align = (String) style.getProperty("icon-image-align");
 		if (align == null) {
-			this.imageAlign = DEFAULT_ALIGN;
+			// keep align setting
 		} else if ("left".equals(align)) {
 			this.imageAlign = Graphics.LEFT;
 		} else if ("right".equals(align)) {
@@ -185,8 +202,13 @@ implements ImageConsumer
 		this.isInitialised = false;
 		this.image = image;
 		if (image != null) {
-			this.imageWidth = this.image.getWidth() + this.paddingHorizontal;
-			this.imageHeight = this.image.getHeight() + this.paddingVertical;
+			if (this.imageAlign == Graphics.LEFT || this.imageAlign == Graphics.RIGHT ) {
+				this.imageWidth = this.image.getWidth() + this.paddingHorizontal;
+				this.imageHeight = this.image.getHeight();
+			} else {
+				this.imageWidth = this.image.getWidth();
+				this.imageHeight = this.image.getHeight() + this.paddingVertical;
+			}
 		} else {
 			this.imageWidth = 0;
 			this.imageHeight = 0;

@@ -86,8 +86,13 @@ public final class TextUtil {
 			int lastIndex = 0;
 			for (int i = 0; i < valueChars.length; i++) {
 				char c = valueChars[i];
-				if (c == '\n') {
-					String line = new String( valueChars, lastIndex, i - lastIndex );
+				if (c == '\n' || i == valueChars.length -1 ) {
+					String line = null;
+					if (i == valueChars.length -1) {
+						line = new String( valueChars, lastIndex, (i + 1) - lastIndex );
+					} else {
+						line = new String( valueChars, lastIndex, i - lastIndex );
+					}
 					completeWidth = font.stringWidth(line);
 					if (completeWidth <= firstLineWidth ) {
 						lines.add( line);						
