@@ -572,8 +572,8 @@ implements CommandListener
 	public static final int INITIAL_CAPS_SENTENCE = 0x200000;
 
 	/**
-	 * The mask value for determining the constraint mode. The application
-	 * should
+	 * The mask value for determining the constraint mode. 
+	 * The application should
 	 * use the bit-wise <code>AND</code> operation with a value returned by
 	 * <code>getConstraints()</code> and
 	 * <code>CONSTRAINT_MASK</code> in order to retrieve the current
@@ -595,7 +595,8 @@ implements CommandListener
 	private int originalWidth;
 	private int originalHeight;
 	protected String title;
-
+	private String passwordText;
+	private boolean isPassword;
 	private long lastCaretSwitch;
 
 	/**
@@ -661,6 +662,10 @@ implements CommandListener
 			//TODO rob i18n default input title
 			this.title = "Input";
 		}
+		if ((constraints & PASSWORD) == PASSWORD) {
+			this.isPassword = true;
+			setString( text );
+		}
 	}
 	
 	/**
@@ -682,13 +687,16 @@ implements CommandListener
 	 */
 	public String getString()
 	{
-		return getText();
+		if (this.isPassword) {
+			return this.passwordText;
+		} else {
+			return this.text;
+		}
 	}
 
 	/**
 	 * Sets the contents of the <code>TextField</code> as a string
-	 * value, replacing the
-	 * previous contents.
+	 * value, replacing the previous contents.
 	 * 
 	 * @param text the new value of the TextField, or null if the TextField is to be made empty
 	 * @throws IllegalArgumentException if text is illegal for the current input constraints
@@ -697,10 +705,27 @@ implements CommandListener
 	 */
 	public void setString( String text)
 	{
+		if (this.isPassword) {
+			this.passwordText = text;
+			if (text != null) {
+				int length = text.length();
+				StringBuffer buffer = new StringBuffer( length );
+				for (int i = 0; i < length; i++) {
+					buffer.append('*');
+				}
+				text = buffer.toString();
+			} else {
+				this.passwordText = null;
+			}
+		}
 		//TODO rob check text-value
 		setText(text);
 		if (this.midpTextBox != null) {
-			this.midpTextBox.setString( text );
+			if (this.isPassword) {
+				this.midpTextBox.setString( this.passwordText );
+			} else {
+				this.midpTextBox.setString( text );
+			}
 		}
 	}
 
@@ -1099,7 +1124,7 @@ implements CommandListener
 		if (cmd == StyleSheet.CANCEL_CMD) {
 			this.midpTextBox.setString( this.text );
 		} else {
-			setText( this.midpTextBox.getString() );
+			setString( this.midpTextBox.getString() );
 		}
 		StyleSheet.display.setCurrent( StyleSheet.currentScreen );
 	}
