@@ -96,16 +96,14 @@ public final class StyleSheet {
 			System.out.println("StyleSheet.getImage(..) needs an ImageConsumer when images are loaded in the background!");
 			return null;
 		}
-		if ( (scheduledImagesByName != null) ) {
-			ImageQueue queue = (ImageQueue) scheduledImagesByName.get(name);
-			if (queue != null) {
-				// this image is already scheduled to load:
-				queue.addConsumer((ImageConsumer) parent);
-				return null;
-			}
-		}
 		if (scheduledImagesByName == null ) {
 			scheduledImagesByName = new Hashtable();
+		}
+		ImageQueue queue = (ImageQueue) scheduledImagesByName.get(name);
+		if (queue != null) {
+			// this image is already scheduled to load:
+			queue.addConsumer((ImageConsumer) parent);
+			return null;
 		}
 		scheduledImagesByName.put( name, new ImageQueue( (ImageConsumer) parent, cache ) );
 		if (imagesByName == null ) {

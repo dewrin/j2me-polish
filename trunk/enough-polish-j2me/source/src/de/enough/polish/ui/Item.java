@@ -594,19 +594,15 @@ public abstract class Item extends Object
 	 * "polish.useDynamicStyles" is defined.
 	 */
 	protected String cssSelector;
-	/**
-	 * The parent of this item.
-	 * This variable can only be used, when the proprocessing variable
-	 * "polish.useDynamicStyles" is defined.
-	 */
-	protected Item parent;
+	//#endif
 	/**
 	 * Determines whether the style has be dynamically assigned already.
-	 * This variable can only be used, when the proprocessing variable
-	 * "polish.useDynamicStyles" is defined.
 	 */
 	protected boolean isStyleInitialised;
-	//#endif
+	/**
+	 * The parent of this item.
+	 */
+	protected Item parent;
 
 	private ArrayList commands;
 	
@@ -654,7 +650,8 @@ public abstract class Item extends Object
 		if (style == null) {
 			this.layout = layout;
 		} else {
-			setStyle( style );
+			this.style = style;
+			this.isStyleInitialised = false;
 		}
 	}
 
@@ -889,6 +886,9 @@ public abstract class Item extends Object
 	 * have changed and they need an immediate refresh. 
 	 */
 	protected void repaint() {
+		if (this.parent instanceof Container) {
+			((Container) this.parent).isInitialised = false;
+		}
 		if (this.screen != null && this.screen == StyleSheet.currentScreen) {
 			this.screen.repaint();
 		}
@@ -1272,6 +1272,10 @@ public abstract class Item extends Object
 	 * @param lineWidth the maximum width of any following lines
 	 */
 	protected final void init( int firstLineWidth, int lineWidth ) {
+		if (this.style != null && !this.isStyleInitialised) {
+			setStyle( this.style );
+			this.isStyleInitialised = true;
+		}
 		//#ifdef polish.useDynamicStyles
 		initStyle();
 		//#endif

@@ -44,7 +44,9 @@ public class ImageTask extends TimerTask {
 	public void run() {
 		try {
 			Image image = Image.createImage( this.name );
+			//#ifdef polish.images.backgroundLoad
 			StyleSheet.notifyImageConsumers(this.name, image);
+			//#endif
 		} catch (IOException e) {
 			//#debug error
 			Debug.debug( "ImageTask: unable to load image [" + this.name + "].", e);

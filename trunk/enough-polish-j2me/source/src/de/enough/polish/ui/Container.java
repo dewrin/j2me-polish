@@ -87,25 +87,19 @@ public class Container extends Item {
 
 	public void add( Item item ) {
 		this.isInitialised = false;
-		//#ifdef polish.useDynamicStyles
 		item.parent = this;
-		//#endif
 		this.itemsList.add( item );
 	}
 
 	public void add( int index, Item item ) {
 		this.isInitialised = false;
-		//#ifdef polish.useDynamicStyles
 		item.parent = this;
-		//#endif
 		this.itemsList.add( index, item );
 	}
 	
 	public void set( int index, Item item ) {
 		this.isInitialised = false;
-		//#ifdef polish.useDynamicStyles
 		item.parent = this;
-		//#endif
 		this.itemsList.set( index, item );
 	}
 	
