@@ -66,15 +66,18 @@
 		    deleteConfirm="Do you really want to kill me?" 
 			/>
 		<!-- selection of supported devices -->
+		<!-- Normally the application is build only for the Nokia/N-Gage phone, -->
+		<!-- but when the test-property is set to true, the second deviceRequirements -->
+		<!-- will be used. -->
 		<deviceRequirements if="test">
 			<requirement name="Identifier" value="Nokia/N-Gage" />
 		</deviceRequirements>
 		<deviceRequirements unless="test">
 			<requirement name="JavaPackage" value="nokia-ui" />
-			<requirement name="BitsPerPixel" value="4+" />
+			<requirement name="BitsPerPixel" value="12+" />
 		</deviceRequirements>
 	    <!-- build settings -->
-		<!-- Also you can set the resDir attribute to "resources" 
+		<!-- Here you can set the resDir attribute to "resources2" 
 		     for an alternative design.
 		 -->
 		<build
@@ -83,7 +86,7 @@
 			fullscreen="menu"
 			usePolishGui="true"
 			preverify="/home/enough/dev/WTK2.1/bin/preverify"
-			resDir="resources2"
+			resDir="resources"
 			>
 			<!-- midlets definition -->
 			<midlet class="de.enough.polish.example.MenuMidlet" name="Example" />

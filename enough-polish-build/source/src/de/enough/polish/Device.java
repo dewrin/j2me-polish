@@ -63,6 +63,8 @@ public class Device extends PolishComponent {
 	public static final String JAVA_PACKAGE= "polish.JavaPackage";
 	public static final String HEAP_SIZE = "polish.HeapSize";
 	public static final String USER_AGENT = "polish.UserAgent";
+	public static final String VIDEO_FORMAT = "polish.VideoFormat";
+	public static final String SOUND_FORMAT = "polish.SoundFormat";
 	public static final String SUPPORTS_POLISH_GUI = "polish.supportsPolishGui";
 	
 	public static final int MIDP_1 = 1;
