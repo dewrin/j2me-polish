@@ -46,7 +46,7 @@ import com.izforge.izpack.util.MultiLineLabel;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class ChooseLicensePanel extends IzPanel 
-implements KeyListener, ChangeListener, DocumentListener {
+implements KeyListener,  ChangeListener, DocumentListener {
 	
 	private final static int GPL = 1;
 	private final static int EVALUATION = 2;
