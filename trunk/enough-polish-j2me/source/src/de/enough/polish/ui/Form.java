@@ -688,10 +688,12 @@ public class Form extends Screen
 	 * @param item the item which contents have been edited.
 	 */
 	protected void addToStateNotifyQueue( Item item ) {
-		if (this.stateNotifyQueue == null) {
-			this.stateNotifyQueue = new ArrayList();
+		if (this.itemStateListener != null) {
+			if (this.stateNotifyQueue == null) {
+				this.stateNotifyQueue = new ArrayList();
+			}
+			this.stateNotifyQueue.add( item );
 		}
-		this.stateNotifyQueue.add( item );
 	}
 	
 	/**
@@ -710,7 +712,9 @@ public class Form extends Screen
 	 * @see de.enough.polish.ui.Screen#animate()
 	 */
 	public boolean animate() {
-		if (this.stateNotifyQueue != null && this.stateNotifyQueue.size() > 0 && this.itemStateListener != null) {
+		if ( (this.itemStateListener != null) 
+				&& (this.stateNotifyQueue != null) 
+				&& (this.stateNotifyQueue.size() > 0 ) ) {
 			notifyStateListener();
 		}
 		return super.animate();

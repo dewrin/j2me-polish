@@ -253,11 +253,21 @@ public class ChoiceGroup extends Container implements Choice
 			this.isImplicit = true;
 			this.focusFirstElement = true;
 		} else {
-			throw new IllegalArgumentException("invalid choiceType [" + choiceType + "] - IMPLICIT=" + Choice.IMPLICIT + ".");
+			//#ifdef polish.verboseDebug
+				throw new IllegalArgumentException("invalid choiceType [" + choiceType + "] - IMPLICIT=" + Choice.IMPLICIT + ".");
+			//#else
+				//# throw new IllegalArgumentException();
+			//#endif
 		}
-		if (imageElements != null && imageElements.length != stringElements.length) {
-			throw new IllegalArgumentException("imageElements need to have the same length as the stringElements.");
-		}
+		//#ifndef polish.skipArgumentCheck
+			if (imageElements != null && imageElements.length != stringElements.length) {
+				//#ifdef polish.verboseDebug
+					throw new IllegalArgumentException("imageElements need to have the same length as the stringElements.");
+				//#else
+					//# throw new IllegalArgumentException();
+				//#endif
+			}
+		//#endif
 		this.choiceType = choiceType;
 		for (int i = 0; i < stringElements.length; i++) {
 			Image img = null;
@@ -521,9 +531,15 @@ public class ChoiceGroup extends Container implements Choice
 	 */
 	public int getSelectedFlags(boolean[] selectedArray_return)
 	{
-		if (this.itemsList.size() != selectedArray_return.length) {
-			throw new IllegalArgumentException("length or return array is invalid");
-		}
+		//#ifndef polish.skipArgumentCheck
+			if (selectedArray_return.length < this.itemsList.size()) {
+				//#ifdef polish.verboseDebug
+					throw new IllegalArgumentException("length of selectedArray is too small");
+				//#else
+					//# throw new IllegalArgumentException();
+				//#endif
+			}
+		//#endif
 		ChoiceItem[] myItems = (ChoiceItem[]) this.itemsList.toArray( new ChoiceItem[ this.itemsList.size() ] );
 		int selectedItems = 0;
 		for (int i = 0; i < myItems.length; i++) {
@@ -625,9 +641,15 @@ public class ChoiceGroup extends Container implements Choice
 	 */
 	public void setSelectedFlags(boolean[] selectedArray)
 	{
-		if (selectedArray.length < this.itemsList.size()) {
-			throw new IllegalArgumentException("length of selectedArray is too small");
-		}
+		//#ifndef polish.skipArgumentCheck
+			if (selectedArray.length < this.itemsList.size()) {
+				//#ifdef polish.verboseDebug
+					throw new IllegalArgumentException("length of selectedArray is too small");
+				//#else
+					//# throw new IllegalArgumentException();
+				//#endif
+			}
+		//#endif
 		if (this.isMultiple) {
 			ChoiceItem[] myItems = (ChoiceItem[]) this.itemsList.toArray( new ChoiceItem[ this.itemsList.size() ] );
 			for (int i = 0; i < myItems.length; i++) {
@@ -808,6 +830,9 @@ public class ChoiceGroup extends Container implements Choice
 				} else {
 					setSelectedIndex(this.focusedIndex, true);
 				}
+				if (this.choiceType != IMPLICIT) {
+					notifyStateChanged();
+				}
 				return true;
 			} else {
 				if (keyCode >= Canvas.KEY_NUM1 && keyCode <= Canvas.KEY_NUM9) {
@@ -819,8 +844,11 @@ public class ChoiceGroup extends Container implements Choice
 								this.isPopupClosed = true;
 								requestInit();
 							}
+							if (this.choiceType != IMPLICIT) {
+								notifyStateChanged();
+							}
+							return true;
 						}
-						return true;
 					}
 				} else if (this.isPopup && (this.isPopupClosed == false)) {
 					this.isPopupClosed = true;

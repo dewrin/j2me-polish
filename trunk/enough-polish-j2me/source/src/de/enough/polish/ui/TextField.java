@@ -1125,6 +1125,7 @@ implements CommandListener
 			this.midpTextBox.setString( this.text );
 		} else {
 			setString( this.midpTextBox.getString() );
+			notifyStateChanged();
 		}
 		StyleSheet.display.setCurrent( StyleSheet.currentScreen );
 	}

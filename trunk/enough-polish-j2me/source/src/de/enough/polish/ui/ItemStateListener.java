@@ -73,7 +73,7 @@ public interface ItemStateListener
 	 * <p> The listener is not called if the application changes
 	 * the value of an interactive item. </p>
 	 * 
-	 * @param item - the item that was changed
+	 * @param item the item that was changed
 	 */
 	public void itemStateChanged( Item item);
 

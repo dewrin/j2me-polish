@@ -505,6 +505,7 @@ implements CommandListener
 			this.midpDateField.setDate( this.date );
 		} else {
 			setDate( this.midpDateField.getDate() );
+			notifyStateChanged();
 		}
 		StyleSheet.display.setCurrent( StyleSheet.currentScreen );
 	}

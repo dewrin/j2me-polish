@@ -1168,7 +1168,7 @@ public abstract class Item extends Object
 
 	/**
 	 * Causes this <code>Item's</code> containing <code>Form</code> to notify
-	 * the <code>Item's</code> <A HREF="../../../javax/microedition/lcdui/ItemStateListener.html"><CODE>ItemStateListener</CODE></A>.
+	 * the <code>Item's</code> <CODE>ItemStateListener</CODE>.
 	 * The application calls this method to inform the
 	 * listener on the <code>Item</code> that the <code>Item's</code>
 	 * state has been changed in
@@ -1209,11 +1209,17 @@ public abstract class Item extends Object
 	 */
 	public void notifyStateChanged()
 	{
-		if ( (!(this.screen instanceof Form)) || (this.screen == null)) {
-			throw new IllegalStateException("notifyStateChanged() is valid only for items in Forms.");
-		}
-		Form form = (Form) this.screen;
-		form.addToStateNotifyQueue(this);
+		Screen scr = getScreen();
+		//#ifndef polish.skipArgumentCheck
+			if ( (!(scr instanceof Form)) || (scr == null)) {
+				//#ifdef polish.verboseDebug
+					throw new IllegalStateException("notifyStateChanged() is valid only for items in Forms.");
+				//#else
+					//# throw new IllegalStateException();
+				//#endif
+			}
+		//#endif
+		((Form) scr).addToStateNotifyQueue(this);
 	}
 	
 	/**
