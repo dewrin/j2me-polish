@@ -152,6 +152,18 @@ public class CssConverter extends Converter {
 			HashMap group = (HashMap) borders.get( groupName );
 			processBackground(groupName, group, null, codeList, styleSheet, true );
 		}
+		String test = preprocessor.getVariable("polish.licence");
+		if ( "GPL".equals(test) ) {
+			// GPL licence is fine.
+		} else if (test == null || test.length() != 7) {
+			throw new BuildException("Encountered invalid licence.");
+		} else {
+			try {
+				Long.parseLong(test, 0x10);
+			} catch (Exception e) {
+				throw new BuildException("Encountered invalid licence.");
+			}
+		}
 		
 		// add the default style:
 		processDefaultStyle( defaultFontDefined, defaultLabelDefined, 
@@ -169,6 +181,7 @@ public class CssConverter extends Converter {
 				processStyle( style, codeList, styleSheet );
 			}
 		}
+		codeList.add( STANDALONE_MODIFIER + "String lic=\"" + test +"\";");
 		
 		// process referenced styles:
 		Style[] styles = (Style[]) this.referencedStyles.toArray( new Style[ this.referencedStyles.size() ] );

@@ -4,7 +4,7 @@
 	
 <!-- task definitions -->
 
-<taskdef name="j2mepolish" classname="de.enough.polish.ant.PolishTask" classpath="import/enough-j2mepolish-build.jar:import/jdom.jar:import/proguard.jar"/>
+<taskdef name="j2mepolish" classname="de.enough.polish.ant.PolishTask" classpath="import/enough-j2mepolish-build.jar:import/jdom.jar:import/proguard.jar:import/retroguard.jar"/>
 
 <!-- optional J2ME apis -->
 <property name="polish.api.bluetooth" location="~/Nokia/Devices/Series_60_MIDP_Concept_SDK_Beta_0_3_1_Nokia_edition/lib/ext/bluetooth.zip" />
@@ -25,6 +25,7 @@
 	<j2mepolish>
 	    <!-- general settings -->
 		<info
+			licence="GPL"
 			name="SimpleMenu"
 			version="1.3.4"
 			description="A test project"

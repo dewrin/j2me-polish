@@ -960,5 +960,15 @@ public class Preprocessor {
 		return (this.symbols.get( symbol) != null);
 	}
 
+	/**
+	 * Retrieves the value of a variable.
+	 * 
+	 * @param name the name of the variable
+	 * @return the value of the variable
+	 */
+	public String getVariable(String name) {
+		return (String) this.variables.get(name);
+	}
+
 
 }
