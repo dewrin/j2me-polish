@@ -480,6 +480,9 @@ public class CssConverter extends Converter {
 			}
 			reference = reference.substring( 0, closingPos ).trim();
 		}
+		if (reference.charAt(0) == '.') {
+			reference = reference.substring( 1 );
+		}
 		if (!styleSheet.isUsed(reference)) {
 			Style style = styleSheet.getStyle(reference);
 			if (style == null) {
