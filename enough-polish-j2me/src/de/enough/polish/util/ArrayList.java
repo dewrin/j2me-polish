@@ -1,0 +1,267 @@
+/*
+ * Created on 03-Jan-2004 at 17:08:51.
+ * This source code is published under the GNU General Public Licence and
+ * the enough-software-licence for commercial use.
+ * Please refer to accompanying LICENSE.txt or visit www.enough.de for details.
+ */
+package de.enough.polish.util;
+
+/**
+ * <p>Provides an flexible list for storing objects.</p>
+ *
+ * @author rob
+ * <pre>
+ * history
+ *        03-Jan-2004 - rob creation
+ * </pre>
+ */
+public class ArrayList {
+	private Object[] storedObjects;
+	private int growthFactor;
+	private int size;
+	
+	/**
+	 * Creates an ArrayList with the initial capacity of 10 and a growth factor of 75%
+	 */
+	public ArrayList() {
+		this( 10, 75 );
+	}
+	
+	/**
+	 * creates an ArrayList with the given initial capacity and a growth factor of 75%
+	 * 
+	 * @param initialCapacity - the capacity of this array list.
+	 */
+	public ArrayList( int initialCapacity ) {
+		this( initialCapacity, 75 );
+	}
+
+	/**
+	 * Creates a new ArrayList
+	 * 
+	 * @param initialCapacity - the capacity of this array list.
+	 * @param growthFactor - the factor in % for increasing the capacity 
+	 * 								  when there's not enough room in this list anymore 
+	 */
+	public ArrayList( int initialCapacity, int growthFactor ) {
+		this.storedObjects = new Object[ initialCapacity ];
+		this.growthFactor = growthFactor;
+	}
+	
+	/**
+	 * Retrieves the current size of this array list.
+	 *  
+	 * @return the number of stored elements in this list.
+	 */
+	public int size() {
+		return this.size;
+	}
+	
+	/**
+	 * Determines whether this list is empty.
+	 * 
+	 * @return true when this list is empty
+	 */
+	public boolean isEmpty(){
+		return (this.size == 0);
+	}
+	
+	/**
+	 * Determines whether the given element is stored in this list.
+	 * 
+	 * @param element - the element which might be stored in this list
+	 * @return true when the given element is stored in this list
+	 * @throws IllegalArgumentException when the given element is null
+	 * @see #remove(Object)
+	 */
+	public boolean contains( Object element ) {
+		if (element == null) {
+			throw new IllegalArgumentException( "ArrayList cannot contain a null element.");
+		}
+		for (int i = 0; i < this.size; i++) {
+			Object object = this.storedObjects[i];
+			if ( object.equals( element ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Returns the element at the specified position in this list.
+	 *  
+	 * @param index - the position of the desired element.
+	 * @return the element stored at the given position
+	 * @throws IndexOutOfBoundsException when the index < 0 || index >= size()
+	 */
+	public Object get( int index ) {
+		if (index < 0 || index >= this.size ) {
+			throw new IndexOutOfBoundsException("the index [" + index + "] is not valid for this list with the size [" + this.size + "].");
+		}
+		return this.storedObjects[ index ];
+	}
+	
+	/**
+	 * Removes the element at the specified position in this list.
+	 *  
+	 * @param index - the position of the desired element.
+	 * @return the element stored at the given position
+	 * @throws IndexOutOfBoundsException when the index < 0 || index >= size()
+	 */
+	public Object remove( int index ) {
+		if (index < 0 || index >= this.size ) {
+			throw new IndexOutOfBoundsException("the index [" + index + "] is not valid for this list with the size [" + this.size + "].");
+		}
+		Object removed = this.storedObjects[ index ];
+		for (int i = index+1; i < this.size; i++) {
+			this.storedObjects[ i-1 ] = this.storedObjects[ i ];
+		}
+		this.size--;
+		return removed; 
+	}
+	
+	/**
+	 * Removes the given element.
+	 * 
+	 * @param element - the element which should be removed.
+	 * @return true when the element was found in this list.
+	 * @throws IllegalArgumentException when the given element is null
+	 * @see #contains(Object)
+	 */
+	public boolean remove( Object element ) {
+		if (element == null) {
+			throw new IllegalArgumentException( "ArrayList cannot contain null.");
+		}
+		int index = -1;
+		for (int i = 0; i < this.size; i++) {
+			Object object = this.storedObjects[i];
+			if ( object.equals( element ) ) {
+				index = i;
+				break;
+			}
+		}
+		if (index == -1) {
+			return false;
+		}
+		for (int i = index+1; i < this.size; i++) {
+			this.storedObjects[ i-1 ] = this.storedObjects[ i ];
+		}
+		this.size--;
+		return true; 
+	}
+	
+	/**
+	 * Removes all of the elements from this list. 
+	 * The list will be empty after this call returns. 
+	 */
+	public void clear() {
+		for (int i = 0; i < this.size; i++) {
+			this.storedObjects[i] = null;
+		}
+		this.size = 0;
+	}
+
+	/**
+	 * Stores the given element in this list.
+	 * 
+	 * @param element - the element which should be appended to this list.
+	 * @return true when the element could be appended (always)
+	 * @throws IllegalArgumentException when the given element is null
+	 * @see #insert( int, Object )
+	 */
+	public boolean add( Object element) {
+		if (element == null) {
+			throw new IllegalArgumentException( "ArrayList cannot contain null.");
+		}
+		if (this.size >= this.storedObjects.length) {
+			increaseCapacity();
+		}
+		this.storedObjects[ this.size ] = element;
+		this.size++;
+		return true;
+	}
+	
+	/**
+	 * Inserts the given element at the defined position.
+	 * Any following elements are shifted one position to the back.
+	 * 
+	 * @param index - the position at which the element should be inserted, 
+	 * 					 use 0 when the element should be inserted in the front of this list.
+	 * @param element - the element which should be inserted
+	 * @return true when the element could be inserted
+	 * @throws IllegalArgumentException when the given element is null
+	 * @throws IndexOutOfBoundsException when the index < 0 || index >= size()
+	 */
+	public boolean insert( int index, Object element ) {
+		if (element == null) {
+			throw new IllegalArgumentException( "ArrayList cannot contain null.");
+		}
+		if (index < 0 || index >= this.size ) {
+			throw new IndexOutOfBoundsException("the index [" + index + "] is not valid for this list with the size [" + this.size + "].");
+		}
+		if (this.size >= this.storedObjects.length) {
+			increaseCapacity();
+		}
+		// shift all following elements one position to the back:
+		for (int i = this.size; i >= index; i--) {
+			this.storedObjects[i] = this.storedObjects[ i-1 ];
+		} 
+		// insert the given element:
+		this.storedObjects[ index ] = element;
+		return true;
+	}
+	
+	/**
+	 * Replaces the element at the specified position in this list with the specified element. 
+	 * 
+	 * @param index - the position of the element, the first element has the index 0.
+	 * @param element - the element which should be set
+	 * @return the replaced element
+	 * @throws IndexOutOfBoundsException when the index < 0 || index >= size()
+	 */
+	public Object set( int index, Object element ) {
+		if (index < 0 || index >= this.size ) {
+			throw new IndexOutOfBoundsException("the index [" + index + "] is not valid for this list with the size [" + this.size + "].");
+		}
+		Object replaced = this.storedObjects[ index ];
+		this.storedObjects[ index ] = element;
+		return replaced;
+	}
+	
+	/**
+	 * Returns all stored elements as an array.
+	 * 
+	 * @return the stored elements as an array.
+	 */
+	public Object[] toArray() {
+		Object[] copy = new Object[ this.size ];
+		System.arraycopy( this.storedObjects, 0, copy, 0, this.size );
+		return copy;
+	}
+	
+	/**
+	 * Returns all stored elements in the given array.
+	 * 
+	 * @param copy - the array in which the stored elements should be copied.
+	 * @return the stored elements of this list
+	 */
+	public Object[] toArray( Object[] copy ) {
+		System.arraycopy( this.storedObjects, 0, copy, 0, this.size );
+		return copy;
+	}
+
+	/**
+	 * increases the capacity of this list.
+	 */
+	private void increaseCapacity() {
+		int currentCapacity = this.storedObjects.length;
+		int newCapacity = currentCapacity + ((currentCapacity * this.growthFactor) / 100);
+		if (newCapacity == currentCapacity ) {
+			newCapacity++;
+		}
+		Object[] newStore = new Object[ newCapacity ];
+		System.arraycopy( this.storedObjects, 0, newStore, 0, this.size );
+		this.storedObjects = newStore;
+	}
+
+}
