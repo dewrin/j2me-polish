@@ -6,6 +6,8 @@
  */
 package de.enough.polish.ant;
 
+import de.enough.polish.util.CastUtil;
+
 import org.apache.tools.ant.Project;
 
 /**
@@ -67,14 +69,10 @@ public class ConditionalElement {
 	 */
 	public boolean isActive( Project project ) {
 		if (this.unlessExpression != null) {
-			if (project.getProperty(this.unlessExpression) != null) {
-				return false;
-			}
+			return ! CastUtil.getBoolean(project.getProperty(this.unlessExpression)); 
 		}
 		if (this.ifExpression != null ) {
-			if ( project.getProperty(this.ifExpression) == null) {
-				return false;
-			}
+			return CastUtil.getBoolean(project.getProperty(this.ifExpression)); 
 		}
 		return true;
 	}

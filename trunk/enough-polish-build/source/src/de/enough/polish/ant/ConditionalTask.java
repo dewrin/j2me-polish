@@ -6,6 +6,8 @@
  */
 package de.enough.polish.ant;
 
+import de.enough.polish.util.CastUtil;
+
 import org.apache.tools.ant.Task;
 
 /**
@@ -36,7 +38,7 @@ public class ConditionalTask extends Task {
 	 */
 	public void setIf(String ifExpr) {
 		this.isActive = this.isActive &&
-			(getProject().getProperty(ifExpr) != null);
+			CastUtil.getBoolean(this.project.getProperty(ifExpr));
 	}
 	
 	/**
@@ -46,7 +48,7 @@ public class ConditionalTask extends Task {
 	 */
 	public void setUnless(String unlessExpr) {
 		this.isActive = this.isActive &&
-			(getProject().getProperty(unlessExpr) == null);
+			! CastUtil.getBoolean(this.project.getProperty(unlessExpr));
 	}
 
 	/**

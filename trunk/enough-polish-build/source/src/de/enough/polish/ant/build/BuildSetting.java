@@ -9,6 +9,7 @@ package de.enough.polish.ant.build;
 import de.enough.polish.*;
 
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 
 import java.io.File;
 
@@ -47,12 +48,15 @@ public class BuildSetting {
 	private String midp1Path;
 	private String midp2Path;
 	private String preverify;
+	private Project project;
 	
 	/**
 	 * Creates a new build setting.
+	 * 
+	 * @param project The corresponding ant-project.
 	 */
-	public BuildSetting() {
-		this.obfuscatorSetting = new ObfuscatorSetting();
+	public BuildSetting( Project project ) {
+		this.project = project;
 		this.workDir = new File("./build");
 		this.destDir = new File("./dist");
 		this.apiDir = new File("./import");
@@ -64,7 +68,9 @@ public class BuildSetting {
 	}
 	
 	public void addConfiguredObfuscator( ObfuscatorSetting setting ) {
-		this.obfuscatorSetting = setting;
+		if (setting.isActive(this.project)) {
+			this.obfuscatorSetting = setting;
+		}
 	}
 	
 	public void addConfiguredMidlets( MidletSetting setting ) {
@@ -89,7 +95,9 @@ public class BuildSetting {
 	}
 	
 	public void addConfiguredDebug( DebugSetting setting ) {
-		this.debugSetting = setting;
+		if (setting.isActive(this.project)) {
+			this.debugSetting = setting;
+		}
 	}
 	
 	public void addConfiguredVariables( Variables vars ) {
@@ -463,6 +471,9 @@ public class BuildSetting {
 	 * @param obfuscator The name of the obfuscator, e.g. "ProGuard" or "RetroGuard"
 	 */
 	public void setObfuscator( String obfuscator ) {
+		if (this.obfuscatorSetting == null) {
+			this.obfuscatorSetting = new ObfuscatorSetting();
+		}
 		this.obfuscatorSetting.setName( obfuscator );
 	}
 	
@@ -472,6 +483,9 @@ public class BuildSetting {
 	 * @return True when the jars should be obfuscated.
 	 */
 	public boolean doObfuscate() {
+		if (this.obfuscatorSetting == null) {
+			return false;
+		}
 		return this.obfuscatorSetting.isEnabled();
 	}
 	
@@ -481,6 +495,9 @@ public class BuildSetting {
 	 * @param obfuscate True when the jars should be obfuscated.
 	 */
 	public void setObfuscate( boolean obfuscate ) {
+		if (this.obfuscatorSetting == null) {
+			this.obfuscatorSetting = new ObfuscatorSetting();
+		}
 		this.obfuscatorSetting.setEnable( obfuscate );
 	}
 }
