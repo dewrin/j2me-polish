@@ -6,7 +6,6 @@
  */
 package de.enough.polish.preprocess;
 
-import de.enough.polish.DebugManager;
 import de.enough.polish.Project;
 import de.enough.polish.util.StringList;
 
@@ -126,8 +125,8 @@ public class PreprocessorTest extends TestCase {
 			"	System.out.println( hello );"
 		};
 		StringList lines = new StringList( sourceLines );
-		boolean changed = this.preprocessor.preprocess( "MyClass.java", lines );
-		assertFalse( changed );
+		int result  = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.NOT_CHANGED,  result );
 		/*
 		String[] processedLines = lines.getArray();
 		for (int i = 0; i < processedLines.length; i++) {
@@ -144,8 +143,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "MyClass.java", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		/*
 		processedLines = lines.getArray();
 		System.out.println("#ifdef test");
@@ -184,8 +183,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "MyClass.java", lines );
-		assertFalse( changed );
+		result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.NOT_CHANGED, result );
 		
 		// check inner #ifdef    (2):
 		sourceLines = new String[] {
@@ -203,8 +202,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "MyClass.java", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		
 		// check inner #ifdef    (3 - with syntax error):
 		sourceLines = new String[] {
@@ -223,7 +222,7 @@ public class PreprocessorTest extends TestCase {
 		};
 		lines = new StringList( sourceLines );
 		try {
-			changed = this.preprocessor.preprocess( "MyClass.java", lines );
+			result = this.preprocessor.preprocess( "MyClass.java", lines );
 			fail( "preprocessing should fail when encountering syntax error within inactive if-block." );
 		} catch (PreprocessException e) {
 			// expected behaviour
@@ -241,8 +240,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		StringList lines = new StringList( sourceLines );
-		boolean changed = this.preprocessor.preprocess( "MyClass.java", lines );
-		assertFalse( changed );
+		int result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.NOT_CHANGED, result );
 		/*
 		String[] processedLines = lines.getArray();
 		System.out.println("#ifndef test");
@@ -260,8 +259,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "MyClass.java", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		/*
 		processedLines = lines.getArray();
 		for (int i = 0; i < processedLines.length; i++) {
@@ -288,7 +287,7 @@ public class PreprocessorTest extends TestCase {
 	
 	public void testIf() throws PreprocessException {
 		String[] sourceLines = new String[] {
-				"	//#ifdef test1 ",
+				"	//#if test1 ",
 				"	String hello =  \"test1 is defined\";",
 				"	//#else",
 				"	//# String hello =  \"test1 is not defined\";",
@@ -296,8 +295,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		StringList lines = new StringList( sourceLines );
-		boolean changed = this.preprocessor.preprocess( "MyClass.java", lines );
-		assertFalse( changed );
+		int result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.NOT_CHANGED, result );
 		/*
 		 String[] processedLines = lines.getArray();
 		 for (int i = 0; i < processedLines.length; i++) {
@@ -306,7 +305,7 @@ public class PreprocessorTest extends TestCase {
 		 System.out.println("=========================");
 		 */
 		sourceLines = new String[] {
-				"	//#ifdef XXtest1 ",
+				"	//#if XXtest1 ",
 				"	String hello =  \"XXtest1 is defined\";",
 				"	//#else",
 				"	//# String hello =  \"XXtest1 is not defined\";",
@@ -314,8 +313,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "MyClass.java", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		/*
 		 processedLines = lines.getArray();
 		 System.out.println("#ifdef test");
@@ -324,7 +323,7 @@ public class PreprocessorTest extends TestCase {
 		 }
 		 */
 		sourceLines = new String[] {
-				"	//#ifdef XXtest1 ",
+				"	//#if XXtest1 ",
 				"	String hello =  \"XXtest1 is defined\";",
 				"	//#else",
 				"	//# String hello =  \"XXtest1 is not defined\";",
@@ -354,8 +353,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "MyClass.java", lines );
-		assertFalse( changed );
+		result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.NOT_CHANGED, result );
 		
 		// check inner #if    (2):
 		sourceLines = new String[] {
@@ -373,8 +372,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "MyClass.java", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		
 		// check inner #if    (3 - with syntax error):
 		sourceLines = new String[] {
@@ -393,7 +392,7 @@ public class PreprocessorTest extends TestCase {
 		};
 		lines = new StringList( sourceLines );
 		try {
-			changed = this.preprocessor.preprocess( "MyClass.java", lines );
+			result = this.preprocessor.preprocess( "MyClass.java", lines );
 			fail( "preprocessing should fail when encountering syntax error within inactive if-block." );
 		} catch (PreprocessException e) {
 			// expected behaviour
@@ -416,12 +415,12 @@ public class PreprocessorTest extends TestCase {
 		};
 		lines = new StringList( sourceLines );
 		try {
-			changed = this.preprocessor.preprocess( "MyClass.java", lines );
+			result = this.preprocessor.preprocess( "MyClass.java", lines );
 			fail( "preprocessing should fail when encountering syntax error within inactive if-block." );
 		} catch (PreprocessException e) {
 			// expected behaviour
 		}
-		
+				
 	}
 	
 	public void testDefine() throws PreprocessException {
@@ -435,8 +434,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		StringList lines = new StringList( sourceLines );
-		boolean changed = this.preprocessor.preprocess( "MyClass.java", lines );
-		assertFalse( changed );
+		int result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.NOT_CHANGED, result );
 		assertTrue(  this.preprocessor.symbols.get("KNUDDEL") == null);
 		
 		sourceLines = new String[] {
@@ -449,8 +448,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "MyClass.java", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		assertFalse(  this.preprocessor.symbols.get("KNUDDEL") == null);
 	}
 	
@@ -465,8 +464,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		StringList lines = new StringList( sourceLines );
-		boolean changed = this.preprocessor.preprocess( "MyClass.java", lines );
-		assertFalse( changed );
+		int result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.NOT_CHANGED, result );
 		assertTrue(  this.preprocessor.symbols.get("test2") != null);
 		
 		sourceLines = new String[] {
@@ -479,8 +478,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "MyClass.java", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		assertFalse(  this.preprocessor.symbols.get("test2") != null);
 	}
 	
@@ -496,8 +495,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		StringList lines = new StringList( sourceLines );
-		boolean changed = this.preprocessor.preprocess( "MyClass.java", lines );
-		assertFalse( changed );
+		int result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.NOT_CHANGED, result );
 		
 		sourceLines = new String[] {
 				"	//#ifdef XXtest1 ",
@@ -510,8 +509,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "MyClass.java", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 
 		// use invalid property
 		sourceLines = new String[] {
@@ -563,8 +562,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		StringList lines = new StringList( sourceLines );
-		boolean changed = this.preprocessor.preprocess( "MyClass.java", lines );
-		assertFalse( changed );
+		int result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.NOT_CHANGED, result );
 		
 		sourceLines = new String[] {
 				"	//#ifdef XXtest1 ",
@@ -576,8 +575,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "MyClass.java", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 	}
 
 	public void testStyle() throws PreprocessException {
@@ -591,8 +590,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		StringList lines = new StringList( sourceLines );
-		boolean changed = this.preprocessor.preprocess( "MyClass.java", lines );
-		assertFalse( changed );
+		int result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.NOT_CHANGED, result );
 		StyleSheet styleSheet = this.preprocessor.getStyleSheet();
 		assertFalse( styleSheet.isDefined("weird"));
 		
@@ -606,8 +605,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "MyClass.java", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		styleSheet = this.preprocessor.getStyleSheet();
 		assertTrue( styleSheet.isDefined("weird"));
 		
@@ -622,8 +621,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "MyClass.java", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		styleSheet = this.preprocessor.getStyleSheet();
 		assertTrue( styleSheet.isDefined("crazy"));
 		
@@ -640,8 +639,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "MyClass.java", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		styleSheet = this.preprocessor.getStyleSheet();
 		assertTrue( styleSheet.isDefined("funny"));
 		
@@ -660,7 +659,7 @@ public class PreprocessorTest extends TestCase {
 		};
 		lines = new StringList( sourceLines );
 		try {
-			changed = this.preprocessor.preprocess( "MyClass.java", lines );
+			result = this.preprocessor.preprocess( "MyClass.java", lines );
 			fail("preprocess should fail when encountering #style directive with syntax errors.");
 		} catch (PreprocessException e) {
 			// expected behaviour!
@@ -681,7 +680,7 @@ public class PreprocessorTest extends TestCase {
 		};
 		lines = new StringList( sourceLines );
 		try {
-			changed = this.preprocessor.preprocess( "MyClass.java", lines );
+			result = this.preprocessor.preprocess( "MyClass.java", lines );
 			fail("preprocess should fail when encountering #style directive with syntax errors.");
 		} catch (PreprocessException e) {
 			// expected behaviour!
@@ -717,11 +716,11 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		StringList lines = new StringList( sourceLines );
-		boolean changed = this.preprocessor.preprocess( "com.company.package.MyClass", lines );
-		assertTrue( changed );
+		int result = this.preprocessor.preprocess( "com.company.package.MyClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		// test the same with a class for which debugging is disabled:
 		lines.reset();
-		changed = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
+		result = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
 		
 		// debug-level = info
 		sourceLines = new String[] {
@@ -731,8 +730,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.package.MyUndefinedClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.package.MyUndefinedClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#debug info",
 				"	System.out.println( \"test1 is defined\" );",
@@ -740,8 +739,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.package.MyUndefinedClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.package.MyUndefinedClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#debug warn",
 				"	System.out.println( \"test1 is defined\" );",
@@ -749,8 +748,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.package.MyUndefinedClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.package.MyUndefinedClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#debug error",
 				"	System.out.println( \"test1 is defined\" );",
@@ -758,8 +757,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.package.MyUndefinedClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.package.MyUndefinedClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#debug info",
 				"	//# System.out.println( \"test1 is defined\" );",
@@ -767,8 +766,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.package.MyUndefinedClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.package.MyUndefinedClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		
 		// debug-level = visual
 		sourceLines = new String[] {
@@ -778,8 +777,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#debug info",
 				"	System.out.println( \"test1 is defined\" );",
@@ -787,8 +786,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#debug fatal",
 				"	System.out.println( \"test1 is defined\" );",
@@ -796,8 +795,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#debug visual",
 				"	System.out.println( \"test1 is defined\" );",
@@ -805,8 +804,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#debug notdefined",
 				"	System.out.println( \"test1 is defined\" );",
@@ -814,8 +813,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 
 		// debug-level = error
 		sourceLines = new String[] {
@@ -825,8 +824,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#debug info",
 				"	System.out.println( \"test1 is defined\" );",
@@ -834,8 +833,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#debug warn",
 				"	System.out.println( \"test1 is defined\" );",
@@ -843,8 +842,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#debug error",
 				"	System.out.println( \"test1 is defined\" );",
@@ -852,8 +851,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#debug fatal",
 				"	System.out.println( \"test1 is defined\" );",
@@ -861,8 +860,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#debug visual",
 				"	System.out.println( \"test1 is defined\" );",
@@ -870,8 +869,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#debug undefined",
 				"	System.out.println( \"test1 is defined\" );",
@@ -879,8 +878,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 	}
 
 	public void testMdebug() throws PreprocessException {
@@ -892,11 +891,11 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		StringList lines = new StringList( sourceLines );
-		boolean changed = this.preprocessor.preprocess( "com.company.package.MyClass", lines );
-		assertTrue( changed );
+		int result = this.preprocessor.preprocess( "com.company.package.MyClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		// test the same with a class for which debugging is disabled:
 		lines.reset();
-		changed = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
+		result = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
 		
 		// debug-level = info
 		sourceLines = new String[] {
@@ -907,8 +906,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.package.MyUndefinedClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.package.MyUndefinedClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#mdebug info",
 				"	System.out.println( \"test1 is defined\" );",
@@ -917,8 +916,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.package.MyUndefinedClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.package.MyUndefinedClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#mdebug warn",
 				"	System.out.println( \"test1 is defined\" );",
@@ -927,8 +926,8 @@ public class PreprocessorTest extends TestCase {
 				"	//#enddebug "
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.package.MyUndefinedClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.package.MyUndefinedClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#mdebug error",
 				"	System.out.println( \"test1 is defined\" );",
@@ -937,8 +936,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.package.MyUndefinedClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.package.MyUndefinedClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#mdebug info",
 				"	//# System.out.println( \"test1 is defined\" );",
@@ -947,8 +946,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.package.MyUndefinedClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.package.MyUndefinedClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		
 		// debug-level = visual
 		sourceLines = new String[] {
@@ -959,8 +958,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#mdebug info",
 				"	System.out.println( \"test1 is defined\" );",
@@ -969,8 +968,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#mdebug fatal",
 				"	System.out.println( \"test1 is defined\" );",
@@ -979,8 +978,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#mdebug visual",
 				"	System.out.println( \"test1 is defined\" );",
@@ -989,8 +988,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#mdebug notdefined",
 				"	System.out.println( \"test1 is defined\" );",
@@ -999,8 +998,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.package.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 
 		// debug-level = error
 		sourceLines = new String[] {
@@ -1011,8 +1010,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#mdebug info",
 				"	System.out.println( \"test1 is defined\" );",
@@ -1021,8 +1020,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#mdebug warn",
 				"	System.out.println( \"test1 is defined\" );",
@@ -1031,8 +1030,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		
 		sourceLines = new String[] {
 				"	//#mdebug warn",
@@ -1042,8 +1041,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
-		assertFalse( changed );
+		result = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
+		assertEquals( Preprocessor.NOT_CHANGED, result );
 		
 		sourceLines = new String[] {
 				"	//#mdebug error",
@@ -1053,8 +1052,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#mdebug fatal",
 				"	System.out.println( \"test1 is defined\" );",
@@ -1063,8 +1062,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#mdebug visual",
 				"	System.out.println( \"test1 is defined\" );",
@@ -1073,8 +1072,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		sourceLines = new String[] {
 				"	//#mdebug undefined",
 				"	System.out.println( \"test1 is defined\" );",
@@ -1083,8 +1082,8 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		changed = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
-		assertTrue( changed );
+		result = this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
+		assertEquals( Preprocessor.CHANGED, result );
 		
 		
 		// test invalid declarations:
@@ -1101,6 +1100,37 @@ public class PreprocessorTest extends TestCase {
 		} catch (PreprocessException e) {
 			/// expected behaviour!
 		}
+	}
+	
+	public void testCondition() throws PreprocessException {
+		String[] sourceLines = new String[] {
+				"	//#condition ! polish.midp2",
+				"	System.out.println( \"test1 is defined\" );",
+				"	String hello =  \"hello world\";"
+		};
+		StringList lines = new StringList( sourceLines );
+		this.preprocessor.addSymbol("polish.midp2");
+		int result = this.preprocessor.preprocess( "com.company.package.MyClass", lines );
+		assertEquals( Preprocessor.SKIP_FILE, result );
+		
+		sourceLines = new String[] {
+				"	//#condition !polish.midp2",
+				"	System.out.println( \"test1 is defined\" );",
+				"	String hello =  \"hello world\";"
+		};
+		lines = new StringList( sourceLines );
+		result = this.preprocessor.preprocess( "com.company.package.MyClass", lines );
+		assertEquals( Preprocessor.SKIP_FILE, result );
+		
+		sourceLines = new String[] {
+				"	//#condition polish.midp2",
+				"	System.out.println( \"test1 is defined\" );",
+				"	String hello =  \"hello world\";"
+		};
+		lines = new StringList( sourceLines );
+		result = this.preprocessor.preprocess( "com.company.package.MyClass", lines );
+		assertEquals( Preprocessor.NOT_CHANGED, result );
+		
 	}
 	
 }

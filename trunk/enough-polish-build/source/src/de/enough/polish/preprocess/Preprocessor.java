@@ -6,12 +6,12 @@
  */
 package de.enough.polish.preprocess;
 
-import de.enough.polish.*;
 import de.enough.polish.Project;
 import de.enough.polish.util.*;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,12 +28,28 @@ import java.util.regex.Pattern;
 public class Preprocessor {
 	
 	private static final int DIRECTIVE_FOUND = 1;
+	/**
+	 * A value indicating that the file has been changed.
+	 * CHANGED has the value 2. 
+	 */
 	public static final int CHANGED = 2;
-	public static final int NOT_PROCESSED = 4;
+	/**
+	 * A value indicating that the file has not been changed.
+	 * NOT_CHANGED has the value 4. 
+	 */
+	public static final int NOT_CHANGED = 4;
+	/**
+	 * A value indicating that the file should be skipped altogether.
+	 * This can be when e.g. a MIDP2-emulating class should not be
+	 * copied to a MIDP2-system. 
+	 * An example are the de.enough.polish.ui.game-classes.
+	 * 
+	 * SKIP_FILE has the value 8. 
+	 */
 	public static final int SKIP_FILE = 8;
 	
 	public static final Pattern DIRECTIVE_PATTERN = 
-		Pattern.compile("\\s*(//#if\\s+|//#ifdef\\s+|//#ifndef\\s+|//#elif\\s+|//#elifdef\\s+|//#elifndef\\s+|//#else|//#endif|//#include\\s+|//#endinclude|//#style |//#debug|//#mdebug|//#enddebug|//#define\\s+|//#undefine\\s+|//#=\\s+)");
+		Pattern.compile("\\s*(//#if\\s+|//#ifdef\\s+|//#ifndef\\s+|//#elif\\s+|//#elifdef\\s+|//#elifndef\\s+|//#else|//#endif|//#include\\s+|//#endinclude|//#style |//#debug|//#mdebug|//#enddebug|//#define\\s+|//#undefine\\s+|//#=\\s+|//#condition\\s+)");
 
 	private DebugManager debugManager;
 	private File destinationDir;
@@ -78,6 +94,9 @@ public class Preprocessor {
 		this.debugManager = project.getDebugManager();
 		this.enableDebug = project.isDebugEnabled();
 		this.variables = variables;
+		if (symbols == null) {
+			symbols = new HashMap();
+		}
 		this.symbols = symbols;
 		this.verbose = verbose;
 		this.backup = backup;
@@ -120,21 +139,53 @@ public class Preprocessor {
 	}
 
 	/**
-	 * Sets the symbols.
+	 * Sets the symbols. Any old settings will be discarded.
 	 * 
-	 * @param symbols the symbols.
+	 * @param symbols All new symbols, defined in a HashMap.
 	 */
 	public void setSymbols(HashMap symbols) {
 		this.symbols = symbols;
+		this.booleanEvaluator.setSymbols(symbols);
 	}
 	
 	/**
-	 * Sets the variables.
+	 * Adds a single symbol to the list.
+	 * 
+	 * @param name The name of the symbol.
+	 */
+	public void addSymbol( String name ) {
+		this.symbols.put( name, Boolean.TRUE );
+	}
+	
+	/**
+	 * Sets the variables, any old settings will be lost.
 	 * 
 	 * @param variables the variables.
 	 */
 	public void setVariables(HashMap variables) {
 		this.variables = variables;
+	}
+	
+	/**
+	 * Adds a variable to the list of existing variables.
+	 * When a variable with the given name already exists, it
+	 * will be overwritten.
+	 * 
+	 * @param name The name of the variable.
+	 * @param value The value of the variable.
+	 */
+	public void addVariable( String name, String value ) {
+		this.variables.put( name, value );
+	}
+	
+	/**
+	 * Adds all the variables to the existing variables.
+	 * When a variable already exists, it will be overwritten.
+	 * 
+	 * @param additionalVars A map of additional variables.
+	 */
+	public void addVariables( Map additionalVars ) {
+		this.variables.putAll(additionalVars);
 	}
 	
 	/**
@@ -167,7 +218,11 @@ public class Preprocessor {
 		this.variables.put( "polish.source", sourceDir.getAbsolutePath() );
 		String className = fileName.substring(0, fileName.indexOf('.'));
 		className = TextUtil.replace( className, "/", "." );
-		boolean preprocessed = preprocess( className, lines );
+		int result = preprocess( className, lines );
+		if (result == SKIP_FILE) {
+			return false;
+		}
+		boolean preprocessed = (result == CHANGED);
 		if (this.newExtension != null) {
 			// change the extension of the file:
 			int dotPos = fileName.indexOf('.');
@@ -181,13 +236,14 @@ public class Preprocessor {
 		if (preprocessed 
 				|| ( !destinationFile.exists() ) 
 				|| ( sourceFile.lastModified() > destinationFile.lastModified() ) 
-				) {
+				) 
+		{
 			// the file needs to be written
 			if (this.backup && destinationFile.exists() ) {
 				// create backup:
-				destinationFile.renameTo( new File( destinationFile.getAbsoluteFile() + ".bak") );
+				destinationFile.renameTo( new File( destinationFile.getAbsolutePath() + ".bak") );
 			}
-			// create necessary directories:
+			// save preprocessed file:
 			FileUtil.writeTextFile( destinationFile, lines.getArray() );
 			return true;
 		} else {
@@ -211,10 +267,9 @@ public class Preprocessor {
 	 * @return true when changes were made.
 	 * @throws PreprocessException when the preprocessing fails.
 	 */
-	protected boolean preprocess(String className, StringList lines) 
+	public int preprocess(String className, StringList lines) 
 	throws PreprocessException 
 	{
-		//TODO throw existing SkipException.INSTANCE when #! is not fulfilled
 		boolean changed = false;
 		try {
 			while (lines.next()) {
@@ -224,6 +279,8 @@ public class Preprocessor {
 					int result = checkForFirstLevelDirective( className, lines, line, line.trim() );
 					if (result == CHANGED ) {
 						changed = true;
+					} else if (result == SKIP_FILE) {
+						return SKIP_FILE;
 					}
 				}
 			}
@@ -231,7 +288,11 @@ public class Preprocessor {
 			reset();
 			throw e;
 		}
-		return changed;
+		if (changed) {
+			return CHANGED;
+		} else {
+			return NOT_CHANGED;
+		}
 	}
 	
 	/**
@@ -251,7 +312,7 @@ public class Preprocessor {
 	{
 		if (!trimmedLine.startsWith("//#")) {
 			// this is not a preprocesssing directive:
-			return NOT_PROCESSED;
+			return NOT_CHANGED;
 		}
 		int spacePos = trimmedLine.indexOf(' ');
 		if (spacePos == -1) {
@@ -279,12 +340,17 @@ public class Preprocessor {
 			return checkInvalidDirective( className, lines, line, trimmedLine.substring(3).trim(), null );
 		} else if (this.ifDirectiveCount > 0 &&  spacePos == 3) {
 			// this is just an outcommented line
-			return NOT_PROCESSED;
+			return NOT_CHANGED;
 		}
 		String command = trimmedLine.substring(3, spacePos);
 		String argument = trimmedLine.substring( spacePos + 1 ).trim();
 		boolean changed = false;
-		if ("ifdef".equals(command)) {
+		if ("condition".equals(command)) {
+			// a precondition must be fullfilled for this source file:
+			if (! checkIfCondition(argument, className, lines)) {
+				return SKIP_FILE;
+			}
+		} else if ("ifdef".equals(command)) {
 			changed = processIfdef( argument, lines, className );
 		} else if ("ifndef".equals(command)) {
 			changed = processIfndef( argument, lines, className );
@@ -320,7 +386,7 @@ public class Preprocessor {
 	throws PreprocessException
 	{
 		if ( (this.ifDirectiveCount > 0) && (this.withinIfDirectives.get( command ) != null) ) {
-			return NOT_PROCESSED;
+			return NOT_CHANGED;
 		} else if ( this.ignoreDirectives.get( command ) != null ) {
 			return DIRECTIVE_FOUND;
 		} else {
@@ -332,6 +398,7 @@ public class Preprocessor {
 		}
 		
 	}
+
 
 	/**
 	 * Processes the #ifdef command.
@@ -386,7 +453,7 @@ public class Preprocessor {
 		while (lines.next()) {
 			String line = lines.getCurrent();
 			String trimmedLine = line.trim();
-			int result = NOT_PROCESSED; 
+			int result = NOT_CHANGED; 
 			if (conditionFulfilled) {
 				result = checkForFirstLevelDirective( className, lines, line, trimmedLine );
 			}
