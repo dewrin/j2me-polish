@@ -1,0 +1,5 @@
+
+CSS-attributes should always named like "font-family", not "fontFamily" (principle of least astonishment) 
+
+The types.xml, borders.xml and backgrounds.xml could be compiled to increase the performance of the
+build-process.
