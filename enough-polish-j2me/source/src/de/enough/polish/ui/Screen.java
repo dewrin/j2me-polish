@@ -77,13 +77,13 @@ import javax.microedition.lcdui.*;
  */
 public abstract class Screen 
 //#if polish.useFullScreen && polish.classes.fullscreen:defined
-//#define tmp.fullScreen
-//#= extends ${polish.classes.fullscreen}
+	//#define tmp.fullScreen
+	//#= extends ${polish.classes.fullscreen}
 //#else
-extends Canvas
+	extends Canvas
 //#endif
 //#if polish.debugVerbose && polish.useDebugGui
-implements CommandListener
+	implements CommandListener
 //#endif
 {
 	
@@ -94,10 +94,11 @@ implements CommandListener
 	protected Border border;
 	protected Style style;
 	protected int screenHeight;
+	private int originalScreenHeight;
 	protected int screenWidth;
-	protected Ticker ticker;
+	private Ticker ticker;
 	protected String cssSelector;
-	protected ForwardCommandListener cmdListener;
+	private ForwardCommandListener cmdListener;
 	protected Container container;
 	protected boolean isLayoutVCenter;
 	protected boolean isInitialised;
@@ -169,6 +170,7 @@ implements CommandListener
 				this.screenHeight = getHeight();
 			//#endif
 		//#endif
+		this.originalScreenHeight = this.screenHeight;
 		
 		//#ifdef polish.ScreenWidth:defined
 			//#= this.screenWidth = ${ polish.ScreenWidth };
@@ -234,7 +236,9 @@ implements CommandListener
 				this.menuFont = Font.getFont( Font.FACE_SYSTEM, Font.STYLE_BOLD, Font.SIZE_MEDIUM );
 			}
 			this.menuBarHeight = this.menuFont.getHeight() + 2;
-			this.screenHeight = this.fullScreenHeight - this.menuBarHeight;
+			int diff = this.originalScreenHeight - this.screenHeight;
+			this.originalScreenHeight = this.fullScreenHeight - this.menuBarHeight;
+			this.screenHeight = this.originalScreenHeight - diff;
 		//#endif
 			
 		// set the title:
@@ -245,10 +249,17 @@ implements CommandListener
 			StyleSheet.animationThread.start();
 		}
 		this.isInitialised = true;
+	}
+	
+	
+
+	/* (non-Javadoc)
+	 * @see javax.microedition.lcdui.Canvas#showNotify()
+	 */
+	protected void showNotify() {
 		// register this screen:
 		StyleSheet.currentScreen = this;
 	}
-
 	/**
 	 * Sets the style of this screen.
 	 * 
@@ -263,11 +274,14 @@ implements CommandListener
 	}
 	
 	public boolean animate() {
+		if (!this.isInitialised) {
+			return false;
+		}
 		//#ifdef polish.debugVerbose
 			try {
 		//#endif
 				
-		//TODO rob animate ticker, container, border
+		//TODO rob animate border
 		boolean animated = false;
 		if (this.background != null) {
 			animated = this.background.animate();
@@ -277,6 +291,9 @@ implements CommandListener
 		}
 		if (this.gauge != null) {
 			animated = animated | this.gauge.animate();
+		}
+		if (this.ticker != null) {
+			animated = animated | this.ticker.animate();
 		}
 		//#if polish.useFullScreen && polish.api.nokia-ui 
 		if (animated || this.repaintRequested) {
@@ -331,20 +348,23 @@ implements CommandListener
 		if (this.title != null) {
 			this.title.paint(0, 0, 0, this.screenWidth, g);
 		}
-		int y = this.titleHeight;
-		// protect the title and the full-screen-menu area:
-		g.setClip(0, y, this.screenWidth, this.screenHeight - y );
-		g.translate( 0, y );
+		// protect the title, ticker and the full-screen-menu area:
+		g.setClip(0, this.titleHeight, this.screenWidth, this.screenHeight - this.titleHeight );
+		g.translate( 0, this.titleHeight );
 		// paint content:
 		paintScreen( g);
 		
-		g.translate( 0, -y );
+		g.translate( 0, -this.titleHeight );
 		// allow painting outside of the screen again:
 		//#ifdef tmp.menuFullScreen
 		 	g.setClip(0, 0, this.screenWidth, this.fullScreenHeight );
 		//#else
-		 	g.setClip(0, 0, this.screenWidth, this.screenHeight );
+		 	g.setClip(0, 0, this.screenWidth, this.originalScreenHeight );
 		//#endif
+		 	
+		if (this.ticker != null) {
+			this.ticker.paint( 0, this.screenHeight, 0, this.screenWidth, g );
+		}
 		
 		// paint border:
 		if (this.border != null) {
@@ -355,7 +375,7 @@ implements CommandListener
 		//#ifdef tmp.menuFullScreen
 			if (this.menuOpened) {
 				int menuHeight = this.menuContainer.getItemHeight(this.menuMaxWidth, this.menuMaxWidth);
-				y = this.screenHeight - menuHeight;
+				int y = this.originalScreenHeight - menuHeight;
 				if (y < this.titleHeight) {
 					y = this.titleHeight; 
 					this.menuContainer.setVerticalDimensions(y, this.screenHeight);
@@ -365,7 +385,7 @@ implements CommandListener
 			// clear menu-bar:
 			if (this.menuBarColor != Item.TRANSPARENT) {
 				g.setColor( this.menuBarColor );
-				g.fillRect(0, this.screenHeight, this.screenWidth,  this.menuBarHeight );
+				g.fillRect(0, this.originalScreenHeight, this.screenWidth,  this.menuBarHeight );
 			}
 			if (this.menuContainer.size() > 0) {
 				String menuText = null;
@@ -382,18 +402,18 @@ implements CommandListener
 				}
 				g.setColor( this.menuFontColor );
 				g.setFont( this.menuFont );
-				g.drawString(menuText, 2, this.screenHeight + 2, Graphics.TOP | Graphics.LEFT );
+				g.drawString(menuText, 2, this.originalScreenHeight + 2, Graphics.TOP | Graphics.LEFT );
 				if ( this.menuOpened ) {
 					// draw select string:
 					//TODO rob internationalise cmd.cancelMenu
 					menuText = "Cancel";
-					g.drawString(menuText, this.screenWidth - 2, this.screenHeight + 2, Graphics.TOP | Graphics.RIGHT );
+					g.drawString(menuText, this.screenWidth - 2, this.originalScreenHeight + 2, Graphics.TOP | Graphics.RIGHT );
 				}
 			}
 			if (this.menuSingleRightCommand != null && !this.menuOpened) {
 				g.setColor( this.menuFontColor );
 				g.setFont( this.menuFont );
-				g.drawString(this.menuSingleRightCommand.getLabel(), this.screenWidth - 2, this.screenHeight + 2, Graphics.TOP | Graphics.RIGHT );
+				g.drawString(this.menuSingleRightCommand.getLabel(), this.screenWidth - 2, this.originalScreenHeight + 2, Graphics.TOP | Graphics.RIGHT );
 			}
 		//#endif
 		} catch (RuntimeException e) {
@@ -499,22 +519,27 @@ implements CommandListener
 	 * 
 	 * @param ticker - the ticker object used on this screen
 	 */
-	public void setTicker( Ticker ticker)
+	public void setPolishTicker( Ticker ticker)
 	{
 		this.ticker = ticker;
+		if (ticker == null) {
+			this.screenHeight = this.originalScreenHeight;
+		} else {
+			int tickerHeight = ticker.getItemHeight(this.screenWidth, this.screenWidth );
+			this.screenHeight = this.originalScreenHeight - tickerHeight;
+		}
 		if (isShown()) {
 			repaint();
 		}
 	}
-
+	
 	/**
 	 * Gets the ticker used by this Screen.
 	 * 
 	 * @return ticker object used, or null if no ticker is present
 	 */
-	public javax.microedition.lcdui.Ticker getTicker()
+	public Ticker getPolishTicker()
 	{
-		//TODO rob adjust calls to getTicker accordingly
 		return this.ticker;
 	}
 		
