@@ -166,7 +166,7 @@ public class CssConverter extends Converter {
 				defaultBorderDefined = true;
 			} 
 			HashMap group = (HashMap) borders.get( groupName );
-			processBackground(groupName, group, null, codeList, styleSheet, true );
+			processBorder(groupName, group, null, codeList, styleSheet, true );
 		}
 		String test = preprocessor.getVariable("polish.licence");
 		if ( "GPL".equals(test) ) {
