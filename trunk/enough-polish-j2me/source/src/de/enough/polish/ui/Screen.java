@@ -513,70 +513,67 @@ implements CommandListener
 	 * @see javax.microedition.lcdui.Canvas#keyPressed(int)
 	 */
 	protected final void keyPressed(int keyCode) {
-		//#ifdef polish.debugVerbose
-			try {
-		//#endif
-		int gameAction = getGameAction(keyCode);
-		//#ifdef tmp.menuFullScreen
-			if (keyCode == FullCanvas.KEY_SOFTKEY1) {
-				if ( this.menuSingleLeftCommand != null) {
-					callCommandListener( this.menuSingleLeftCommand );
-					return;
-				} else {
-					if (!this.menuOpened) {
-						this.menuOpened = true;
-						repaint();
+		try {
+			int gameAction = getGameAction(keyCode);
+			//#ifdef tmp.menuFullScreen
+				if (keyCode == FullCanvas.KEY_SOFTKEY1) {
+					if ( this.menuSingleLeftCommand != null) {
+						callCommandListener( this.menuSingleLeftCommand );
 						return;
 					} else {
-						gameAction = Canvas.FIRE;
+						if (!this.menuOpened) {
+							this.menuOpened = true;
+							repaint();
+							return;
+						} else {
+							gameAction = Canvas.FIRE;
+						}
+					}
+				} else if (keyCode == FullCanvas.KEY_SOFTKEY2) {
+					if (!this.menuOpened && this.menuSingleRightCommand != null) {
+						callCommandListener( this.menuSingleRightCommand );
+						return;
 					}
 				}
-			} else if (keyCode == FullCanvas.KEY_SOFTKEY2) {
-				if (!this.menuOpened && this.menuSingleRightCommand != null) {
-					callCommandListener( this.menuSingleRightCommand );
+				if (this.menuOpened) {
+					if (keyCode == FullCanvas.KEY_SOFTKEY2 ) {
+						this.menuOpened = false;
+					} else  if ( gameAction == Canvas.FIRE ) {
+						int focusedIndex = this.menuContainer.getFocusedIndex();
+						Command cmd = (Command) this.menuCommands.get( focusedIndex );
+						this.menuOpened = false;
+						callCommandListener( cmd );
+					} else { 
+						this.menuContainer.handleKeyPressed(keyCode, gameAction);
+					}
+					repaint();
 					return;
 				}
-			}
-			if (this.menuOpened) {
-				if (keyCode == FullCanvas.KEY_SOFTKEY2 ) {
-					this.menuOpened = false;
-				} else  if ( gameAction == Canvas.FIRE ) {
-					int focusedIndex = this.menuContainer.getFocusedIndex();
-					Command cmd = (Command) this.menuCommands.get( focusedIndex );
-					this.menuOpened = false;
-					callCommandListener( cmd );
-				} else { 
-					this.menuContainer.handleKeyPressed(keyCode, gameAction);
-				}
-				repaint();
-				return;
-			}
-		//#endif
-		boolean processed = handleKeyPressed(keyCode, gameAction);
-		if (!processed) {
-			//TODO Screen could try to switch to the last screen when Canvas.LEFT 
-			// or Canvas.UP has been pressed. 
-			// It could use the StyleSheet.currentScreen variable
-			// for this purpose
-			//#debug
-			Debug.debug("unable to handle key [" + keyCode + "].");
-		}
-		if (processed) {
-			//#if polish.useFullScreen && polish.api.nokia-ui
-				requestRepaint();
-			//#else
-				repaint();
 			//#endif
-		}
-		//#ifdef polish.debugVerbose
-			} catch (Exception e) {
-				Debug.debug("keyPressed() threw an exception", e );
-				//#ifdef polish.useDebugGui
-					// set the current screen to the debug-screen:
-					StyleSheet.display.setCurrent( Debug.getLogForm(true, this) );
+			boolean processed = handleKeyPressed(keyCode, gameAction);
+			if (!processed) {
+				//TODO Screen could try to switch to the last screen when Canvas.LEFT 
+				// or Canvas.UP has been pressed. 
+				// It could use the StyleSheet.currentScreen variable
+				// for this purpose
+				//#debug
+				Debug.debug("unable to handle key [" + keyCode + "].");
+			}
+			if (processed) {
+				//#if polish.useFullScreen && polish.api.nokia-ui
+					requestRepaint();
+				//#else
+					repaint();
 				//#endif
 			}
-		//#endif
+		} catch (Exception e) {
+			//#debug error
+			Debug.debug("keyPressed() threw an exception", e );
+			//#ifdef polish.useDebugGui
+				// set the current screen to the debug-screen:
+				StyleSheet.display.setCurrent( Debug.getLogForm(true, this) );
+			//#endif
+		}
 	}
 		
 	//#ifdef polish.useDynamicStyles	
