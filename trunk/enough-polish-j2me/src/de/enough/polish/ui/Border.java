@@ -11,11 +11,12 @@ import javax.microedition.lcdui.Graphics;
 /**
  * <p>Provides an abstract  border.</p>
  *
- * @author Robert Virkus, robert@enough.de
+ * <p>copyright enough software 2003, 2004</p>
  * <pre>
  * history
  *        04-Jan-2004 - rob creation
  * </pre>
+ * @author Robert Virkus, robert@enough.de
  */
 public abstract class Border {
 	
