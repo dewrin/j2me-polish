@@ -56,7 +56,7 @@
 			name="J2ME Polish"
 			version="1.3.4"
 			description="A test project"
-			vendorName="enough software"
+			vendorName="Enough Software"
 			infoUrl="http://www.j2mepolish.org"
 			icon="dot.png"
 			jarName="${polish.vendor}-${polish.name}-example.jar" 
@@ -65,11 +65,11 @@
 		    deleteConfirm="Do you really want to kill me?" 
 			/>
 		<!-- selection of supported devices -->
-		<!-- Normally the application is build only for the Nokia/N-Gage phone, -->
+		<!-- Normally the application is build only for the Nokia/3650 and the 6600 phones, -->
 		<!-- but when the test-property is set to true, the second deviceRequirements -->
-		<!-- will be used. -->
+		<!-- will be used instead. -->
 		<deviceRequirements if="test">
-			<requirement name="Identifier" value="Nokia/N-Gage" />
+			<requirement name="Identifier" value="Nokia/3650, Nokia/6600" />
 		</deviceRequirements>
 		<deviceRequirements unless="test">
 			<requirement name="JavaPackage" value="nokia-ui" />
@@ -84,7 +84,6 @@
 			imageLoadStrategy="background"
 			fullscreen="menu"
 			usePolishGui="true"
-			preverify="/home/enough/dev/WTK2.1/bin/preverify"
 			resDir="resources"
 			>
 			<!-- midlets definition -->

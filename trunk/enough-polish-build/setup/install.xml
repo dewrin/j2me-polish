@@ -90,6 +90,8 @@
             <file src="src" targetdir="$INSTALL_PATH"/>
             <file src="resources" targetdir="$INSTALL_PATH"/>
             <file src="resources2" targetdir="$INSTALL_PATH"/>
+            <file src="../setup/.classpath" targetdir="$INSTALL_PATH"/>
+            <file src="../setup/.project" targetdir="$INSTALL_PATH"/>
         </pack>
         <pack name="External Device Database" required="no" preselected="no" >
             <description>The files &quot;devices.xml&quot;, &quot;vendors.xml&quot;, &quot;groups.xml&quot; and &quot;apis.xml&quot;. These are only necessary if you want to add your own device-definitions or modify existing ones.</description>

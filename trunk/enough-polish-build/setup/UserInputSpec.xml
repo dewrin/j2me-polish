@@ -44,7 +44,7 @@
 	<field type="staticText" txt="If you have installed the sample application, you can create your first MIDlet by calling Ant either from the command-line or from within your favorite Java IDE." />
 	<field type="staticText" txt="For migrating J2ME Polish into existing projects, just copy the file &quot;build.xml&quot; and the folder &quot;import&quot; to your project." />
 	<divider alignment="top"/>
-	<field type="staticText" txt="Just remove the installation directory for de-installing J2ME Polish." />
+	<field type="staticText" txt="Remove the installation directory for de-installing J2ME Polish." />
 </panel>
 
 
