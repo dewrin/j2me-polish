@@ -394,7 +394,7 @@ public class PolishTask extends ConditionalTask {
 			String fileName = fileNames[i];
 			try {
 				TextFile file = new TextFile( baseDir.getAbsolutePath(), fileName );
-				if ("de/enough/polish/ui/StyleSheet.java".equals(fileName)) {
+				if (fileName.endsWith("StyleSheet.java") && fileName.startsWith("de")) {
 					this.styleSheetFile = file;
 				}
 				files[i] = file;
@@ -533,8 +533,8 @@ public class PolishTask extends ConditionalTask {
 						String className = file.getFileName();
 						if (className.endsWith(".java")) {
 							className = className.substring(0, className.length() - 5 );
-							className = TextUtil.replace(className, '/', '.' );
 						}
+						className = TextUtil.replace(className, File.separatorChar, '.' );
 						// set the StyleSheet.display variable in all MIDlets
 						if ( (this.midletClassesByName.get( className ) != null) 
 								&& usePolishGui) {
