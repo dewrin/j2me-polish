@@ -85,6 +85,18 @@ public class AnimationThread extends Thread {
 						}
 					}
 				}
+				if (StyleSheet.gauge != null) {
+					//TODO rob double check if the StyleSheet.gauge is still visible
+					if (StyleSheet.gauge.animate()) {
+						sleeptime = ANIMATION_INTERVAL;
+						animationCounter = 0;
+						if (StyleSheet.currentScreen != null) {
+							StyleSheet.currentScreen.repaint();
+						}
+					} else {
+						StyleSheet.gauge = null;
+					}
+				}
 			} catch (InterruptedException e) {
 				// ignore
 			} catch (Exception e) {

@@ -360,6 +360,18 @@ public abstract class Item extends Object
 	 * TRANSPARENT has the value -1.
 	 */
 	public static final int TRANSPARENT = -1;
+	
+	/**
+	 * A J2ME Polish constant defining a vertical orientation.
+	 * VERTICAL has the value 0.
+	 */
+	public static final int VERTICAL = 0;
+	
+	/**
+	 * A J2ME Polish constant defining a horizontal orientation.
+	 * HORIZONTAL has the value 1.
+	 */
+	public static final int HORIZONTAL = 1;
 
 	/**
 	 * A layout directive indicating that this <code>Item</code>
@@ -551,12 +563,17 @@ public abstract class Item extends Object
 	 * is to appear as a button.
 	 * <P>Value <code>2</code> is assigned to <code>BUTTON</code>.</P>
 	 * 
-	 * 
-	 * 
 	 * @since MIDP 2.0
 	 */
 	public static final int BUTTON = 2;
 
+	/**
+	 * A J2ME Polish appearance mode value indicating that the <code>Item</code>
+	 * accepts input from the user.
+	 * <P>Value <code>3</code> is assigned to <code>INTERACTIVE</code>.</P>
+	 */
+	public static final int INTERACTIVE = 3;
+	
 	protected int layout;
 	protected ItemCommandListener itemCommandListener;
 	protected Command defaultCommand;
@@ -1502,6 +1519,16 @@ public abstract class Item extends Object
 	 * @return
 	 */
 	protected boolean handleKeyPressed( int keyCode, int gameAction ) {
+		return false;
+	}
+
+	/**
+	 * Animates this item.
+	 * Subclasses can override this method to create animations.
+	 * 
+	 * @return true when this item has been animated.
+	 */
+	public boolean animate() {
 		return false;
 	}
 

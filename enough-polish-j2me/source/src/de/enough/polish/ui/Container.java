@@ -404,12 +404,10 @@ public class Container extends Item {
 	 * @see de.enough.polish.ui.Item#paintItem(int, int, javax.microedition.lcdui.Graphics)
 	 */
 	protected void paintContent(int x, int y, int leftBorder, int rightBorder, Graphics g) {
-		if (this.yOffset != 0) {
-			System.out.println("container.yOffset = " + this.yOffset );
-		}
 		// paints all items,
 		// the layout will be done according to this containers'
 		// layout or according to the items layout, when specified.
+		
 		// adjust vertical start for scrolling:
 		y += this.yOffset;
 		if (this.columnsSetting == NO_COLUMNS) {

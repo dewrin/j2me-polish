@@ -25,8 +25,13 @@
  */
 package de.enough.polish.ui;
 
-import javax.microedition.lcdui.Command;
+import de.enough.polish.util.Debug;
+
+import javax.microedition.lcdui.*;
 import javax.microedition.lcdui.Graphics;
+import javax.microedition.lcdui.Image;
+
+import java.io.IOException;
 
 /**
  * Implements a graphical display, such as a bar graph, of an integer
@@ -160,6 +165,9 @@ import javax.microedition.lcdui.Graphics;
  * @since MIDP 1.0
  */
 public class Gauge extends Item
+//#ifdef polish.images.backgroundLoad
+implements ImageConsumer
+//#endif
 {
 	/**
 	 * A special value used for the maximum value in order to indicate that
@@ -258,10 +266,26 @@ public class Gauge extends Item
 	 * @since MIDP 2.0
 	 */
 	public static final int INCREMENTAL_UPDATING = 3;
+	
+	private static final int MODE_CONTINUOUS = 0; 
+	private static final int MODE_CHUNKED = 1;
 
-	//following variables are implicitely defined by getter- or setter-methods:
 	private int value;
 	private int maxValue;
+	private boolean isInteractive;
+	private int color = 0x0000FF; //default color is blue
+	private int mode = MODE_CHUNKED;
+	private int orientation = HORIZONTAL;
+	private int chunkWidth = 6;
+	private int gapWidth = 3;
+	private int gapColor = 0xFFFFFF; // default gap color is white
+	private Image image;
+	private Image indicatorImage;
+	private boolean isIndefinite;
+	private int indefinitePos;
+	//#ifdef polish.midp2
+	private javax.microedition.lcdui.Gauge midpGauge;
+	//#endif
 
 	/**
 	 * Creates a new <code>Gauge</code> object with the given
@@ -288,167 +312,107 @@ public class Gauge extends Item
 	 * <code>INCREMENTAL_IDLE</code>, <code>CONTINUOUS_RUNNING</code>,
 	 * or <code>INCREMENTAL_UPDATING</code>.</p>
 	 * 
-	 * @param label - the Gauge's label
-	 * @param interactive - tells whether the user can change the value
-	 * @param maxValue - the maximum value, or INDEFINITE
-	 * @param initialValue - the initial value in the range [0..maxValue], or one of CONTINUOUS_IDLE, INCREMENTAL_IDLE, CONTINUOUS_RUNNING, or INCREMENTAL_UPDATING if maxValue is INDEFINITE.
-	 * @throws IllegalArgumentException - if maxValue is not positive for interactive gauges
+	 * @param label the Gauge's label
+	 * @param interactive tells whether the user can change the value
+	 * @param maxValue the maximum value, or INDEFINITE
+	 * @param initialValue the initial value in the range [0..maxValue], or one of CONTINUOUS_IDLE, INCREMENTAL_IDLE, CONTINUOUS_RUNNING, or INCREMENTAL_UPDATING if maxValue is INDEFINITE.
+	 * @throws IllegalArgumentException if maxValue is not positive for interactive gauges
 	 * 												  or if maxValue is neither positive nor INDEFINITE for non-interactive gauges
 	 * 												  or if initialValue is not one of CONTINUOUS_IDLE, INCREMENTAL_IDLE, CONTINUOUS_RUNNING, or INCREMENTAL_UPDATING for a non-interactive gauge with indefinite range
 	 * @see #INDEFINITE, #CONTINUOUS_IDLE, #INCREMENTAL_IDLE, #CONTINUOUS_RUNNING, #INCREMENTAL_UPDATING
 	 */
 	public Gauge( String label, boolean interactive, int maxValue, int initialValue)
 	{
-		//TODO implement Gauge
+		this( label, interactive, maxValue, initialValue, null );
 	}
 
 	/**
-	 * Sets the label of the <code>Item</code>. If <code>label</code>
-	 * is <code>null</code>, specifies that this item has no label.
+	 * Creates a new <code>Gauge</code> object with the given
+	 * label, in interactive or non-interactive mode, with the given
+	 * maximum and initial values.  In interactive mode (where
+	 * <code>interactive</code> is <code>true</code>) the maximum
+	 * value must be greater than zero, otherwise an exception is
+	 * thrown.  In non-interactive mode (where
+	 * <code>interactive</code> is <code>false</code>) the maximum
+	 * value must be greater than zero or equal to the special value
+	 * <code>INDEFINITE</code>, otherwise an exception is thrown.
 	 * 
-	 * <p>It is illegal to call this method if this <code>Item</code>
-	 * is contained within  an <code>Alert</code>.</p>
+	 * <p>If the maximum value is greater than zero, the gauge has
+	 * definite range.  In this case the initial value must be within
+	 * the range zero to <code>maxValue</code>, inclusive.  If the
+	 * initial value is less than zero, the value is set to zero.  If
+	 * the initial value is greater than <code>maxValue</code>, it is
+	 * set to <code>maxValue</code>.</p>
 	 * 
-	 * @param label - the label string
-	 * @throws IllegalStateException - if this Item is contained within an Alert
-	 * @see Item#setLabel(String) in class Item
-	 * @see Item#getLabel()
+	 * <p>If <code>interactive</code> is <code>false</code> and the
+	 * maximum value is <code>INDEFINITE</code>, this creates a
+	 * non-interactive gauge with indefinite range. The initial value
+	 * must be one of <code>CONTINUOUS_IDLE</code>,
+	 * <code>INCREMENTAL_IDLE</code>, <code>CONTINUOUS_RUNNING</code>,
+	 * or <code>INCREMENTAL_UPDATING</code>.</p>
+	 * 
+	 * @param label the Gauge's label
+	 * @param interactive tells whether the user can change the value
+	 * @param maxValue the maximum value, or INDEFINITE
+	 * @param initialValue the initial value in the range [0..maxValue], or one of CONTINUOUS_IDLE, INCREMENTAL_IDLE, CONTINUOUS_RUNNING, or INCREMENTAL_UPDATING if maxValue is INDEFINITE.
+	 * @param style the CSS style for this item
+	 * @throws IllegalArgumentException if maxValue is not positive for interactive gauges
+	 * 												  or if maxValue is neither positive nor INDEFINITE for non-interactive gauges
+	 * 												  or if initialValue is not one of CONTINUOUS_IDLE, INCREMENTAL_IDLE, CONTINUOUS_RUNNING, or INCREMENTAL_UPDATING for a non-interactive gauge with indefinite range
+	 * @see #INDEFINITE, #CONTINUOUS_IDLE, #INCREMENTAL_IDLE, #CONTINUOUS_RUNNING, #INCREMENTAL_UPDATING
 	 */
-	public void setLabel( String label)
+	public Gauge( String label, boolean interactive, int maxValue, int initialValue, Style style )
 	{
-		this.label = label;
+		super( label, Item.LAYOUT_DEFAULT, Item.PLAIN, style );
+		// check values:
+		if (interactive) {
+			if (maxValue < 0 ) {
+				throw new IllegalArgumentException("Invalid maxValue for Gauge: " + maxValue );
+			}
+			if (initialValue < 0 || initialValue > maxValue) {
+				throw new IllegalArgumentException("Invalid initialValue for Gauge: " + initialValue );
+			}
+		} else {
+			if (maxValue == INDEFINITE) {
+				this.isIndefinite = true;
+				this.maxValue = 20;
+				if ( !( initialValue == CONTINUOUS_IDLE 
+						|| initialValue == CONTINUOUS_RUNNING
+						|| initialValue == INCREMENTAL_IDLE
+						|| initialValue == INCREMENTAL_UPDATING ) ) {
+					throw new IllegalArgumentException("Invalid initialValue for Gauge: " + initialValue );
+				}
+			} else if (maxValue < 0 ) {
+				throw new IllegalArgumentException("Invalid maxValue for Gauge: " + maxValue );
+			} else if (initialValue < 0 || initialValue > maxValue) {
+				throw new IllegalArgumentException("Invalid initialValue for Gauge: " + initialValue );
+			}			
+		}
+		// set values
+		this.isInteractive = interactive;
+		if (interactive) {
+			this.appearanceMode = Item.INTERACTIVE;
+		}
+		this.maxValue = maxValue;
+		setValue( initialValue );
 	}
 
+	//#ifdef polish.midp2
 	/**
-	 * Sets the layout directives for this item.
+	 * Gets the MIDP Gauge class.
+	 * This is used for Gauge elements which are added to an Alert.
+	 * Compare Alert#setIndicator( Gauge ).
+	 * This method is only avaiable on MIDP/2.0 devices.
 	 * 
-	 * <p>It is illegal to call this method if this <code>Item</code>
-	 * is contained within an <code>Alert</code>.</p>
-	 * 
-	 * @param layout - a combination of layout directive values for this item
-	 * @throws IllegalArgumentException - if the value of layout is not a valid combination of layout directives
-	 * @throws IllegalStateException - if this Item is contained within an Alert
-	 * @see Item#setLayout(int) in class Item
-	 * @see Item#getLayout()
-	 * @since  MIDP 2.0
+	 * @return the MIDP Gauge class.
 	 */
-	public void setLayout(int layout)
-	{
-		this.layout = layout;
+	public javax.microedition.lcdui.Gauge getMidpGauge() {
+		if (this.midpGauge == null) {
+			this.midpGauge = new javax.microedition.lcdui.Gauge( this.label, this.isInteractive, this.maxValue, this.value ); 
+		}
+		return this.midpGauge;
 	}
-
-	/**
-	 * Adds a context sensitive <code>Command</code> to the item.
-	 * The semantic type of
-	 * <code>Command</code> should be <code>ITEM</code>. The implementation
-	 * will present the command
-	 * only when the the item is active, for example, highlighted.
-	 * <p>
-	 * If the added command is already in the item (tested by comparing the
-	 * object references), the method has no effect. If the item is
-	 * actually visible on the display, and this call affects the set of
-	 * visible commands, the implementation should update the display as soon
-	 * as it is feasible to do so.
-	 * 
-	 * <p>It is illegal to call this method if this <code>Item</code>
-	 * is contained within an <code>Alert</code>.</p>
-	 * 
-	 * @param cmd - the command to be added
-	 * @throws IllegalStateException - if this Item is contained within an Alert
-	 * @throws NullPointerException - if cmd is null
-	 * @see Item#addCommand(Command) in class Item
-	 * @since  MIDP 2.0
-	 */
-	public void addCommand( Command cmd)
-	{
-		//TODO implement addCommand
-	}
-
-	/**
-	 * Sets a listener for <code>Commands</code> to this Item,
-	 * replacing any previous
-	 * <code>ItemCommandListener</code>. A <code>null</code> reference
-	 * is allowed and has the effect of
-	 * removing any existing listener.
-	 * 
-	 * <p>It is illegal to call this method if this <code>Item</code>
-	 * is contained within an <code>Alert</code>.</p>
-	 * 
-	 * @param l - the new listener, or null.
-	 * @throws IllegalStateException - if this Item is contained within an Alert
-	 * @see Item#setItemCommandListener(ItemCommandListener) in class Item
-	 * @since  MIDP 2.0
-	 */
-	public void setItemCommandListener( ItemCommandListener l)
-	{
-		this.itemCommandListener = l;
-	}
-
-	/**
-	 * Sets the preferred width and height for this <code>Item</code>.
-	 * Values for width and height less than <code>-1</code> are illegal.
-	 * If the width is between zero and the minimum width, inclusive,
-	 * the minimum width is used instead.
-	 * If the height is between zero and the minimum height, inclusive,
-	 * the minimum height is used instead.
-	 * 
-	 * <p>Supplying a width or height value greater than the minimum width or
-	 * height <em>locks</em> that dimension to the supplied
-	 * value.  The implementation may silently enforce a maximum dimension for
-	 * an <code>Item</code> based on factors such as the screen size.
-	 * Supplying a value of
-	 * <code>-1</code> for the width or height unlocks that dimension.
-	 * See <a href="#sizes">Item Sizes</a> for a complete discussion.</p>
-	 * 
-	 * <p>It is illegal to call this method if this <code>Item</code>
-	 * is contained within  an <code>Alert</code>.</p>
-	 * 
-	 * @param width - the value to which the width should be locked, or -1 to unlock
-	 * @param height - the value to which the height should be locked, or -1 to unlock
-	 * @throws IllegalArgumentException - if width or height is less than -1
-	 * @throws IllegalStateException - if this Item is contained within an Alert
-	 * @see Item#setPreferredSize(int, int) in class Item
-	 * @see Item#getPreferredHeight(), Item#getPreferredWidth()
-	 * @since  MIDP 2.0
-	 */
-	public void setPreferredSize(int width, int height)
-	{
-		//TODO implement setPreferredSize
-	}
-
-	/**
-	 * Sets default <code>Command</code> for this <code>Item</code>.
-	 * If the <code>Item</code> previously had a
-	 * default <code>Command</code>, that <code>Command</code>
-	 * is no longer the default, but it
-	 * remains present on the <code>Item</code>.
-	 * 
-	 * <p>If not <code>null</code>, the <code>Command</code> object
-	 * passed becomes the default <code>Command</code>
-	 * for this <code>Item</code>.  If the <code>Command</code> object
-	 * passed is not currently present
-	 * on this <code>Item</code>, it is added as if <A HREF="../../../javax/microedition/lcdui/Gauge.html#addCommand(javax.microedition.lcdui.Command)"><CODE>addCommand(javax.microedition.lcdui.Command)</CODE></A>
-	 * had been called
-	 * before it is made the default <code>Command</code>.</p>
-	 * 
-	 * <p>If <code>null</code> is passed, the <code>Item</code> is set to
-	 * have no default <code>Command</code>.
-	 * The previous default <code>Command</code>, if any, remains present
-	 * on the <code>Item</code>.
-	 * </p>
-	 * 
-	 * <p>It is illegal to call this method if this <code>Item</code>
-	 * is contained within  an <code>Alert</code>.</p>
-	 * 
-	 * @param cmd - the command to be used as this Item's default Command, or null if there is to be no default command
-	 * @throws IllegalStateException - if this Item is contained within an Alert
-	 * @see Item#setDefaultCommand(Command) in class Item
-	 * @since  MIDP 2.0
-	 */
-	public void setDefaultCommand( Command cmd)
-	{
-		this.defaultCommand = cmd;
-	}
+	//#endif
 
 	/**
 	 * Sets the current value of this <code>Gauge</code> object.
@@ -465,13 +429,147 @@ public class Gauge extends Item
 	 * <code>INCREMENTAL_UPDATING</code>.
 	 * Other values will cause an exception to be thrown.</p>
 	 * 
-	 * @param value - the new value
-	 * @throws IllegalArgumentException - if value is not one of CONTINUOUS_IDLE,  INCREMENTAL_IDLE, CONTINUOUS_RUNNING, or INCREMENTAL_UPDATING for non-interactive gauges with indefinite range
+	 * @param value the new value
+	 * @throws IllegalArgumentException if value is not one of CONTINUOUS_IDLE,  INCREMENTAL_IDLE, CONTINUOUS_RUNNING, or INCREMENTAL_UPDATING for non-interactive gauges with indefinite range
 	 * @see #CONTINUOUS_IDLE, #INCREMENTAL_IDLE, #CONTINUOUS_RUNNING, #INCREMENTAL_UPDATING, #getValue()
 	 */
 	public void setValue(int value)
 	{
+		if (this.isIndefinite) {
+			if (this.value == CONTINUOUS_RUNNING ) {
+				// when the value WAS continuous-running, remove this gauge from 
+				// the animations:
+				StyleSheet.gauge = null;
+			}
+			if (value == CONTINUOUS_IDLE) {
+				this.indefinitePos = 0;
+			} else if (value == CONTINUOUS_RUNNING) {
+				StyleSheet.gauge = this;
+			} else if ( value == INCREMENTAL_IDLE ) {
+				this.indefinitePos = 0;
+			} else if ( value == INCREMENTAL_UPDATING ) {
+				this.indefinitePos++;
+				if (this.indefinitePos > this.maxValue ) {
+					this.indefinitePos = 0;				}
+			} else {
+				throw new IllegalArgumentException("Invalid value for indefinite Gauge: " + value );
+			}
+		} else if (value < 0  ) {
+			value = 0;
+		} else  if (value > this.maxValue) {
+			value = this.maxValue;
+		}
 		this.value = value;
+		if (this.isInitialised) {
+			if (this.isIndefinite) {
+				updateIndefiniteIndicatorImage();
+			} else {
+				createIndicatorImage();
+			}
+		}
+		//#ifdef polish.midp2
+		if (this.midpGauge != null) {
+			this.midpGauge.setValue( value );
+		}
+		//#endif		
+	}
+
+	/**
+	 * Calculates the position of the indicator and creator the appropriate image.
+	 * This method must not be called when the gauge has not yet been initialised.
+	 */
+	private void createIndicatorImage() {
+		int percentage = (this.value * 100) / this.maxValue;
+		int position = (percentage * this.contentWidth) / 100;
+		if (position == 0) {
+			position = 1;
+		}
+		this.indicatorImage = Image.createImage( position, this.contentHeight );
+		Graphics g = this.indicatorImage.getGraphics();
+		if (this.image != null) {
+			int imageWidth = this.image.getWidth();
+			int x = 0;
+			while ( x < position ) {
+				g.drawImage(this.image, x, 0, Graphics.TOP | Graphics.LEFT );
+				x += imageWidth;
+			}
+		} else if (this.mode == MODE_CHUNKED) {
+			/*
+			if (this.chunkWidth == 0) {
+				int spacePerChunk = this.contentWidth / this.maxValue;
+				if (spacePerChunk > 5) {
+					this.gapWidth = 3;
+					this.chunkWidth = spacePerChunk - this.gapWidth;
+				} else {
+					
+				}
+			} */
+			// paint the filling:
+			g.setColor( this.color );
+			g.fillRect( 0, 0, position, this.contentHeight );
+			// paint the gaps:
+			g.setColor( this.gapColor );
+			int x = this.chunkWidth;
+			while (x < position) {
+				g.fillRect( x, 0, this.gapWidth, this.contentHeight );
+				x += this.gapWidth + this.chunkWidth;
+			}
+		} else {
+			// mode == CONTINUOUS
+			g.setColor( this.color );
+			g.fillRect( 0, 0, position, this.contentHeight );
+		}
+		
+	}
+
+	/**
+	 * Updates the indicator image for an indefinite gauge.
+	 */
+	private void updateIndefiniteIndicatorImage() {
+		Graphics g = this.indicatorImage.getGraphics();
+		if (this.value == CONTINUOUS_IDLE || this.value == INCREMENTAL_IDLE) {
+			g.setColor( this.gapColor );
+			g.fillRect( 0, 0, this.contentWidth, this.contentHeight );
+		} else if (this.value == CONTINUOUS_RUNNING ) {
+			if (this.image != null) {
+				g.setColor( this.color );
+				g.fillRect( 0, 0, this.contentWidth, this.contentHeight );
+				g.drawImage( this.image, this.indefinitePos, 0, Graphics.TOP | Graphics.LEFT );
+			} else {
+				g.setColor( this.color );
+				g.fillRect( 0, 0, this.contentWidth, this.contentHeight );
+				g.setColor( this.gapColor );
+				int cWidth = this.chunkWidth + this.gapWidth;
+				int x =  this.indefinitePos - cWidth;
+				while (x < this.contentWidth) {
+					g.fillRect( x, 0, this.gapWidth, this.contentHeight );
+					x += cWidth;
+				}
+			}
+		} else { // value == INCREMENTAL_UPDATE
+			int percentage = (this.indefinitePos * 100) / this.maxValue;
+			int position = (percentage * this.contentWidth) / 100;
+			if (this.image != null) {
+				g.setColor( this.color );
+				g.fillRect( 0, 0, this.contentWidth, this.contentHeight );
+				int imageWidth = this.image.getWidth();
+				int x = 0;
+				while (x < position) {
+					g.drawImage( this.image, x, 0, Graphics.TOP | Graphics.LEFT );
+					x += imageWidth;
+				} 
+			} else {
+				g.setColor( this.gapColor );
+				g.fillRect( 0, 0, this.contentWidth, this.contentHeight );
+				g.setColor( this.color );
+				int cWidth = this.chunkWidth + this.gapWidth;
+				int x = 0;
+				while (x < position) {
+					g.fillRect( x, 0, this.chunkWidth, this.contentHeight );
+					x += cWidth;
+				}
+			}
+		}
 	}
 
 	/**
@@ -525,13 +623,25 @@ public class Gauge extends Item
 	 * had an indefinite range, setting the maximum value to
 	 * <code>INDEFINITE</code> will have no effect. </p>
 	 * 
-	 * @param maxValue - the new maximum value
-	 * @throws IllegalArgumentException - if maxValue is invalid
+	 * @param maxValue the new maximum value
+	 * @throws IllegalArgumentException if maxValue is invalid
 	 * @see #INDEFINITE,  #getMaxValue()
 	 */
 	public void setMaxValue(int maxValue)
 	{
+		this.isInitialised = false;
+		if (maxValue == INDEFINITE) {
+			this.isIndefinite = true;
+			this.isInitialised = false;
+		} else if (maxValue < 0) {
+			throw new IllegalArgumentException("Invalid maxValue for Gauge: " + maxValue );
+		}
 		this.maxValue = maxValue;
+		//#ifdef polish.midp2
+		if (this.midpGauge != null) {
+			this.midpGauge.setMaxValue( maxValue );
+		}
+		//#endif		
 	}
 
 	/**
@@ -560,24 +670,51 @@ public class Gauge extends Item
 	 */
 	public boolean isInteractive()
 	{
-		return false;
-		//TODO implement isInteractive
+		return this.isInteractive;
 	}
 
 	/* (non-Javadoc)
 	 * @see de.enough.polish.ui.Item#paint(int, int, javax.microedition.lcdui.Graphics)
 	 */
 	public void paintContent(int x, int y, int leftBorder, int rightBorder, Graphics g) {
-		// TODO Auto-generated method stub
-		
+		g.drawImage(this.indicatorImage, x, y, Graphics.TOP | Graphics.LEFT );
 	}
 
 	/* (non-Javadoc)
 	 * @see de.enough.polish.ui.Item#initItem()
 	 */
 	protected void initContent(int firstLineWidth, int lineWidth) {
-		// TODO enough implement initItem
-		
+		if (this.image != null && !this.isIndefinite) {
+			this.contentHeight = this.image.getHeight();
+		} else if (this.preferredHeight > 0 ) {
+			this.contentHeight = this.preferredHeight;
+		} else {
+			this.contentHeight = 10;
+		}
+		if (this.image != null 
+				&& !this.isIndefinite 
+				&& this.preferredWidth == 0 ) {
+			this.contentWidth = this.image.getWidth();
+		} else if (this.preferredWidth > 0) {
+			this.contentWidth = this.preferredWidth;
+		} else { //if (this.isLayoutExpand) {
+			this.contentWidth = firstLineWidth;
+		}
+		if (this.isIndefinite) {
+			if (this.image != null ) {
+				if (this.value == CONTINUOUS_IDLE  || this.value == CONTINUOUS_RUNNING ) {
+					this.maxValue = this.contentWidth;
+				} else {
+					this.maxValue = this.contentWidth / this.image.getWidth();
+				}
+			} else {
+				this.maxValue = 20;
+			}
+			this.indicatorImage = Image.createImage( this.contentWidth, this.contentHeight );
+			updateIndefiniteIndicatorImage();
+		} else {
+			createIndicatorImage();
+		}
 	}
 
 	//#ifdef polish.useDynamicStyles
@@ -585,7 +722,118 @@ public class Gauge extends Item
 	 * @see de.enough.polish.ui.Item#getCssSelector()
 	 */
 	protected String createCssSelector() {
-		return "Gauge";
+		return "gauge";
 	}
 	//#endif
+	
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#setStyle(de.enough.polish.ui.Style)
+	 */
+	public void setStyle(Style style) {
+		super.setStyle(style);
+		String orientationStr = style.getProperty("gauge-orientation");
+		if (orientationStr != null) {
+			if ("vertical".equals(orientationStr)) {
+				this.orientation = VERTICAL;
+			} else {
+				this.orientation = HORIZONTAL;
+			}
+		}
+		String colorStr = style.getProperty("gauge-color");
+		if (colorStr != null) {
+			this.color = Integer.parseInt( colorStr );
+		}
+		String widthStr = style.getProperty( "gauge-width");
+		if (widthStr != null) {
+			this.preferredWidth = Integer.parseInt( widthStr );
+		}
+		String heightStr = style.getProperty( "gauge-height");
+		if (heightStr != null) {
+			this.preferredHeight = Integer.parseInt( heightStr );
+		}
+		String modeStr = style.getProperty( "gauge-mode");
+		if (modeStr != null) {
+			if ("continuous".equals(modeStr)) {
+				this.mode = MODE_CONTINUOUS;
+			} else {
+				this.mode = MODE_CHUNKED;
+			}
+		}
+		String gapColorStr = style.getProperty( "gauge-gap-color");
+		if (gapColorStr != null) {
+			this.gapColor = Integer.parseInt( gapColorStr );
+		}
+		String gapWidthStr = style.getProperty( "gauge-gap-width");
+		if (gapWidthStr != null) {
+			this.gapWidth = Integer.parseInt( gapWidthStr );
+		}
+		String chunkWidthStr = style.getProperty( "gauge-chunk-width");
+		if (chunkWidthStr != null) {
+			this.chunkWidth = Integer.parseInt( chunkWidthStr );
+		}
+		String imageStr = style.getProperty( "gauge-image");
+		if (imageStr != null) {
+			try {
+				this.image = StyleSheet.getImage( imageStr, this, false );
+			} catch (IOException e) {
+				//#debug error
+				Debug.debug("unable to load gauge-image [" + imageStr + "]: " + e.getMessage(), e );
+			}
+		}
+	}
+
+	//#ifdef polish.images.backgroundLoad
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.ImageConsumer#setImage(java.lang.String, javax.microedition.lcdui.Image)
+	 */
+	public void setImage(String name, Image image) {
+		this.image = image;
+		this.isInitialised = false;
+		repaint();
+	}
+	//#endif
+	
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#handleKeyPressed(int, int)
+	 */
+	protected boolean handleKeyPressed(int keyCode, int gameAction) {
+		if (!this.isInteractive) {
+			return false;
+		}
+		if (gameAction == Canvas.RIGHT) {
+			if (this.value < this.maxValue) {
+				setValue( ++ this.value );
+				return true;
+			} else {
+				return false;
+			}			
+		} else if (gameAction == Canvas.LEFT) {
+			if (this.value > 0) {
+				setValue( -- this.value );
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#animate()
+	 */
+	public boolean animate() {
+		if (this.isIndefinite && this.value == CONTINUOUS_RUNNING && this.isInitialised) {
+			this.indefinitePos++;
+			if (this.image == null) {
+				if (this.indefinitePos > (this.chunkWidth + this.gapWidth)) {
+					this.indefinitePos = 0;
+				}
+			} else if (this.indefinitePos > this.maxValue) {
+				this.indefinitePos = 0;
+			}
+			updateIndefiniteIndicatorImage();
+			return true;
+		}
+		return false;
+	}
 }
