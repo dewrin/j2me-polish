@@ -84,9 +84,6 @@ public class CssConverter extends Converter {
 								   Device device,
 								   Preprocessor preprocessor ) 
 	{
-		//TODO rob one could use percentage settings, when the screen sizes are known /
-		// so also give the device!
-		
 		// search for the position to include the style-sheet definitions:
 		int index = -1;
 		while (sourceCode.next()) {
@@ -168,7 +165,7 @@ public class CssConverter extends Converter {
 		// add the default style:
 		processDefaultStyle( defaultFontDefined, defaultLabelDefined, 
 				defaultBackgroundDefined, defaultBorderDefined,
-				codeList, styleSheet );
+				codeList, styleSheet, device );
 		
 		
 		String[] styleNames = styleSheet.getUsedStyleNames();
@@ -178,7 +175,7 @@ public class CssConverter extends Converter {
 			String styleName = styleNames[i];
 			if (!styleName.equals("default")) {
 				Style style = styleSheet.getStyle( styleName );
-				processStyle( style, codeList, styleSheet );
+				processStyle( style, codeList, styleSheet, device );
 			}
 		}
 		codeList.add( STANDALONE_MODIFIER + "String lic=\"" + test +"\";");
@@ -189,7 +186,7 @@ public class CssConverter extends Converter {
 			codeList.add("\t//referenced styles:");
 			for (int i = 0; i < styles.length; i++) {
 				Style style = styles[i];
-				processStyle( style, codeList, styleSheet );
+				processStyle( style, codeList, styleSheet, device );
 			}
 		}
 		
@@ -209,7 +206,7 @@ public class CssConverter extends Converter {
 			Style[] dynamicStyles = styleSheet.getDynamicStyles(); 
 			for (int i = 0; i < dynamicStyles.length; i++) {
 				Style style = dynamicStyles[i];
-				processStyle( style, codeList, styleSheet );
+				processStyle( style, codeList, styleSheet, device );
 				this.referencedStyles.add( style );
 			}
 		}
@@ -232,7 +229,7 @@ public class CssConverter extends Converter {
 			System.out.println("Warning: CSS-Style [focused] not found, now using the default style instead. If you use Forms or Lists, you should define the style [focused].");
 			codeList.add( STANDALONE_MODIFIER + "Style focusedStyle = defaultStyle;\t// the focused-style is not defined.");
 		} else {
-			processStyle( focusedStyle, codeList, styleSheet );
+			processStyle( focusedStyle, codeList, styleSheet, device );
 		}
 		
 		// generate general warnings and hints:
@@ -257,8 +254,9 @@ public class CssConverter extends Converter {
 	 * @param defaultBorderDefined true when the default border has been defined already
 	 * @param codeList the list to which the declarations should be added
 	 * @param styleSheet the parent style sheet
+	 * @param device the device for which the style should be processed
 	 */
-	private void processDefaultStyle(boolean defaultFontDefined, boolean defaultLabelDefined, boolean defaultBackgroundDefined, boolean defaultBorderDefined, ArrayList codeList, StyleSheet styleSheet) {
+	private void processDefaultStyle(boolean defaultFontDefined, boolean defaultLabelDefined, boolean defaultBackgroundDefined, boolean defaultBorderDefined, ArrayList codeList, StyleSheet styleSheet, Device device) {
 		//System.out.println("PROCESSSING DEFAULT STYLE " + styleSheet.getStyle("default").toString() );
 		Style copy = new Style( styleSheet.getStyle("default"));
 		HashMap group = copy.getGroup("font");
@@ -310,7 +308,7 @@ public class CssConverter extends Converter {
 		group.put("border", "default");
 		copy.addGroup("border", group );
 		// now process the rest of the style completely normal:
-		processStyle(copy, codeList, styleSheet);
+		processStyle(copy, codeList, styleSheet, device);
 	}
 
 
@@ -320,8 +318,9 @@ public class CssConverter extends Converter {
 	 * @param style the style
 	 * @param codeList the array list into which generated code is written
 	 * @param styleSheet the parent style sheet
+	 * @param device the device for which the style should be processed
 	 */
-	private void processStyle(Style style, ArrayList codeList, StyleSheet styleSheet ) {
+	private void processStyle(Style style, ArrayList codeList, StyleSheet styleSheet, Device device) {
 		String styleName = style.getStyleName();
 		//System.out.println("processing style " + name + ": " + style.toString() );
 		// create a new style:
@@ -329,14 +328,14 @@ public class CssConverter extends Converter {
 		// process the margins:
 		HashMap group = style.removeGroup("margin");
 		if ( group != null ) {
-			processFields( false, group, "margin", style, codeList, styleSheet );
+			processFields( 0, false, group, "margin", style, codeList, styleSheet, device );
 		} else {
 			codeList.add("\t\t0,0,0,0,\t// default margin");
 		}
 		// process the paddings:
 		group = style.removeGroup("padding");
 		if ( group != null ) {
-			processFields( true, group, "padding", style, codeList, styleSheet );
+			processFields( 1, true, group, "padding", style, codeList, styleSheet, device );
 		} else {
 			codeList.add("\t\t1,1,1,1,1,1,\t// default padding");
 		}
@@ -788,6 +787,7 @@ public class CssConverter extends Converter {
 	/**
 	 * Processes the given fields - currently either "margins" or "paddings".  
 	 * 
+	 * @param defaultValue the default value for unset fields
 	 * @param includeVerticalHorizontal true when vertical and horizontal fields should
 	 * 		  also be processed (this is the case for paddings).
 	 * @param fields the definition of the fields
@@ -795,51 +795,61 @@ public class CssConverter extends Converter {
 	 * @param style the style
 	 * @param codeList the array list into which generated code is written
 	 * @param styleSheet the parent style sheet
+	 * @param device the device for which the fields should be processed
 	 */
-	private void processFields(boolean includeVerticalHorizontal, HashMap fields, String groupName, Style style, ArrayList codeList, StyleSheet styleSheet) {
+	private void processFields(int defaultValue, boolean includeVerticalHorizontal, HashMap fields, String groupName, Style style, ArrayList codeList, StyleSheet styleSheet, Device device) {
 		StringBuffer result = new StringBuffer();
 		result.append("\t\t");
 		String styleName = style.getSelector();
-		
-		int defaultValue = 0;
+		int screenWidth = -1;
+		String screenWidthStr = device.getCapability("ScreenWidth");
+		if (screenWidthStr != null) {
+			screenWidth = Integer.parseInt( screenWidthStr );
+		}
+		int screenHeight = -1;
+		String screenHeightStr = device.getCapability("ScreenHeight");
+		if (screenHeightStr != null) {
+			screenHeight = Integer.parseInt( screenHeightStr );
+		}
+				
 		String defaultValueStr = (String) fields.get(groupName);
 		if (defaultValueStr != null) {
 			defaultValue = parseInt(styleName, groupName, "", defaultValueStr);
 		}
 		String value = (String) fields.get("left");
 		if (value != null) {
-			result.append( parseInt( styleName, groupName, "left", value )).append( ',');
+			result.append( parseInt( styleName, groupName, "left", value, screenWidth )).append( ',');
 		} else {
 			result.append( defaultValue ).append( ',');
 		}
 		value = (String) fields.get("right");
 		if (value != null) {
-			result.append( parseInt( styleName, groupName, "right", value )).append( ',');
+			result.append( parseInt( styleName, groupName, "right", value, screenWidth )).append( ',');
 		} else {
 			result.append( defaultValue ).append( ',');
 		}
 		value = (String) fields.get("top");
 		if (value != null) {
-			result.append( parseInt( styleName, groupName, "top",  value )).append( ',');
+			result.append( parseInt( styleName, groupName, "top",  value, screenHeight )).append( ',');
 		} else {
 			result.append( defaultValue ).append( ',');
 		}
 		value = (String) fields.get("bottom");
 		if (value != null) {
-			result.append( parseInt( styleName, groupName, "bottom",  value )).append( ',');
+			result.append( parseInt( styleName, groupName, "bottom",  value, screenHeight )).append( ',');
 		} else {
 			result.append( defaultValue ).append( ',');
 		}
 		if (includeVerticalHorizontal) {
 			value = (String) fields.get("vertical");
 			if (value != null) {
-				result.append( parseInt( styleName, groupName, "vertical",  value )).append( ',');
+				result.append( parseInt( styleName, groupName, "vertical",  value, screenWidth )).append( ',');
 			} else {
 				result.append( defaultValue ).append( ',');
 			}
 			value = (String) fields.get("horizontal");
 			if (value != null) {
-				result.append( parseInt( styleName, groupName, "horizontal",  value )).append( ',');
+				result.append( parseInt( styleName, groupName, "horizontal",  value, screenHeight )).append( ',');
 			} else {
 				result.append( defaultValue ).append( ',');
 			}
@@ -848,5 +858,6 @@ public class CssConverter extends Converter {
 		// add to the code:
 		codeList.add( result.toString() );
 	}
+
 
 }

@@ -58,6 +58,35 @@ public class Converter {
 	}
 	
 	/**
+	 * Parses the given number which can be a percentage value.
+	 * If the number is a percentage value, 
+	 *  
+	 * @param styleName the style name
+	 * @param groupName the name of the group
+	 * @param name the name of the field
+	 * @param value the int or percentage value as a String. A percentage value needs
+	 *          to end with a "%" character.
+	 * @param relativeValue the number representing 100% if a percentage value is given.
+	 * @return the resulting int value
+	 * @throws BuildException when the value could not be parsed or when a percentage value
+	 * 			is given and the given relativeValue is -1.
+	 */
+	public int parseInt(String styleName, String groupName, String name, String value, int relativeValue) {
+		int lastCharPos = value.length() - 1;
+		if (value.charAt( lastCharPos ) == '%') {
+			if (relativeValue == -1) {
+				throw new BuildException("Unable to parse the field [" + groupName + "-" + name + "] with the value [" + value + "] from the style [" + styleName + "]: No relative value is known for the current device, e.g. no ScreenSize is defined.");
+			}
+			value = value.substring( 0, lastCharPos );
+			int percentageValue = parseInt(styleName, groupName, name, value);
+			int realValue = (percentageValue * relativeValue) / 100;
+			return realValue;
+		} else {
+			return parseInt(styleName, groupName, name, value);
+		}
+	}
+	
+	/**
 	 * Extracts the correct url from the given resource URL.
 	 * 
 	 * @param url the URL of the resource, e.g. "url( myPic.png )"
