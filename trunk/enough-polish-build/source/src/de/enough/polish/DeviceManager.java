@@ -9,11 +9,11 @@ package de.enough.polish;
 import de.enough.polish.exceptions.InvalidComponentException;
 import de.enough.polish.util.TextUtil;
 
+import org.apache.tools.ant.BuildException;
 import org.jdom.*;
 import org.jdom.input.SAXBuilder;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -32,33 +32,21 @@ public class DeviceManager {
 	private Device[] devices;
 
 	/**
-	 * Creates a new device manager which looks at the current directory for the devices.xml file.
-	 * 
-	 * @param vendorManager The manager of the device-manufacturers
-	 * @param groupManager The manager for device-groups.
-	 * @throws JDOMException when there are syntax errors in devices.xml
-	 * @throws IOException when devices.xml could not be read
-	 * @throws InvalidComponentException when a device definition has errors
-	 */
-	public DeviceManager( VendorManager vendorManager, DeviceGroupManager groupManager ) throws JDOMException, IOException, InvalidComponentException {
-		this( vendorManager, groupManager, new File("./devices.xml") );
-	}
-
-	/**
 	 * Creates a new device manager with the given devices.xml file.
 	 * 
 	 * @param vendorManager The manager of the device-manufacturers
 	 * @param groupManager The manager for device-groups.
-	 * @param devicesFile the file containing the device definitions.
+	 * @param devicesIS the InputStream containing the device definitions.
 	 * 			Usally this is the devices.xml file in the current directory.
 	 * @throws JDOMException when there are syntax errors in devices.xml
 	 * @throws IOException when devices.xml could not be read
 	 * @throws InvalidComponentException when a device definition has errors
 	 */
-	public DeviceManager( VendorManager vendorManager, DeviceGroupManager groupManager, File devicesFile ) 
+	public DeviceManager( VendorManager vendorManager, DeviceGroupManager groupManager, InputStream devicesIS ) 
 	throws JDOMException, IOException, InvalidComponentException 
 	{
-		loadDevices( vendorManager, groupManager, devicesFile );
+		loadDevices( vendorManager, groupManager, devicesIS );
+		devicesIS.close();
 	}
 	
 	/**
@@ -66,17 +54,20 @@ public class DeviceManager {
 	 * 
 	 * @param vendorManager The manager of the device-manufacturers
 	 * @param groupManager The manager for device-groups.
-	 * @param devicesFile the file containing the device definitions.
+	 * @param devicesIS the InputStream containing the device definitions.
 	 * 			Usally this is the devices.xml file in the current directory.
 	 * @throws JDOMException when there are syntax errors in devices.xml
 	 * @throws IOException when devices.xml could not be read
 	 * @throws InvalidComponentException when a device definition has errors
 	 */
-	private void loadDevices( VendorManager vendorManager, DeviceGroupManager groupManager, File devicesFile ) 
+	private void loadDevices( VendorManager vendorManager, DeviceGroupManager groupManager, InputStream devicesIS ) 
 	throws JDOMException, IOException, InvalidComponentException 
 	{
+		if (devicesIS == null) {
+			throw new BuildException("Unable to load devices.xml, no file found.");
+		}
 		SAXBuilder builder = new SAXBuilder( false );
-		Document document = builder.build( devicesFile );
+		Document document = builder.build( devicesIS );
 		ArrayList devicesList = new ArrayList();
 		List xmlList = document.getRootElement().getChildren();
 		for (Iterator iter = xmlList.iterator(); iter.hasNext();) {

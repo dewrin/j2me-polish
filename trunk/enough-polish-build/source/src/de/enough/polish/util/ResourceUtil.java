@@ -7,6 +7,7 @@
 package de.enough.polish.util;
 
 import java.io.*;
+import java.util.ArrayList;
 
 /**
  * <p></p>
@@ -20,17 +21,24 @@ import java.io.*;
  */
 public final class ResourceUtil {
 	
-	private final static ClassLoader CLASS_LOADER = (new Object()).getClass().getClassLoader();
+	private ClassLoader classLoader;
+	
+	public ResourceUtil( ClassLoader classLoader) {
+		this.classLoader = classLoader;
+	}
 	
 	
 	/**
 	 * Opens the specified resource.
+	 * The caller needs to ensure that the resource is closed.
 	 * 
 	 * @param url the url to the resource, a '/'-separated path
-	 * @return the InputStream for the specified resource, 
-	 * 		   or null when the resource could not be found.
+	 * @return the InputStream for the specified resource.
+	 * @throws FileNotFoundException when the specified resource could not be found
 	 */
-	public InputStream open( String url ) {
+	public final InputStream open( String url ) 
+	throws FileNotFoundException 
+	{
 		// check if url points to an existing file:
 		File file = new File( url );
 		if (file.exists()) {
@@ -41,6 +49,34 @@ public final class ResourceUtil {
 				// now try to get the specified resource from the class loader...
 			}
 		}
-		return CLASS_LOADER.getResourceAsStream(url);
+		InputStream in = this.classLoader.getResourceAsStream(url);
+		if (in == null) {
+			throw new FileNotFoundException("unable to open resource [" + url + "]: resource not found.");
+		}
+		return in;
+	}
+
+
+	/**
+	 * Reads the specified text file and returns its content.
+	 * 
+	 * @param url the URL to the text file.
+	 * @return a String array with the content of the specified file.
+	 * @throws FileNotFoundException when the specified resource could not be found
+	 * @throws IOException when the resource could not be read
+	 */
+	public String[] readTextFile(String url ) 
+	throws FileNotFoundException, IOException 
+	{
+		InputStream is = open( url );
+		ArrayList lines = new ArrayList();
+		BufferedReader in = new BufferedReader( new InputStreamReader(is));
+		String line;
+		while ((line = in.readLine()) != null) {
+			lines.add( line );
+		}
+		in.close();
+		is.close();
+		return (String[]) lines.toArray( new String[ lines.size() ]);
 	}
 }

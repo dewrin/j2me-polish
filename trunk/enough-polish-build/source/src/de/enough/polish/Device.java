@@ -66,6 +66,7 @@ public class Device extends PolishComponent {
 	private String[] groupNames;
 	private DeviceGroup[] groups;
 	private File jarFile;
+	private int numberOfChangedFiles;
 	
 
 	/**
@@ -380,6 +381,24 @@ public class Device extends PolishComponent {
 	 */
 	public File getJarFile() {
 		return this.jarFile;
+	}
+
+	/**
+	 * Sets the number of source files which actually have been processed.
+	 * 
+	 * @param numberOfChangedFiles the number of processed source files
+	 */
+	public void setNumberOfChangedFiles(int numberOfChangedFiles) {
+		this.numberOfChangedFiles = numberOfChangedFiles;
+	}
+	
+	/**
+	 * Gets the number of source files which actually have been processed.
+	 * 
+	 * @return the number of processed source files
+	 */
+	public int getNumberOfChangedFiles() {
+		return this.numberOfChangedFiles;
 	}
 
 }
