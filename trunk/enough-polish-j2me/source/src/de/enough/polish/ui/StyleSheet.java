@@ -64,6 +64,8 @@ public final class StyleSheet {
 	public static Style currentStyle = defaultStyle;
 	public static Screen currentScreen;	
 	public static AnimationThread animationThread;
+	/** the gauge which is currently in CONTINUOUS_RUNNING mode */
+	public static Gauge gauge;
 
 	/**
 	 * Retrieves the image with the given name.

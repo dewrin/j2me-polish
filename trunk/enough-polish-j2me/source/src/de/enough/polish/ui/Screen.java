@@ -409,6 +409,7 @@ extends Canvas
 	 */
 	protected void showNotify() {
 		StyleSheet.currentScreen = this;
+		StyleSheet.gauge = null;
 		if (StyleSheet.animationThread == null) {
 			StyleSheet.animationThread = new AnimationThread();
 			StyleSheet.animationThread.start();

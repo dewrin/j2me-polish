@@ -53,6 +53,12 @@ public abstract class Background {
 		this.borderWidth = 0;
 	}
 	
+	/**
+	 * Animates this background.
+	 * Subclasses can override this method to create animations.
+	 * 
+	 * @return true when this background has been animated.
+	 */
 	public boolean animate() {
 		return false;
 	}
