@@ -1,7 +1,7 @@
 /*
  * Created on 26-Feb-2004 at 15:03:21.
  *
- * Copyright (c) 2004 Robert Virkus / enough software
+ * Copyright (c) 2004 Robert Virkus / Enough Software
  *
  * This file is part of J2ME Polish.
  *
@@ -21,7 +21,7 @@
  * 
  * Commercial licenses are also available, please
  * refer to the accompanying LICENSE.txt or visit
- * www.enough.de/j2mepolish for details.
+ * http://www.j2mepolish.org for details.
  */
 package de.enough.polish.preprocess;
 
@@ -34,7 +34,7 @@ import java.util.Set;
 /**
  * <p>Converts the import-statements to allow the parallel usage of the polish-gui and the standard java-gui.</p>
  *
- * <p>copyright enough software 2004</p>
+ * <p>copyright Enough Software 2004</p>
  * <pre>
  * history
  *        26-Feb-2004 - rob creation
@@ -75,12 +75,12 @@ public final class ImportConverter {
 		this.midp2ToPolish = toPolish;
 		
 		toPolish = new HashMap( toPolish );
-		toPolish.put( "javax.microedition.lcdui.game.GameCanvas", "de.enough.polish.ui.game.GameCanvas");
-		toPolish.put( "javax.microedition.lcdui.game.Layer", "de.enough.polish.ui.game.Layer");
-		toPolish.put( "javax.microedition.lcdui.game.LayerManager", "de.enough.polish.ui.game.LayerManager");
-		toPolish.put( "javax.microedition.lcdui.game.Sprite", "de.enough.polish.ui.game.Sprite");
-		toPolish.put( "javax.microedition.lcdui.game.TiledLayer", "de.enough.polish.ui.game.TiledLayer");
-		toPolish.put( "javax.microedition.lcdui.game.*", "de.enough.polish.ui.game.*");
+		toPolish.put( "javax.microedition.lcdui.game.GameCanvas", "de.enough.polish.ui.game.GameCanvas; import de.enough.polish.ui.StyleSheet");
+		toPolish.put( "javax.microedition.lcdui.game.Layer", "de.enough.polish.ui.game.Layer; import de.enough.polish.ui.StyleSheet");
+		toPolish.put( "javax.microedition.lcdui.game.LayerManager", "de.enough.polish.ui.game.LayerManager; import de.enough.polish.ui.StyleSheet");
+		toPolish.put( "javax.microedition.lcdui.game.Sprite", "de.enough.polish.ui.game.Sprite; import de.enough.polish.ui.StyleSheet");
+		toPolish.put( "javax.microedition.lcdui.game.TiledLayer", "de.enough.polish.ui.game.TiledLayer; import de.enough.polish.ui.StyleSheet");
+		toPolish.put( "javax.microedition.lcdui.game.*", "de.enough.polish.ui.game.*; import de.enough.polish.ui.StyleSheet");
 		this.midp1ToPolish = toPolish;
 		
 		// that was peanuts now the tricky part comes:

@@ -1,35 +1,39 @@
 <!-- this file describes some often used libraries -->
 <apis>
+
 	<api>
 		<name>Nokia User Interface API</name>
 		<description>The Nokia User Interface API provides
 			some advanced drawing functionalities.
 		</description>
-		<names>nokia-ui,nokiaui, nokiauiapi</names>
+		<names>nokia-ui,nokia-ui-api, nokiaui, nokiauiapi</names>
 		<symbol>nokia-ui</symbol>
 		<files>nokia-ui.jar, nokiaui.zip</files>
 		<path>import/nokia-ui.jar</path>
 	</api>
+	
 	<api>
 		<name>Mobile Media API</name>
 		<description>The Mobile Media API provides
 			functionalities for playing and capturing sounds and videos.
 		</description>
-		<names>mmapi,mm-api</names>
+		<names>mmapi,mm-api, JSR-135</names>
 		<symbol>mmapi</symbol>
 		<files>j2me-mmapi.jar, mma.zip</files>
 		<path>import/j2me-mmapi.jar</path>
 	</api>
+	
 	<api>
 		<name>Wireless Messaging API</name>
 		<description>The Wireless Messaging API provides
 			functionalities for sending and receiving messages (SMS).
 		</description>
-		<names>wmapi,wm-api</names>
+		<names>wmapi,wm-api, JSR-120</names>
 		<symbol>wmapi</symbol>
 		<files>j2me-wmapi.jar, wma.zip</files>
 		<path>import/j2me-wmapi.jar</path>
 	</api>
+	
 	<api>
 		<name>Bluetooth API</name>
 		<description>The Bluetooth API provides
@@ -40,5 +44,53 @@
 		<files>j2me-btapi.jar, bluetooth.zip</files>
 		<path>import/j2me-btapi.jar</path>
 	</api>
+
+	<api>
+		<name>3D API</name>
+		<description>The 3D API provides 3D functions for J2ME.
+		</description>
+		<names>3d, 3d-api,3dapi, jsr-184, jsr184</names>
+		<symbol>3dapi</symbol>
+		<files>j2me-3dapi.jar</files>
+		<path>import/j2me-3dapi.jar</path>
+	</api>
+
+	<api>
+		<name>JSR-185</name>
+		<description>The Java Wireless Architecture Specification (JWAS), 
+		The Java Wireless Architecture Roadmap (JWAR), and
+		The Java Wireless Architecture Users Guide (JWAUG)
+		(not really an api)
+		</description>
+		<names>JSR-185</names>
+		<symbol>jsr-185</symbol>
+	</api>
+
+	<api>
+		<name>PDA API</name>
+		<description>The PDA-API defines optional packages for features that are commonly found on PDAs and other mobile devices in the J2ME space: one package for Personal Information Management (PIM) access, and one package for accessing file systems through the Generic Connection Framework (GCF).
+		</description>
+		<names>pdaapi, pda-api, pim-api, fileconnection-api, jsr-75, jsr75</names>
+		<symbol>pdaapi</symbol>
+		<files>j2me-pdaapi.jar</files>
+		<path>import/j2me-pdaapi.jar</path>
+	</api>
+	
+	
+
+<!--
+	You can use this block to define a new API
+	( remove these XML-comments ):
+
+	<api>
+		<name></name>
+		<description>
+		</description>
+		<names></names>
+		<symbol></symbol>
+		<files>j2me-api.jar</files>
+		<path>import/j2me-api.jar</path>
+	</api>
+-->
 </apis>
 

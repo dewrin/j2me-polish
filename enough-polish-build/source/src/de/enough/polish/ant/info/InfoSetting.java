@@ -1,7 +1,7 @@
 /*
  * Created on 23-Jan-2003 at 08:09:52.
  *
- * Copyright (c) 2004 Robert Virkus / enough software
+ * Copyright (c) 2004 Robert Virkus / Enough Software
  *
  * This file is part of J2ME Polish.
  *
@@ -21,7 +21,7 @@
  * 
  * Commercial licenses are also available, please
  * refer to the accompanying LICENSE.txt or visit
- * www.enough.de/j2mepolish for details.
+ * http://www.j2mepolish.org for details.
  */
 package de.enough.polish.ant.info;
 
@@ -34,7 +34,7 @@ import java.util.ArrayList;
 /**
  * <p>Represents the info-section of a polish project.</p>
  *
- * <p>copyright enough software 2004</p>
+ * <p>copyright Enough Software 2004</p>
  * <pre>
  * history
  *        23-Jan-2003 - rob creation
@@ -421,13 +421,13 @@ public class InfoSetting {
 			this.license = GPL_LICENSE;
 		} else {
 			if (license.length() != 7) {
-				throw new BuildException("Invalid license: [" + license +"]. Please use either the GPL license or obtain a commercial license from enough software at www.j2mepolish.org");
+				throw new BuildException("Invalid license: [" + license +"]. Please use either the GPL license or obtain a commercial license from Enough Software at www.j2mepolish.org");
 			}
 			try {
 				Long.parseLong(license, 0x10);
 				this.license = license;
 			} catch (Exception e) {
-				throw new BuildException("Invalid license: [" + license +"]. Please use either the GPL license or obtain a commercial license from enough software at www.j2mepolish.org.");
+				throw new BuildException("Invalid license: [" + license +"]. Please use either the GPL license or obtain a commercial license from Enough Software at www.j2mepolish.org.");
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 /*
  * Created on 21-Jan-2003 at 15:15:56.
  *
- * Copyright (c) 2004 Robert Virkus / enough software
+ * Copyright (c) 2004 Robert Virkus / Enough Software
  *
  * This file is part of J2ME Polish.
  *
@@ -21,7 +21,7 @@
  * 
  * Commercial licenses are also available, please
  * refer to the accompanying LICENSE.txt or visit
- * www.enough.de/j2mepolish for details.
+ * http://www.j2mepolish.org for details.
  */
 package de.enough.polish.ant;
 
@@ -47,7 +47,7 @@ import java.util.regex.Pattern;
 /**
  * <p>Manages a J2ME project from the preprocessing to the packaging and obfuscation.</p>
  *
- * <p>copyright enough software 2004</p>
+ * <p>copyright Enough Software 2004</p>
  * <pre>
  * history
  *        21-Jan-2003 - rob creation
@@ -101,7 +101,7 @@ public class PolishTask extends ConditionalTask {
 			throw new BuildException("The nested element <info> requires the attribute [name] which defines the name of this project.");
 		}
 		if (setting.getlicense() == null) {
-			throw new BuildException("The nested element <info> requires the attribute [license] with either \"GPL\" for open source software or the commercial license, which can be obtained at www.enough.de/j2mepolish.");
+			throw new BuildException("The nested element <info> requires the attribute [license] with either \"GPL\" for open source software or the commercial license, which can be obtained at http://www.j2mepolish.org.");
 		}
 		this.infoSetting = setting;
 	}
@@ -499,6 +499,7 @@ public class PolishTask extends ConditionalTask {
 				this.preprocessor.removeSymbol("polish.useAfterStyle");
 			}
 			StringList styleSheetCode = null;
+			boolean usesTicker = false;
 			// preprocess each source file:
 			for (int i = 0; i < this.sourceDirs.length; i++) {
 				File sourceDir = this.sourceDirs[i];
@@ -557,10 +558,7 @@ public class PolishTask extends ConditionalTask {
 							  || (result == Preprocessor.CHANGED) ) 
 							{
 								// now process the getTicker() and setTicker() calls:
-								boolean usesTicker = TickerConverter.convertTickerCalls(sourceCode);
-								if (usesTicker) {
-									System.out.println("Ticker-call converted");
-								}
+								usesTicker = TickerConverter.convertTickerCalls(sourceCode);
 								//System.out.println( "preprocessed [" + className + "]." );
 								file.saveToDir(targetDir, sourceCode.getArray(), false );
 								numberOfChangedFiles++;
@@ -574,6 +572,10 @@ public class PolishTask extends ConditionalTask {
 				} // for each file
 			} // for each source folder
 			
+			if (usesTicker) {
+				//TODO rob add preprocessing symbol for J2ME Polish library,
+				// so that the ticker class can be removed completely
+			}
 			// now all files have been preprocessed.
 			// Now the StyleSheet.java file needs to be written,
 			// but only when the polish GUI should be used:
@@ -1093,7 +1095,7 @@ public class PolishTask extends ConditionalTask {
 	/**
 	 * <p>Accepts only non CSS-files.</p>
 	 *
-	 * <p>copyright enough software 2004</p>
+	 * <p>copyright Enough Software 2004</p>
 	 * <pre>
 	 * history
 	 *        19-Feb-2004 - rob creation

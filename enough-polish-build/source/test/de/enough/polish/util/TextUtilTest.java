@@ -4,7 +4,7 @@ import junit.framework.TestCase;
 /*
  * Created on 14-Jan-2004 at 14:24:09.
  *
- * Copyright (c) 2004 Robert Virkus / enough software
+ * Copyright (c) 2004 Robert Virkus / Enough Software
  *
  * This file is part of J2ME Polish.
  *
@@ -24,13 +24,13 @@ import junit.framework.TestCase;
  * 
  * Commercial licenses are also available, please
  * refer to the accompanying LICENSE.txt or visit
- * www.enough.de/j2mepolish for details.
+ * http://www.j2mepolish.org for details.
  */
 
 /**
  * <p>Tests the TextUtil class.</p>
  *
- * <p>copyright enough software 2004</p>
+ * <p>copyright Enough Software 2004</p>
  * <pre>
  * history
  *        14-Jan-2004 - rob creation

@@ -1,7 +1,7 @@
 /*
  * Created on 14-Jan-2004 at 13:16:14.
  *
- * Copyright (c) 2004 Robert Virkus / enough software
+ * Copyright (c) 2004 Robert Virkus / Enough Software
  *
  * This file is part of J2ME Polish.
  *
@@ -21,7 +21,7 @@
  * 
  * Commercial licenses are also available, please
  * refer to the accompanying LICENSE.txt or visit
- * www.enough.de/j2mepolish for details.
+ * http://www.j2mepolish.org for details.
  */
 package de.enough.polish.ant;
 
@@ -43,7 +43,7 @@ import java.util.ArrayList;
  * This task is compatible with the WtkPreprocess - task of the antenna project.
  * See http://antenna.sourceforge.org for details of the great antenna project.
  * </p>
- * <p>copyright enough software 2004</p>
+ * <p>copyright Enough Software 2004</p>
  * <pre>
  * history
  *        14-Jan-2004 - rob creation
