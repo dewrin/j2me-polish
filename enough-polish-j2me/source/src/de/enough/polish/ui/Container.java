@@ -274,22 +274,38 @@ public class Container extends Item {
 		this.itemStyle = item.focus( this.focusedStyle );
 		this.focusedIndex = index;
 		this.focusedItem = item;
-		if (this.enableScrolling && this.isInitialised) {
+		if (this.isInitialised) {
 			// this container has been painted already,
 			// so the dimensions are known.
-			// Now adjust the scrolling:
 			int itemYTop = item.yTopPos;
 			int itemYBottom = item.yBottomPos;
-				
-			if (itemYBottom > this.yBottom) {
-				// this item is too low:
-				this.yOffset -= ( itemYBottom - this.yBottom );
-				//System.out.println("adjusting yOffset: itemYBottom=" + itemYBottom + "  container.yBottom=" + this.yBottom );
-			} else if (itemYTop < this.yTop) {
-				// this item is too high:
-				this.yOffset += ( this.yTop - itemYTop ); 
+			if (this.enableScrolling) {	
+				// Now adjust the scrolling:
+				if (itemYBottom > this.yBottom) {
+					// this item is too low:
+					this.yOffset -= ( itemYBottom - this.yBottom );
+					//System.out.println("adjusting yOffset: itemYBottom=" + itemYBottom + "  container.yBottom=" + this.yBottom );
+				} else if (itemYTop < this.yTop) {
+					// this item is too high:
+					this.yOffset += ( this.yTop - itemYTop ); 
+				}
+			} else {
+				// this container might be embedded in another one:
+				if (this.parent != null && this.parent instanceof Container) {
+					Container container = (Container) this.parent;
+					if (container.enableScrolling) {
+						// Now adjust the scrolling of the parent:
+						if (itemYBottom > container.yBottom) {
+							// this item is too low:
+							container.yOffset -= ( itemYBottom - container.yBottom );
+							//System.out.println("adjusting yOffset: itemYBottom=" + itemYBottom + "  container.yBottom=" + this.yBottom );
+						} else if (itemYTop < container.yTop) {
+							// this item is too high:
+							container.yOffset += ( container.yTop - itemYTop ); 
+						}
+					}
+				}
 			}
-			
 		}
 		this.isInitialised = false;
 	}
