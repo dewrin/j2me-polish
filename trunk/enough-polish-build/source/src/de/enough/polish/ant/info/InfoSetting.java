@@ -50,7 +50,7 @@ public class InfoSetting {
 	public static final String CLDC1 = "CLDC-1.0";
 	public static final String MIDP1 = "MIDP-1.0";
 	public static final String MIDP2 = "MIDP-2.0";
-	
+	private  static final String GPL_LICENCE = "GPL";
 	
 	private String name;
 	private String version;
@@ -69,6 +69,7 @@ public class InfoSetting {
 	private ArrayList jadAttributes;
 	private String vendorName;
 	private String jarName;
+	private String licence;
 	
 	/**
 	 * Creates a new InfoSetting
@@ -384,4 +385,29 @@ public class InfoSetting {
 		this.jarName = jarName;
 	}
 	
+	/**
+	 * @return Returns the licence.
+	 */
+	public String getLicence() {
+		return this.licence;
+	}
+	
+	/**
+	 * @param licence The licence of the created applications, either "GPL" or the licence-number for commercial use.
+	 */
+	public void setLicence(String licence) {
+		if ("GPL".equalsIgnoreCase(licence)) {
+			this.licence = GPL_LICENCE;
+		} else {
+			if (licence.length() != 7) {
+				throw new BuildException("Invalid licence: [" + licence +"]. Please use either the GPL licence or optain a commercial licence from enough software at www.enough.de/j2mepolish.");
+			}
+			try {
+				Long.parseLong(licence, 0x10);
+				this.licence = licence;
+			} catch (Exception e) {
+				throw new BuildException("Invalid licence: [" + licence +"]. Please use either the GPL licence or optain a commercial licence from enough software at www.enough.de/j2mepolish.");
+			}
+		}
+	}
 }

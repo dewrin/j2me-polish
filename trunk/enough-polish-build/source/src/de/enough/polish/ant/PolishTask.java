@@ -73,7 +73,10 @@ public class PolishTask extends ConditionalTask {
 	
 	public void addConfiguredInfo( InfoSetting setting ) {
 		if (setting.getName() == null ) {
-			throw new BuildException("The nested element [info] needs the attribute [name] which defines the name of this project.");
+			throw new BuildException("The nested element <info> requires the attribute [name] which defines the name of this project.");
+		}
+		if (setting.getLicence() == null) {
+			throw new BuildException("The nested element <info> requires the attribute [licence] with either \"GPL\" for open source software or the commercial licence, which can be obtained at www.enough.de/j2mepolish.");
 		}
 		this.infoSetting = setting;
 	}
@@ -167,6 +170,7 @@ public class PolishTask extends ConditionalTask {
 		}
 		// create project settings:
 		this.polishProject = new PolishProject( this.buildSetting.usesPolishGui(), isDebugEnabled, debugManager );
+		this.polishProject.addCapability("licence", this.infoSetting.getLicence() );
 		// add some specified features:
 		this.polishProject.addFeature(this.buildSetting.getImageLoadStrategy());
 		if (debugManager != null && this.buildSetting.getDebugSetting().useGui()) {
@@ -495,7 +499,7 @@ public class PolishTask extends ConditionalTask {
 			// but only when the polish GUI should be used:
 			if (usePolishGui) {
 				// check if the CSS declarations have changed since the last run:
-				File targetFile = new File( targetDir + File.separatorChar + this.styleSheetFile.getFileName() );
+				File targetFile = new File( targetDir + File.separatorChar + this.styleSheetFile.getFileName() );				
 				boolean cssIsNew = (!targetFile.exists())
 					|| ( lastCssModification > targetFile.lastModified() )
 					|| ( buildXmlLastModified > targetFile.lastModified() );
@@ -866,6 +870,10 @@ public class PolishTask extends ConditionalTask {
 		}
 		device.setJarFile( jarFile );
 		jarTask.setDestFile( jarFile );
+		String test = this.polishProject.getCapability("polish.licence");
+		if ( !this.infoSetting.getLicence().equals(test)) {
+			throw new BuildException("Encountered invalid licence.");
+		}
 		//create manifest:
 		try {
 			Manifest manifest = new Manifest();
