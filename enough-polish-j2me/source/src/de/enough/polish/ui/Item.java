@@ -795,7 +795,7 @@ public abstract class Item extends Object
 		//#ifdef polish.useBeforeStyle
 		if (style.before != null) {
 			this.beforeWidth = style.beforeWidth + this.paddingHorizontal;
-			this.beforeHeight = style.beforeHeight + this.paddingVertical;
+			this.beforeHeight = style.beforeHeight;
 		} else {
 			this.beforeWidth = 0;
 			this.beforeHeight = 0;
@@ -805,7 +805,7 @@ public abstract class Item extends Object
 		//#ifdef polish.useAfterStyle
 		if (style.after != null) {
 			this.afterWidth = style.afterWidth + this.paddingHorizontal;
-			this.afterHeight = style.afterHeight + this.paddingVertical;
+			this.afterHeight = style.afterHeight;
 		} else {
 			this.afterWidth = 0;
 			this.afterHeight = 0;
@@ -1154,8 +1154,11 @@ public abstract class Item extends Object
 		//#endif
 		//System.out.println( this.style.name + ":  increasing leftBorder by " + (this.marginLeft + this.borderWidth + this.paddingLeft));
 		rightBorder -= (this.marginRight + this.borderWidth + this.paddingRight);
+		//#ifdef polish.useAfterStyle
+		rightBorder -= this.afterWidth;
+		//#endif
 		
-		//System.out.println( this.style.name + ":  dcecreasing rightBorder by " + (this.marginRight + this.borderWidth + this.paddingRight));
+		//System.out.println( this.style.name + ":  decreasing rightBorder by " + (this.marginRight + this.borderWidth + this.paddingRight));
 		boolean doCenter = this.isLayoutCenter;
 		if ( doCenter) {
 			int itemSpace = rightBorder - leftBorder;
@@ -1190,6 +1193,7 @@ public abstract class Item extends Object
 		
 		int contentX = x + this.borderWidth + this.paddingLeft;
 		int contentY = y + this.borderWidth + this.paddingTop;
+		int originalContentY = contentY;
 		
 		// paint label:
 		if (this.label != null) {
@@ -1203,12 +1207,32 @@ public abstract class Item extends Object
 		//#ifdef polish.useBeforeStyle
 		if (this.beforeImage != null) {
 			int beforeY = contentY;
-			int realBeforeHeight = this.beforeHeight - this.paddingVertical;
-			if ( realBeforeHeight < this.contentHeight) {
-				beforeY += (this.contentHeight - realBeforeHeight) / 2;
+			if ( this.beforeHeight < this.contentHeight) {
+				beforeY += (this.contentHeight - this.beforeHeight) / 2;
+			} else {
+				contentY += (this.beforeHeight - this.contentHeight) / 2;
 			}
 			g.drawImage(this.beforeImage, contentX, beforeY, Graphics.TOP | Graphics.LEFT );
 			contentX += this.beforeWidth;
+		}
+		//#endif
+		
+		// paint after element:
+		//#ifdef polish.useAfterStyle
+		if (this.afterImage != null) {
+			int afterY = originalContentY;
+			if ( this.afterHeight < this.contentHeight) {
+				afterY += (this.contentHeight - this.afterHeight) / 2;
+			} else {
+				//#ifdef polish.useBeforeStyle
+				if (this.afterHeight > this.beforeHeight) {
+				//#endif
+					contentY = originalContentY + (this.afterHeight - this.contentHeight) / 2;
+				//#ifdef polish.useBeforeStyle
+				}
+				//#endif
+			}
+			g.drawImage(this.afterImage, rightBorder, afterY, Graphics.TOP | Graphics.LEFT );
 		}
 		//#endif
 		
@@ -1228,7 +1252,7 @@ public abstract class Item extends Object
 			}
 		}
 		paintContent( contentX, contentY, leftBorder, rightBorder, g );
-		
+				
 		// paint border:
 		if (this.border != null) {
 			this.border.paint(x, y, this.backgroundWidth, this.backgroundHeight, g);
@@ -1275,9 +1299,20 @@ public abstract class Item extends Object
 				this.itemWidth = lineWidth;
 			}
 		}
+		int cHeight = this.contentHeight;
+		//#ifdef polish.useBeforeStyle
+		if (this.contentHeight < this.beforeHeight) {
+			cHeight = this.beforeHeight;
+		}
+		//#endif
+		//#ifdef polish.useAfterStyle
+		if (this.contentHeight < this.afterHeight) {
+			cHeight = this.afterHeight;
+		}
+		//#endif
 		this.backgroundWidth = this.itemWidth - this.marginLeft - this.marginRight;
 		this.backgroundHeight = this.borderWidth + this.paddingTop 
-		 					  + this.contentHeight 
+		 					  + cHeight 
 							  + this.paddingBottom + this.borderWidth;
 		this.itemHeight = this.backgroundHeight + this.marginTop + this.marginBottom;
 		this.isInitialised = true;

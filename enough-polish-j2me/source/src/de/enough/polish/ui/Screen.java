@@ -8,10 +8,10 @@
 package de.enough.polish.ui;
 
 //#if polish.useFullScreen && polish.api.nokia-ui 
-import de.enough.polish.util.Debug;
-
 import com.nokia.mid.ui.FullCanvas;
 //#endif
+import de.enough.polish.util.ArrayList;
+import de.enough.polish.util.Debug;
 
 import javax.microedition.lcdui.*;
 
@@ -77,13 +77,17 @@ extends Canvas
 	protected CommandListener cmdListener;
 	protected Container container;
 	//#if polish.useMenuFullScreen && polish.classes.fullscreen:defined
-	//#define tmp.menuFullScreen
-	private Command singleCommand;
-	private Container commands = new Container( true );
-	private boolean isMenuOpened;
-	private Font menuFont = Font.getFont( Font.FACE_SYSTEM, Font.STYLE_BOLD, Font.SIZE_MEDIUM );
-	private int menuColor = 0;
-	private int closedMenuHeight = this.menuFont.getHeight() + 2;
+		//#define tmp.menuFullScreen
+		private Command menuSingleCommand;
+		//#style menu, default
+		private Container menuContainer = new Container( true );
+		private ArrayList menuCommands = new ArrayList( 6, 50 );
+		private boolean menuOpened;
+		private Font menuFont = Font.getFont( Font.FACE_SYSTEM, Font.STYLE_BOLD, Font.SIZE_MEDIUM );
+		private int menuFontColor = 0;
+		private int menuHeightClosed = this.menuFont.getHeight() + 2;
+		private int menuMaxWidth = ( getWidth() * 2 ) / 3;
+		private int menuBarColor = 0xFFFFFF;
 	//#endif
 
 	/**
@@ -130,6 +134,19 @@ extends Canvas
 			this.background = null;
 			this.border = null;
 		}
+		//#ifdef tmp.menuFullScreen
+		Style menuStyle = StyleSheet.getStyle("menu");
+		if (menuStyle != null) {
+		String colorStr = menuStyle.getProperty("menubar-color");
+		if (colorStr != null) {
+			this.menuBarColor = Integer.parseInt(colorStr);
+		}
+		colorStr = menuStyle.getProperty("menufont-color");
+		if (colorStr != null) {
+			this.menuFontColor = Integer.parseInt(colorStr);
+		}
+		}
+	//#endif
 	}
 	
 	public boolean animate() {
@@ -166,24 +183,44 @@ extends Canvas
 		if (this.border != null) {
 			this.border.paint(0, 0, this.screenWidth, this.screenHeight, g);
 		}
-		//TODO rob when screen extends FullMenuCanvas, then also paint the menu
 		//#ifdef tmp.menuFullScreen
-		if (this.isMenuOpened) {
-			System.out.println("menu opened");
-		} else if (this.commands.size() > 0) {
-			// clear menu-bar:
-			g.setColor( 0xFFFFFF );
-			int yStart = this.screenHeight - this.closedMenuHeight;
-			g.fillRect(0, yStart, this.screenWidth,  this.closedMenuHeight );
-			//TODO rob internationalise openMenuText
-			String menuText = "Options";
-			if (this.singleCommand != null) {
-				menuText = this.singleCommand.getLabel();
+			if (this.menuOpened) {
+				int menuHeight = this.menuContainer.getItemHeight(this.menuMaxWidth, this.menuMaxWidth);
+				int titleHeight = this.title.getItemHeight( this.screenWidth, this.screenWidth )
+					+ 1; //TODO add paddingVertical?
+				y = this.screenHeight - (menuHeight + this.menuHeightClosed + 1);
+				if (y < titleHeight) {
+					y = titleHeight; 
+				}
+				this.menuContainer.paint(0, y, 0, this.menuMaxWidth, g);
+			} 
+			if (this.menuContainer.size() > 0) {
+				// clear menu-bar:
+				g.setColor( this.menuBarColor );
+				int yStart = this.screenHeight - this.menuHeightClosed;
+				g.fillRect(0, yStart, this.screenWidth,  this.menuHeightClosed );
+				String menuText = null;
+				if (this.menuOpened) {
+					//TODO rob internationalise cmd.selectMenu
+					menuText = "Select";
+				} else {
+					if (this.menuSingleCommand != null) {
+						menuText = this.menuSingleCommand.getLabel();
+					} else {
+						//TODO rob internationalise cmd.openMenu
+						menuText = "Options";				
+					}
+				}
+				g.setColor( this.menuFontColor );
+				g.setFont( this.menuFont );
+				g.drawString(menuText, 2, yStart + 1, Graphics.TOP | Graphics.LEFT );
+				if ( this.menuOpened ) {
+					// draw select string:
+					//TODO rob internationalise cmd.cancelMenu
+					menuText = "Cancel";
+					g.drawString(menuText, this.screenWidth - 2, yStart + 1, Graphics.TOP | Graphics.RIGHT );
+				}
 			}
-			g.setColor( this.menuColor );
-			g.setFont( this.menuFont );
-			g.drawString(menuText, 2, yStart + 1, Graphics.TOP | Graphics.LEFT );
-		}
 		//#endif
 		//TODO rob paint the ticker
 	}
@@ -276,21 +313,39 @@ extends Canvas
 		int gameAction = getGameAction(keyCode);
 		//#ifdef tmp.menuFullScreen
 		if (keyCode == FullCanvas.KEY_SOFTKEY1) {
-			if ( this.singleCommand != null) {
-				callCommandListener( this.singleCommand );
+			if ( this.menuSingleCommand != null) {
+				callCommandListener( this.menuSingleCommand );
 				return;
 			} else {
-				this.isMenuOpened = true;
-				repaint();
-				return;
+				if (!this.menuOpened) {
+					this.menuOpened = true;
+					repaint();
+					return;
+				} else {
+					gameAction = Canvas.FIRE;
+				}
 			}
 		}
+		if (this.menuOpened) {
+			if (keyCode == FullCanvas.KEY_SOFTKEY2 ) {
+				this.menuOpened = false;
+			} else  if ( gameAction == Canvas.FIRE ) {
+				int focussedIndex = this.menuContainer.getFocussedIndex();
+				Command cmd = (Command) this.menuCommands.get( focussedIndex );
+				this.menuOpened = false;
+				callCommandListener( cmd );
+			} else { 
+				this.menuContainer.handleKeyPressed(keyCode, gameAction);
+			}
+			repaint();
+			return;
+		}
 		//#endif
-		//TODO handle menu-commands in full screen mode
 		boolean processed = handleKeyPressed(keyCode, gameAction);
 		if (!processed) {
-			//TODO Screen could try to the last screen when Canvas.LEFT or Canvas.UP
-			// has been pressed. It could use the StyleSheet.currentScreen variable
+			//TODO Screen could try to switch to the last screen when Canvas.LEFT 
+			// or Canvas.UP has been pressed. 
+			// It could use the StyleSheet.currentScreen variable
 			// for this purpose
 			System.out.println("unable to handle key [" + keyCode + "].");
 		}
@@ -386,13 +441,17 @@ extends Canvas
 	 * @see javax.microedition.lcdui.Displayable#addCommand(javax.microedition.lcdui.Command)
 	 */
 	public synchronized void addCommand(Command cmd) {
-		//#style menuItem, default
+		//#style menuitem, menu, default
 		StringItem menuItem = new StringItem( null, cmd.getLabel(), Item.HYPERLINK );
-		this.commands.add( menuItem );
-		if (this.commands.size() == 1) {
-			this.singleCommand = cmd;
+		this.menuContainer.add( menuItem );
+		if (this.menuContainer.size() == 1) {
+			this.menuSingleCommand = cmd;
 		} else {
-			this.singleCommand = null;
+			this.menuSingleCommand = null;
+		}
+		this.menuCommands.add( cmd );
+		if (isShown()) {
+			repaint();
 		}
 	}
 	
