@@ -89,7 +89,7 @@ SonyEricsson T68i  SonyEricssonT68
 				       value="wmapi, mmapi, motorola-lwt, location-api" />
 		<capability name="SoftwarePlatform.HeapSize"
 				       value="1.15 MB" />
-		<capability name="SoftwarePlatform.MidletMaxSize"
+		<capability name="SoftwarePlatform.MaxJarSize"
 				       value="500 kb" />
 	</device>
 	<device>
@@ -112,29 +112,246 @@ SonyEricsson T68i  SonyEricssonT68
 	</device>
 
 <!-- Nokia devices -->
+	
 	<device>
-		<identifier>Nokia/3650</identifier>
+		<identifier>Nokia/N-Gage QD</identifier>
 		<groups>Series60</groups>
-		<capability name="JavaPackage" value="mmapi, btapi, wmapi" />
+		<capability name="OS" value="Symbian OS 6.1"/>
 		<capability name="ScreenSize" value="176x208"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="mmapi, wmapi" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="VideoFormat" value="3GPP" />
+		<capability name="SoundFormat" value="midi,amr,wav" />
+		<capability name="HeapSize" value="16 MB" />
+		<capability name="MaxJarSize" value="4 MB" />
+	</device>
+
+	<device>
+		<identifier>Nokia/7610</identifier>
+		<groups>Series60</groups>
+		<features>hasCamera</features>
+		<capability name="OS" value="Symbian OS 7.0s"/>
+		<capability name="ScreenSize" value="176x208"/>
+		<capability name="BitsPerPixel" value="16"/>
+		<capability name="JavaPackage" value="mmapi, wmapi, btapi" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="VideoFormat" value="3GPP, MPEG-4, RealVideo" />
+		<capability name="SoundFormat" value="midi, True Tones,  WAV,  MP3, AAC, RealAudio" />
+		<capability name="HeapSize" value="8 MB" />
+		<capability name="MaxJarSize" value="dynamic" />
+		<capability name="CameraResolution" value="1MP" />
+		<capability name="CameraZoom" value="4" />
+	</device>
+		
+		<device>
+		<identifier>Nokia/6620</identifier>
+		<groups>Series60</groups>
+		<features>hasCamera</features>
+		<capability name="OS" value="Symbian OS 7.0s"/>
+		<capability name="ScreenSize" value="176x208"/>
+		<capability name="BitsPerPixel" value="16"/>
+		<capability name="JavaPackage" value="mmapi, wmapi, btapi" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="VideoFormat" value="3GPP, MPEG-4, RealVideo" />
+		<capability name="SoundFormat" value="midi, True Tones, MP3, AAC" />
+		<capability name="HeapSize" value="dynamic" />
+		<capability name="MaxJarSize" value="dynamic" />
+		<capability name="CameraResolution" value="vga" />
+		<capability name="CameraZoom" value="0" />
+	</device>
+
+	<device>
+		<identifier>Nokia/3660</identifier>
+		<groups>Series60</groups>
+		<features>hasCamera</features>
+		<capability name="OS" value="Symbian OS 6.1"/>
+		<capability name="ScreenSize" value="176x208"/>
+		<capability name="BitsPerPixel" value="16"/>
+		<capability name="JavaPackage" value="mmapi, wmapi" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="VideoFormat" value="3GPP" />
+		<capability name="SoundFormat" value="midi, amr" />
+		<capability name="HeapSize" value="dynamic" />
+		<capability name="MaxJarSize" value="4mb" />
+		<capability name="CameraResolution" value="vga" />
+		<capability name="CameraZoom" value="0" />
+	</device>	
+
+	<device>
+		<identifier>Nokia/3620</identifier>
+		<groups>Series60</groups>
+		<features>hasCamera</features>
+		<capability name="OS" value="Symbian OS 6.1"/>
+		<capability name="ScreenSize" value="176x208"/>
+		<capability name="BitsPerPixel" value="16"/>
+		<capability name="JavaPackage" value="mmapi, wmapi" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="VideoFormat" value="3GPP" />
+		<capability name="SoundFormat" value="midi, amr" />
+		<capability name="HeapSize" value="dynamic" />
+		<capability name="MaxJarSize" value="4mb" />
+		<capability name="CameraResolution" value="vga" />
+		<capability name="CameraZoom" value="0" />
 	</device>
 
 	<device>
 		<identifier>Nokia/6600</identifier>
 		<groups>Series60</groups>
+		<features>hasCamera</features>
+		<capability name="OS" value="Symbian OS 7.0s"/>
 		<capability name="ScreenSize" value="176x208"/>
 		<capability name="BitsPerPixel" value="16"/>
-		<capability name="JavaPackage" value="mmapi, btapi, wmapi" />
+		<capability name="JavaPackage" value="mmapi, wmapi, btapi" />
 		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="VideoFormat" value="3GPP" />
+		<capability name="SoundFormat" value="midi, True Tones" />
+		<capability name="HeapSize" value="3mb" />
+		<capability name="MaxJarSize" value="dynamic" />
+		<capability name="CameraResolution" value="vga" />
+		<capability name="CameraZoom" value="2" />
 	</device>
-
+	
 	<device>
-		<identifier>Nokia/N-Gage</identifier>
+		<identifier>Nokia/3600</identifier>
 		<groups>Series60</groups>
+		<features>hasCamera</features>
+		<capability name="OS" value="Symbian OS 6.1"/>
 		<capability name="ScreenSize" value="176x208"/>
 		<capability name="BitsPerPixel" value="12"/>
 		<capability name="JavaPackage" value="mmapi, wmapi" />
 		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="VideoFormat" value="3GPP" />
+		<capability name="SoundFormat" value="midi, amr" />
+		<capability name="HeapSize" value="dynamic" />
+		<capability name="MaxJarSize" value="4mb" />
+		<capability name="CameraResolution" value="vga" />
+		<capability name="CameraZoom" value="0" />
+	</device>
+		
+	<device>
+		<identifier>Nokia/N-Gage</identifier>
+		<groups>Series60</groups>
+		<capability name="OS" value="Symbian OS 6.1"/>
+		<capability name="ScreenSize" value="176x208"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="mmapi, wmapi" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="VideoFormat" value="3GPP" />
+		<capability name="SoundFormat" value="midi, amr,  WAV, MP3, AAC" />
+		<capability name="HeapSize" value="dynamic" />
+		<capability name="MaxJarSize" value="4mb" />
+	</device>
+		
+	<device>
+		<identifier>Nokia/3650</identifier>
+		<groups>Series60</groups>
+		<features>hasCamera</features>
+		<capability name="OS" value="Symbian OS 6.1"/>
+		<capability name="ScreenSize" value="176x208"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="mmapi, wmapi" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="VideoFormat" value="3GPP" />
+		<capability name="SoundFormat" value="midi, amr" />
+		<capability name="HeapSize" value="dynamic" />
+		<capability name="MaxJarSize" value="4mb" />
+		<capability name="CameraResolution" value="vga" />
+		<capability name="CameraZoom" value="0" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/7650</identifier>
+		<groups>Series60</groups>
+		<features>hasCamera</features>
+		<capability name="OS" value="Symbian OS 6.1"/>
+		<capability name="ScreenSize" value="176x208"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="midi, amr" />
+		<capability name="HeapSize" value="dynamic" />
+		<capability name="MaxJarSize" value="4mb" />
+		<capability name="CameraResolution" value="vga" />
+		<capability name="CameraZoom" value="0" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/6255</identifier>
+		<features>hasCamera</features>
+		<capability name="ScreenSize" value="128x160"/>
+		<capability name="BitsPerPixel" value="16"/>
+		<capability name="JavaPackage" value="nokia-ui" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="VideoFormat" value="3GPP" />
+		<capability name="SoundFormat" value="midi, mp3, aac" />
+		<capability name="CameraResolution" value="vga" />
+		<capability name="CameraZoom" value="3" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/9500</identifier>
+		<groups>Series80</groups>
+		<features>hasCamera</features>
+		<capability name="OS" value="Symbian OS 7.0s"/>
+		<capability name="ScreenSize" value="640x200"/>
+		<capability name="BitsPerPixel" value="16"/>
+		<capability name="JavaPackage" value="mmapi, wmapi, btapi,  Java Technology Wireless Industry rel. 1 (JSR-185),CDC (JSR-36), Personal Profile (JSR-62), Foundation Profile (JSR-46), FileConnection and PIM API (JSR-75)" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="VideoFormat" value="3GPP,  MPEG-4, RealVideo" />
+		<capability name="SoundFormat" value="midi, amr, wav, mp3, aac" />
+		<capability name="HeapSize" value="20mb" />
+		<capability name="MaxJarSize" value="dynamic" />
+		<capability name="CameraResolution" value="vga" />
+		<capability name="CameraZoom" value="0" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/5140</identifier>
+		<groups>Series40</groups>
+		<features>hasCamera</features>
+		<capability name="ScreenSize" value="128x128"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="mmapi, wmapi,  Java Technology Wireless Industry rel. 1 (JSR-185)" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="VideoFormat" value="3GPP" />
+		<capability name="SoundFormat" value="midi, amr" />
+		<capability name="HeapSize" value="512kb" />
+		<capability name="MaxJarSize" value="128kb" />
+		<capability name="CameraResolution" value="vga" />
+		<capability name="CameraZoom" value="0" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/7700</identifier>
+		<groups>Series90</groups>
+		<features>hasCamera</features>
+		<capability name="OS" value="Symbian OS 7.0s"/>
+		<capability name="ScreenSize" value="640x320"/>
+		<capability name="BitsPerPixel" value="16"/>
+		<capability name="JavaPackage" value="mmapi, wmapi, btapi" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="VideoFormat" value="3GPP, MPEG-4, RealVideo" />
+		<capability name="SoundFormat" value="midi, amr, WAV, MP3, AAC, RealAudio" />
+		<capability name="HeapSize" value="dynamic" />
+		<capability name="MaxJarSize" value="dynamic" />
+		<capability name="CameraResolution" value="vga" />
+		<capability name="CameraZoom" value="0" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/6230</identifier>
+		<groups>Series40</groups>
+		<features>hasCamera</features>
+		<capability name="ScreenSize" value="128x128"/>
+		<capability name="BitsPerPixel" value="16"/>
+		<capability name="JavaPackage" value="mmapi, wmapi, btapi, Java Technology Wireless Industry rel. 1 (JSR-185)" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="VideoFormat" value="3GPP" />
+		<capability name="SoundFormat" value="midi, amr, MP3, AAC" />
+		<capability name="HeapSize" value="512kb" />
+		<capability name="MaxJarSize" value="128kb" />
+		<capability name="CameraResolution" value="vga" />
+		<capability name="CameraZoom" value="0" />
 	</device>
 	
 <!-- Siemens devices -->
