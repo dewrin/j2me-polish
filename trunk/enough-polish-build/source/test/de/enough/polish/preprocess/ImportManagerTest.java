@@ -13,7 +13,7 @@ import java.util.Calendar;
 import junit.framework.TestCase;
 
 /**
- * <p>Tests the ImportManager class</p>
+ * <p>Tests the ImportConverter class</p>
  *
  * <p>copyright enough software 2004</p>
  * <pre>
@@ -29,7 +29,7 @@ public class ImportManagerTest extends TestCase {
 	}
 	
 	public void testProcessImports() {
-		ImportManager manager = new ImportManager();
+		ImportConverter manager = new ImportConverter();
 		StringList code = new StringList( new String[] {
 			"/*",
 			"* Created on 20-Feb-2004 at 20:09:42.",

@@ -62,12 +62,12 @@ public class Preprocessor {
 	private boolean indent;
 	boolean enableDebug;
 	private String newExtension;
-	private StyleSheet styleSheet;
 	private HashMap withinIfDirectives;
 	private HashMap ignoreDirectives;
 	private HashMap supportedDirectives;
 	private int ifDirectiveCount;
 	private BooleanEvaluator booleanEvaluator;
+	private StyleSheet styleSheet;
 
 	/**
 	 * Creates a new Preprocessor - usually for a specific device or a device group.
@@ -102,7 +102,6 @@ public class Preprocessor {
 		this.backup = backup;
 		this.indent = indent;
 		this.newExtension = newExt;
-		this.styleSheet = new StyleSheet();
 		this.booleanEvaluator = new BooleanEvaluator( symbols );
 		this.destinationDir = destinationDir;
 		this.withinIfDirectives = new HashMap();
@@ -188,14 +187,6 @@ public class Preprocessor {
 		this.variables.putAll(additionalVars);
 	}
 	
-	/**
-	 * Retrieves the style sheet with all found style definitions of the preprocessed code.
-	 * 
-	 * @return the style sheet
-	 */
-	public StyleSheet getStyleSheet() {
-		return this.styleSheet;
-	}
 	
 	/**
 	 * Preprocesses the given file and saves it to the destination directory.
@@ -743,7 +734,8 @@ public class Preprocessor {
 			lines.insert( "\tStyleSheet.setCurrentStyle( \"" + argument + "\" );"  );
 		}
 		// mark the style as beeing used:
-		this.styleSheet.addStyle( argument );
+		//TODO allow usage of favourite styles #style myStyle, okStyle, baseStyle
+		this.styleSheet.addUsedStyle( argument );
 		return true;
 	}
 
@@ -855,6 +847,24 @@ public class Preprocessor {
 	public static final boolean includesDirective(String line) {
 		Matcher matcher = DIRECTIVE_PATTERN.matcher( line );
 		return matcher.find();
+	}
+
+	/**
+	 * Sets the style sheet.
+	 * 
+	 * @param styleSheet the new style sheet
+	 */
+	public void setSyleSheet(StyleSheet styleSheet) {
+		this.styleSheet = styleSheet;
+	}
+	
+	/**
+	 * Retrieves the style sheet.
+	 * 
+	 * @return the style sheet.
+	 */
+	public StyleSheet getStyleSheet() {
+		return this.styleSheet;
 	}
 
 

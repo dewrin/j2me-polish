@@ -68,6 +68,7 @@ public class PreprocessorTest extends TestCase {
 		variables.put( "polish.message", "Hello world!");
 		
 		this.preprocessor = new Preprocessor( project, currentDir, variables, symbols, false, false, true, null );
+		this.preprocessor.setSyleSheet( new StyleSheet() );
 	}
 
 	/* (non-Javadoc)
@@ -608,7 +609,7 @@ public class PreprocessorTest extends TestCase {
 		result = this.preprocessor.preprocess( "MyClass.java", lines );
 		assertEquals( Preprocessor.CHANGED, result );
 		styleSheet = this.preprocessor.getStyleSheet();
-		assertTrue( styleSheet.isDefined("weird"));
+		assertTrue( styleSheet.isUsed("weird"));
 		
 		sourceLines = new String[] {
 				"	//#ifdef XXtest1 ",
@@ -624,7 +625,7 @@ public class PreprocessorTest extends TestCase {
 		result = this.preprocessor.preprocess( "MyClass.java", lines );
 		assertEquals( Preprocessor.CHANGED, result );
 		styleSheet = this.preprocessor.getStyleSheet();
-		assertTrue( styleSheet.isDefined("crazy"));
+		assertTrue( styleSheet.isUsed("crazy"));
 		
 		sourceLines = new String[] {
 				"	//#ifdef XXtest1 ",
@@ -642,7 +643,7 @@ public class PreprocessorTest extends TestCase {
 		result = this.preprocessor.preprocess( "MyClass.java", lines );
 		assertEquals( Preprocessor.CHANGED, result );
 		styleSheet = this.preprocessor.getStyleSheet();
-		assertTrue( styleSheet.isDefined("funny"));
+		assertTrue( styleSheet.isUsed("funny"));
 		
 		// without closing semicolon:
 		sourceLines = new String[] {

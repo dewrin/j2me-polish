@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Set;
 
 /**
- * <p>Changes the import-statements to allow the parallel usage of the polish-gui and the standard java-gui.</p>
+ * <p>Converts the import-statements to allow the parallel usage of the polish-gui and the standard java-gui.</p>
  *
  * <p>copyright enough software 2004</p>
  * <pre>
@@ -22,7 +22,7 @@ import java.util.Set;
  * </pre>
  * @author Robert Virkus, robert@enough.de
  */
-public final class ImportManager {
+public final class ImportConverter {
 	
 	private HashMap polishToMidp1;
 	private HashMap midp1ToPolish;
@@ -30,9 +30,9 @@ public final class ImportManager {
 	private String[] completeLcdUiReplacement;
 	
 	/**
-	 * Creates a new import manager.
+	 * Creates a new import converter.
 	 */
-	public ImportManager() {
+	public ImportConverter() {
 		// init import statements to translate from the J2ME- to the polish-GUI:
 		HashMap toPolish = new HashMap();
 		toPolish.put( "javax.microedition.lcdui.Choice", "de.enough.polish.ui.Choice");
