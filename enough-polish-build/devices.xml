@@ -58,6 +58,20 @@ SonyEricsson T68i  SonyEricssonT68
 <!-- Motorola devices -->
 	<device>
 		<identifier>
+			Motorola/V300
+		</identifier>
+		<user-agent>MOTv300</user-agent>
+		<capability name="SoftwarePlatform.JavaPlatform"
+					   value="MIDP/1.0" />
+		<capability name="HardwarePlatform.ScreenSize"
+					    value="176x220" />
+		<capability name="HardwarePlatform.BitsPerPixel"
+				       value="16" />
+		<capability name="HardwarePlatform.CameraResolution"
+				       value="300x200" />
+	</device>
+	<device>
+		<identifier>
 			Motorola/i730
 		</identifier>
 		<user-agent>MOTi730</user-agent>
@@ -113,6 +127,15 @@ SonyEricsson T68i  SonyEricssonT68
 		<capability name="JavaPlatform" value="MIDP/2.0" />
 	</device>
 
+	<device>
+		<identifier>Nokia/N-Gage</identifier>
+		<groups>Series60</groups>
+		<capability name="ScreenSize" value="176x208"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="mmapi, wmapi" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+	</device>
+	
 <!-- Siemens devices -->
 	<device 
 		supportsPolishGui="true">

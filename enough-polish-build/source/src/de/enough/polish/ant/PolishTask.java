@@ -194,7 +194,7 @@ public class PolishTask extends ConditionalTask {
 		}
 		// create project settings:
 		this.polishProject = new PolishProject( this.buildSetting.usesPolishGui(), isDebugEnabled, debugManager );
-		if (debugManager.isVerbose()) {
+		if (debugManager != null && debugManager.isVerbose()) {
 			this.polishProject.addFeature("debugVerbose");
 		}
 		this.polishProject.addCapability("license", this.infoSetting.getlicense() );
@@ -578,13 +578,13 @@ public class PolishTask extends ConditionalTask {
 			throw new BuildException( e.getMessage() );
 		}
 	}
-
+	
 	/**
 	 * Sets the StyleSheet.display variable in a MIDlet class.
 	 * 
 	 * @param className the name of the class
 	 * @param sourceCode the source code
-	 * @throws BuildException when the MIDlet constructor or startApp()-method could not be found
+	 * @throws BuildException when the startApp()-method could not be found
 	 */
 	private void insertDisplaySetting( String className, StringList sourceCode ) {
 		// at first try to find the startApp method:
@@ -605,15 +605,7 @@ public class PolishTask extends ConditionalTask {
 		}
 		System.out.println(START_APP_PATTERN.pattern());
 		throw new BuildException("Unable to find startApp method in MIDlet [" + className + "].");
-		// the startApp method could not be found,
-		// so see if the constructor can be found:
-		/*
-		sourceCode.reset();
-		String name = className;
-		if (className.lastIndexOf('.') != -1) {
-			name = className.substring( className.lastIndexOf('.') + 1 );
-		}
-		*/
+
 	}
 
 	/**

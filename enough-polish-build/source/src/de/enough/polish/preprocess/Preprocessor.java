@@ -517,6 +517,9 @@ public class Preprocessor {
 			} else if ( trimmedLine.startsWith("//#if ") ) {
 				// we are currently in a branch which is not true (conditionFulfilled == false)
 				this.ifDirectiveCount++;
+			} else if ( trimmedLine.startsWith("//#ifndef ") ) {
+				// we are currently in a branch which is not true (conditionFulfilled == false)
+				this.ifDirectiveCount++;
 			} else if (trimmedLine.startsWith("//#else") 
 					&& (this.ifDirectiveCount == currentIfDirectiveCount)) {
 				if (conditionFulfilled || conditionHasBeenFullfilled) {
@@ -887,7 +890,7 @@ public class Preprocessor {
 		if (this.debugManager.isDebugEnabled( className, argument )) {
 			boolean verboseDebug = this.debugManager.isVerbose();
 			if (verboseDebug) {
-				System.out.println("is verbose debug!");
+				//System.out.println("is verbose debug!");
 				insertVerboseDebugInfo( lines, className );
 			}
 			return (verboseDebug | uncommentLine( line, lines ));
