@@ -171,7 +171,7 @@ public class LibraryManager {
 							libPath = file.getAbsolutePath();
 						} else {
 							// now check if an property has been defined for this api:
-							String path = (String) antProperties.get( "polish.api." + libName );
+							String path = (String) this.antProperties.get( "polish.api." + libName );
 							if (path != null) {
 								File libFile = new File( path );
 								if (libFile.exists()) {
