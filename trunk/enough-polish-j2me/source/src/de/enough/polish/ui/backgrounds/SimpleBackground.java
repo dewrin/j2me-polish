@@ -1,3 +1,4 @@
+//#condition polish.usePolishGui
 /*
  * Created on 06-Jan-2004 at 22:01:54.
  * This source code is published under the GNU General Public Licence and
@@ -40,7 +41,7 @@ extends Background
 	 */
 	public void paint(int x, int y, int width, int height, Graphics g) {
 		g.setColor( this.color );
-		g.fillRect( x, y, width, height );
+		g.fillRect( x, y, width + 1, height + 1 );
 	}
 
 }

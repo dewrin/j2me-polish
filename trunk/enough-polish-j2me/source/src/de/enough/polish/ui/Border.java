@@ -1,3 +1,4 @@
+//#condition polish.usePolishGui
 /*
  * Created on 04-Jan-2004 at 19:37:35.
  * This source code is published under the GNU General Public Licence and

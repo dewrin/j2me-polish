@@ -6,6 +6,7 @@
  */
 package de.enough.polish.util;
 
+
 /**
  * <p>Provides an flexible list for storing objects.</p>
  * <p>
@@ -94,6 +95,25 @@ public class ArrayList {
 	}
 	
 	/**
+	 * Retrieves the index of the given object.
+	 * 
+	 * @param element the object which is part of this list.
+	 * @return the index of the object or -1 when the object is not part of this list.
+	 * @throws IllegalArgumentException when the given element is null
+	 */
+	public int indexOf(Object element) {
+		if (element == null) {
+			throw new IllegalArgumentException( "ArrayList cannot contain a null element.");
+		}
+		for (int i = 0; i < this.size; i++) {
+			Object object = this.storedObjects[i];
+			if ( object.equals( element ) ) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	/**
 	 * Returns the element at the specified position in this list.
 	 *  
 	 * @param index the position of the desired element.
@@ -106,7 +126,7 @@ public class ArrayList {
 		}
 		return this.storedObjects[ index ];
 	}
-	
+		
 	/**
 	 * Removes the element at the specified position in this list.
 	 *  
@@ -279,5 +299,6 @@ public class ArrayList {
 		System.arraycopy( this.storedObjects, 0, newStore, 0, this.size );
 		this.storedObjects = newStore;
 	}
+
 
 }

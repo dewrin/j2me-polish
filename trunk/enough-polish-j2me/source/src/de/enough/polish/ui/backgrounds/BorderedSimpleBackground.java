@@ -1,3 +1,4 @@
+//#condition polish.usePolishGui
 /*
  * Created on 06-Jan-2004 at 22:17:53.
  * This source code is published under the GNU General Public Licence and
@@ -45,13 +46,13 @@ public class BorderedSimpleBackground extends Background {
 	 */
 	public void paint(int x, int y, int width, int height, Graphics g) {
 		g.setColor( this.color );
-		g.fillRect( x, y, width, height );
+		g.fillRect( x, y, width + 1, height + 1 );
 		g.setColor( this.borderColor );
-		g.drawRect( x, y, width -1, height -1 );
+		g.drawRect( x, y, width, height );
 		if (this.borderWidth > 1) {
 			int border = this.borderWidth - 1;
 			while ( border > 0) {
-				g.drawRect( x+border, y+border, width - border -1, height - border -1 );
+				g.drawRect( x+border, y+border, width - 2*border, height - 2*border );
 				border--;
 			}
 		}
