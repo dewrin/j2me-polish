@@ -457,6 +457,10 @@ public class CssConverter extends Converter {
 	 */
 	private String getColor(String value) {
 		String color = this.colorConverter.parseColor(value);
+		if (color == ColorConverter.TRANSPARENT ) {
+			return "-1";
+		}
+		//TODO rob this won't work with argb-colors
 		return Integer.decode(color).toString();
 	}
 
@@ -467,7 +471,7 @@ public class CssConverter extends Converter {
 	 * @param value the reference
 	 * @param parent the parent style
 	 * @param styleSheet the sheet in which the style is embedded
-	 * @return
+	 * @return the name of the reference style
 	 */
 	private String getStyleReference(String value, Style parent, StyleSheet styleSheet) {
 		String reference = value.toLowerCase();
