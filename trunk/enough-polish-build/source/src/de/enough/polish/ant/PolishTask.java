@@ -56,7 +56,7 @@ import java.util.regex.Pattern;
  */
 public class PolishTask extends ConditionalTask {
 
-	private static final String VERSION = "0.3.1";
+	private static final String VERSION = "1.0.0-RC1";
 
 	private BuildSetting buildSetting;
 	private InfoSetting infoSetting;
@@ -334,7 +334,7 @@ public class PolishTask extends ConditionalTask {
 			this.sourceFiles[i+1] = getTextFiles( dir,  dirScanner.getIncludedFiles() );
 		}
 		if (this.buildSetting.usesPolishGui() && this.styleSheetFile == null) {
-			throw new BuildException("Did not find the file [StyleSheet.java] of the polish GUI framework. Please add the [polish] attribute to the <source> element of the <build> setting. The [polish]-attribute should point to the directory which contains the polish-Java-sources.");
+			throw new BuildException("Did not find the file [StyleSheet.java] of the J2ME Polish GUI framework. Please adjust the [polishDir] attribute of the <build> element in the [build.xml] file. The [polishDir]-attribute should point to the directory which contains the J2ME Polish-Java-sources.");
 		}
 		
 		// init boot class path:
@@ -359,7 +359,7 @@ public class PolishTask extends ConditionalTask {
 		if (this.buildSetting.usesPolishGui()) {
 			File cssFile = new File( this.buildSetting.getResDir().getAbsolutePath() + File.separatorChar + "polish.css");
 			if (!cssFile.exists()) {
-				log("Unable to find polish.css at [" + cssFile.getAbsolutePath() + "] - you should create this file when you want to make most of the polish GUI.", Project.MSG_WARN );
+				log("Unable to find polish.css at [" + cssFile.getAbsolutePath() + "] - you should create this file when you want to make most of the J2ME Polish GUI.", Project.MSG_WARN );
 				this.styleSheet = new StyleSheet();
 			} else {
 				CssReader cssReader = new CssReader();

@@ -324,9 +324,15 @@ public class BuildSetting {
 	 */
 	public void setPolishDir( File polishDir ) {
 		if (!polishDir.exists()) {
-			throw new BuildException("The polish directory [" + polishDir.getAbsolutePath() + 
+			throw new BuildException("The J2ME Polish source directory [" + polishDir.getAbsolutePath() + 
 					"] does not exist. " +
 					"Please correct the [polishDir] attribute of the <build> element.");
+		}
+		String actualSourcePath = polishDir.getAbsolutePath() + File.separator
+				+ "src";
+		File actualSourceDir = new File( actualSourcePath );
+		if ( actualSourceDir.exists()) {
+			polishDir = actualSourceDir;
 		}
 		this.polishDir = polishDir;
 	}
