@@ -46,7 +46,7 @@ extends Background
 	 */
 	public void paint(int x, int y, int width, int height, Graphics g) {
 		g.setColor( this.color );
-		g.fillRoundRect( x, y, width + 1, height + 1, this.arcWidth, this.arcHeight );
+		g.fillRoundRect( x, y, width, height, this.arcWidth, this.arcHeight );
 	}
 
 }

@@ -52,7 +52,7 @@ public class BorderedRoundRectBackground extends Background {
 	 */
 	public void paint(int x, int y, int width, int height, Graphics g) {
 		g.setColor( this.color );
-		g.fillRoundRect( x, y, width + 1, height + 1, this.arcWidth, this.arcHeight );
+		g.fillRoundRect( x, y, width, height, this.arcWidth, this.arcHeight );
 		g.setColor( this.borderColor );
 		g.drawRoundRect( x, y, width, height, this.arcWidth, this.arcHeight );
 		if (this.borderWidth > 1) {
