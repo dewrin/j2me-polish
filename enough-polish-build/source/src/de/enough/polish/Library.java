@@ -122,7 +122,7 @@ public class Library {
 		}
 		
 		// 2. now check if an property has been defined for this api:
-		String path = (String) antProperties.get( "polish.api." + this.symbol );
+		String path = (String) this.antProperties.get( "polish.api." + this.symbol );
 		if (path != null) {
 			File libFile = new File( path );
 			if (libFile.exists()) {
