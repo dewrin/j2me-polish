@@ -445,9 +445,9 @@ public class CssConverter extends Converter {
 							.append(key);
 					}
 					String value = (String) group.get( key );
-					if (key.equals("style")) {
+					if (key.endsWith("style")) {
 						value = getStyleReference( value, style, styleSheet );
-					} else if (key.equals("color")) {
+					} else if (key.endsWith("color")) {
 						value = getColor( value );
 					} else if (key.equals("url")) {
 						value = getUrl( value );
