@@ -50,6 +50,7 @@ public final class StyleSheet {
 	 * @throws NullPointerException when the name is null
 	 */
 	public static Style getStyle( String name ) {
+		//TODO set the style as the current style?
 		if (stylesByName==null) {
 			return defaultStyle;
 		}

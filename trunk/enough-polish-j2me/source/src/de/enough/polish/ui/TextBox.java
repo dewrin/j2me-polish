@@ -5,9 +5,7 @@ import javax.microedition.lcdui.Canvas;
 import javax.microedition.lcdui.Graphics;
 
 /**
- * The <code>TextBox</code> class is a <code>Screen</code> that allows
- * the user to enter and edit
- * text.
+ * The <code>TextBox</code> class is a <code>Screen</code> that allows the user to enter and edit text.
  * 
  * <p>A <code>TextBox</code> has a maximum size, which is the maximum
  * number of characters
