@@ -17,11 +17,11 @@ package de.enough.polish.util;
  * <p>
  * Workarounds for some of the missing methods:
  * <ul>
- * 	<li><b>isEmpty()<b> Use "list.size() == 0" instead.</li> 
- *		<li><b>ensureCapacity(int)<b> Define the expected capacity in the constructor.</li>
- *		<li><b>indexOf(Object)/lastIndexOf(Object)<b> You have to do them manually. 
+ * 	<li><b>isEmpty()</b> Use "list.size() == 0" instead.</li> 
+ *		<li><b>ensureCapacity(int)</b> Define the expected capacity in the constructor.</li>
+ *		<li><b>indexOf(Object)/lastIndexOf(Object)</b> You have to do them manually. 
  *				Use "list.toArray()" to get the stored objects, cycle through them and test for equality.</li>
- * 	<li><b>addAll(Collection)<b> Add all elements of the collection singlely.</li> 
+ * 	<li><b>addAll(Collection)</b> Add all elements of the collection singlely.</li> 
  * </ul>
  * </p>
  * @author Robert Virkus, robert@enough.de
@@ -45,7 +45,7 @@ public class ArrayList {
 	/**
 	 * creates an ArrayList with the given initial capacity and a growth factor of 75%
 	 * 
-	 * @param initialCapacity - the capacity of this array list.
+	 * @param initialCapacity the capacity of this array list.
 	 */
 	public ArrayList( int initialCapacity ) {
 		this( initialCapacity, 75 );
@@ -54,8 +54,8 @@ public class ArrayList {
 	/**
 	 * Creates a new ArrayList
 	 * 
-	 * @param initialCapacity - the capacity of this array list.
-	 * @param growthFactor - the factor in % for increasing the capacity 
+	 * @param initialCapacity the capacity of this array list.
+	 * @param growthFactor the factor in % for increasing the capacity 
 	 * 								  when there's not enough room in this list anymore 
 	 */
 	public ArrayList( int initialCapacity, int growthFactor ) {
@@ -75,7 +75,7 @@ public class ArrayList {
 	/**
 	 * Determines whether the given element is stored in this list.
 	 * 
-	 * @param element - the element which might be stored in this list
+	 * @param element the element which might be stored in this list
 	 * @return true when the given element is stored in this list
 	 * @throws IllegalArgumentException when the given element is null
 	 * @see #remove(Object)
@@ -96,7 +96,7 @@ public class ArrayList {
 	/**
 	 * Returns the element at the specified position in this list.
 	 *  
-	 * @param index - the position of the desired element.
+	 * @param index the position of the desired element.
 	 * @return the element stored at the given position
 	 * @throws IndexOutOfBoundsException when the index < 0 || index >= size()
 	 */
@@ -110,7 +110,7 @@ public class ArrayList {
 	/**
 	 * Removes the element at the specified position in this list.
 	 *  
-	 * @param index - the position of the desired element.
+	 * @param index the position of the desired element.
 	 * @return the element stored at the given position
 	 * @throws IndexOutOfBoundsException when the index < 0 || index >= size()
 	 */
@@ -129,7 +129,7 @@ public class ArrayList {
 	/**
 	 * Removes the given element.
 	 * 
-	 * @param element - the element which should be removed.
+	 * @param element the element which should be removed.
 	 * @return true when the element was found in this list.
 	 * @throws IllegalArgumentException when the given element is null
 	 * @see #contains(Object)
@@ -170,7 +170,7 @@ public class ArrayList {
 	/**
 	 * Stores the given element in this list.
 	 * 
-	 * @param element - the element which should be appended to this list.
+	 * @param element the element which should be appended to this list.
 	 * @throws IllegalArgumentException when the given element is null
 	 * @see #add( int, Object )
 	 */
@@ -189,9 +189,9 @@ public class ArrayList {
 	 * Inserts the given element at the defined position.
 	 * Any following elements are shifted one position to the back.
 	 * 
-	 * @param index - the position at which the element should be inserted, 
+	 * @param index the position at which the element should be inserted, 
 	 * 					 use 0 when the element should be inserted in the front of this list.
-	 * @param element - the element which should be inserted
+	 * @param element the element which should be inserted
 	 * @throws IllegalArgumentException when the given element is null
 	 * @throws IndexOutOfBoundsException when the index < 0 || index >= size()
 	 */
@@ -217,8 +217,8 @@ public class ArrayList {
 	/**
 	 * Replaces the element at the specified position in this list with the specified element. 
 	 * 
-	 * @param index - the position of the element, the first element has the index 0.
-	 * @param element - the element which should be set
+	 * @param index the position of the element, the first element has the index 0.
+	 * @param element the element which should be set
 	 * @return the replaced element
 	 * @throws IndexOutOfBoundsException when the index < 0 || index >= size()
 	 */
@@ -245,7 +245,7 @@ public class ArrayList {
 	/**
 	 * Returns all stored elements in the given array.
 	 * 
-	 * @param target - the array in which the stored elements should be copied.
+	 * @param target the array in which the stored elements should be copied.
 	 * @return the stored elements of this list
 	 */
 	public Object[] toArray( Object[] target ) {
