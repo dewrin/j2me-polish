@@ -97,7 +97,7 @@ implements CommandListener
 	protected int screenWidth;
 	protected Ticker ticker;
 	protected String cssSelector;
-	protected CommandListener cmdListener;
+	protected ForwardCommandListener cmdListener;
 	protected Container container;
 	protected boolean isLayoutVCenter;
 	protected boolean isInitialised;
@@ -129,6 +129,8 @@ implements CommandListener
 	//#endif
 	/** The Gauge Item which should be animated by this screen */
 	protected Item gauge;
+	/** The currently focused items which has item-commands */
+	private Item focusedItem;
 
 	/**
 	 * Creates a new screen
@@ -179,6 +181,10 @@ implements CommandListener
 		this.container.screen = this;
 		this.titleText = title;
 		this.style = style;
+		this.cmdListener = new ForwardCommandListener();
+		//#ifndef tmp.menuFullScreen
+		super.setCommandListener(this.cmdListener);
+		//#endif
 		} catch (RuntimeException e) {
 			e.printStackTrace();
 			throw new RuntimeException("Error in Screen Constructor: " + e.toString() );
@@ -376,28 +382,31 @@ implements CommandListener
 				}
 				g.setColor( this.menuFontColor );
 				g.setFont( this.menuFont );
-				g.drawString(menuText, 2, this.screenHeight + 1, Graphics.TOP | Graphics.LEFT );
+				g.drawString(menuText, 2, this.screenHeight + 2, Graphics.TOP | Graphics.LEFT );
 				if ( this.menuOpened ) {
 					// draw select string:
 					//TODO rob internationalise cmd.cancelMenu
 					menuText = "Cancel";
-					g.drawString(menuText, this.screenWidth - 2, this.screenHeight + 1, Graphics.TOP | Graphics.RIGHT );
+					g.drawString(menuText, this.screenWidth - 2, this.screenHeight + 2, Graphics.TOP | Graphics.RIGHT );
 				}
 			}
-			if (this.menuSingleRightCommand != null) {
+			if (this.menuSingleRightCommand != null && !this.menuOpened) {
 				g.setColor( this.menuFontColor );
 				g.setFont( this.menuFont );
-				g.drawString(this.menuSingleRightCommand.getLabel(), this.screenWidth - 2, this.screenHeight + 1, Graphics.TOP | Graphics.RIGHT );
+				g.drawString(this.menuSingleRightCommand.getLabel(), this.screenWidth - 2, this.screenHeight + 2, Graphics.TOP | Graphics.RIGHT );
 			}
 		//#endif
 		} catch (RuntimeException e) {
 			//#mdebug error
-			g.setColor( 0xFF0000 );
-			g.fillRect( 0, 0, this.screenWidth, this.screenHeight );
-			g.setColor( 0 );
-			String msg = e.toString();
-			g.drawString( msg, 10, 10, Graphics.TOP | Graphics.LEFT );
-			Debug.debug( "unable to paint screen", e );
+				g.setColor( 0xFF0000 );
+				g.fillRect( 0, 0, this.screenWidth, this.screenHeight );
+				g.setColor( 0 );
+				String msg = e.toString();
+				g.drawString( msg, 10, 10, Graphics.TOP | Graphics.LEFT );
+				Debug.debug( "unable to paint screen", e );
+				if (true) {
+					return;
+				}
 			//#enddebug
 			throw e;
 		}
@@ -626,10 +635,7 @@ implements CommandListener
 	 * @see javax.microedition.lcdui.Displayable#setCommandListener(javax.microedition.lcdui.CommandListener)
 	 */
 	public void setCommandListener(CommandListener listener) {
-		//#ifndef tmp.menuFullScreen
-		super.setCommandListener(listener);
-		//#endif
-		this.cmdListener = listener;
+		this.cmdListener.realCommandListener = listener;
 	}
 	
 	//#ifdef tmp.menuFullScreen
@@ -670,18 +676,54 @@ implements CommandListener
 	 * @see javax.microedition.lcdui.Displayable#removeCommand(javax.microedition.lcdui.Command)
 	 */
 	public void removeCommand(Command cmd) {
-		this.menuCommands.remove( cmd );
+		int index = this.menuCommands.indexOf(cmd);
+		this.menuCommands.remove(index);
 		if (this.menuSingleLeftCommand == cmd ) {
 			this.menuSingleLeftCommand = null;
-		}
-		if (this.menuSingleRightCommand == cmd) {
+			this.menuContainer.remove(index);			
+		} else if (this.menuSingleRightCommand == cmd) {
 			this.menuSingleRightCommand = null;
+		} else {
+			this.menuContainer.remove(index);			
 		}
 		if (isShown()) {
 			repaint();
 		}
 	}
 	//#endif
+	
+	/**
+	 * Sets the commands of the given item
+	 * 
+	 * @param item the item which has at least one command 
+	 */
+	protected void setItemCommands( Item item ) {
+		this.focusedItem = item;
+		// now add any commands which are associated with the item:
+		if (item.commands != null) {
+			Command[] commands = (Command[]) item.commands.toArray( new Command[item.commands.size()] );
+			for (int i = 0; i < commands.length; i++) {
+				Command command = commands[i];
+				addCommand(command);
+			}
+		}
+	}
+	
+	/**
+	 * Removes the commands of the given item.
+	 *  
+	 * @param item the item which has at least one command 
+	 */
+	protected void removeItemCommands( Item item ) {
+		if (item.commands != null) {
+			Command[] commands = (Command[]) item.commands.toArray( new Command[item.commands.size()] );
+			for (int i = 0; i < commands.length; i++) {
+				Command command = commands[i];
+				removeCommand(command);
+			}
+		}
+		this.focusedItem = null;
+	}
 	
 	/**
 	 * Calls the command listener with the specified command.
@@ -735,5 +777,38 @@ implements CommandListener
 		StyleSheet.display.setCurrent( this );
 	}
 	//#endif
+	
+	/**
+	 * <p>A command listener which forwards commands to the item command listener in case it encounters an item command.</p>
+	 *
+	 * <p>copyright enough software 2004</p>
+	 * <pre>
+	 * history
+	 *        09-Jun-2004 - rob creation
+	 * </pre>
+	 * @author Robert Virkus, robert@enough.de
+	 */
+	class ForwardCommandListener implements CommandListener {
+		public CommandListener realCommandListener;
+
+		/* (non-Javadoc)
+		 * @see javax.microedition.lcdui.CommandListener#commandAction(javax.microedition.lcdui.Command, javax.microedition.lcdui.Displayable)
+		 */
+		public void commandAction(Command cmd, Displayable thisScreen) {
+			//check if the given command is from the currently focused item:
+			if ((Screen.this.focusedItem != null) && (Screen.this.focusedItem.itemCommandListener != null)) {
+				Item item = Screen.this.focusedItem;
+				if ( item.commands.contains(cmd)) {
+					item.itemCommandListener.commandAction(cmd, item);
+					return;
+				}
+			}
+			// now invoke the usual command listener:
+			if (this.realCommandListener != null) {
+				this.realCommandListener.commandAction(cmd, thisScreen);
+			}
+		}
+		
+	}
 
 }
