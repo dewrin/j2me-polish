@@ -314,6 +314,22 @@ public class PreprocessorTest extends TestCase {
 		lines = new StringList( sourceLines );
 		result = this.preprocessor.preprocess( "MyClass.java", lines );
 		assertEquals( Preprocessor.CHANGED, result );
+
+		sourceLines = new String[] {		
+			"	//#ifndef polish.skipArgumentCheck",
+			"		if (listType != Choice.EXCLUSIVE && listType != Choice.MULTIPLE && listType != Choice.IMPLICIT ) {",
+			"			//#ifdef polish.debugVerbose",
+			"				throw new IllegalArgumentException(\"invalid list-type: \" + listType );",
+			"			//#else",
+			"				//# throw new IllegalArgumentException();",
+			"			//#endif",
+			"		}",		
+			"	//#endif"
+		};
+		lines = new StringList( sourceLines );
+		result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.CHANGED, result );
+		
 		/*
 		processedLines = lines.getArray();
 		for (int i = 0; i < processedLines.length; i++) {
