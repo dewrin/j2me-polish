@@ -134,5 +134,42 @@ public final class TextUtil {
 		return (String[]) strings.toArray( new String[ strings.size() ] );
 	}
 
+	/**
+	 * Splits the given String around the matches defined by the given delimiter into an array.
+	 * The resulting text-chunks will be trimmed afterwards.
+	 * Example:
+	 * <value>TextUtil.split("one ; two;   three ", ';')</value> results into the array
+	 * <value>{"one", "two", "three"}</value>.
+	 *
+	 * @param value the String which should be split into an array
+	 * @param delimiter the delimiter which marks the boundaries of the array 
+	 * @return an array, when the delimiter was not found, the array will only have a single element.
+	 */
+	public static String[] splitAndTrim(String value, char delimiter) {
+		String[] result = split( value, delimiter );
+		for (int i = 0; i < result.length; i++) {
+			result[i] = result[i].trim();
+		}
+		return result;
+	}
 
+	/**
+	 * Splits the given String around the matches defined by the given delimiter into an array.
+	 * The resulting text-chunks will be trimmed afterwards.
+	 * Example:
+	 * <value>TextUtil.split(" one ;;  two ;;three ", ";;")</value> results into the array
+	 * <value>{"one", "two", "three"}</value>.
+	 *
+	 * @param value the String which should be split into an array
+	 * @param delimiter the delimiter which marks the boundaries of the array 
+	 * @return an array, when the delimiter was not found, the array will only have a single element.
+	 */
+	public static String[] splitAndTrim(String value, String delimiter) {
+		String[] result = split( value, delimiter );
+		for (int i = 0; i < result.length; i++) {
+			result[i] = result[i].trim();
+		}
+		return result;
+	}
+	
 }

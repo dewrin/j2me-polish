@@ -1,0 +1,77 @@
+/*
+ * Created on 24-Jan-2004 at 00:21:06.
+ * This source code is published under the GNU General Public Licence and
+ * the enough-software-licence for commercial use.
+ * Please refer to accompanying LICENSE.txt or visit www.enough.de for details.
+ */
+package de.enough.polish.ant.requirements;
+
+import de.enough.polish.Device;
+import de.enough.polish.Capability;
+
+import java.util.ArrayList;
+
+/**
+ * <p>A list of requirements which each supported device needs to satisfy.</p>
+ *
+ * <p>copyright enough software 2004</p>
+ * <pre>
+ * history
+ *        24-Jan-2004 - rob creation
+ * </pre>
+ * @author Robert Virkus, robert@enough.de
+ */
+public class Requirements {
+	
+
+	private ArrayList requirements;
+	
+
+	/**
+	 * Creates a new device requirements list.
+	 */
+	public Requirements() {
+		this.requirements = new ArrayList();
+	}
+	
+	public void addConfiguredRequirement( Capability req ) {
+		String name = req.getName(); 
+		String value = req.getValue();
+		String type = req.getType();
+		Requirement requirement = Requirement.getInstance( name, value, type );
+		this.requirements.add( requirement );
+	}
+	
+	public Requirement[] getRequirements() {
+		return (Requirement[]) this.requirements.toArray( new Requirement[this.requirements.size()] );	
+	}
+	
+	/**
+	 * Filters the available devices and only returns those which satisfy all requirements.
+	 * 
+	 * @param availableDevices array of all available devices.
+	 * @return All devices which satisfy the requirements.
+	 */
+	public Device[] filterDevices( Device[] availableDevices ) {
+		Requirement[] reqs = getRequirements();
+		ArrayList deviceList = new ArrayList();
+		for (int i = 0; i < availableDevices.length; i++) {
+			Device device = availableDevices[i];
+			// now check all requirements:
+			boolean requirementMet = true;
+			for (int j = 0; j < reqs.length; j++) {
+				Requirement requirement = reqs[i];
+				if (! requirement.isMet( device)) {
+					requirementMet = false;
+					break;
+				}
+			}
+			if (requirementMet) {
+				// all requirements are met by this device:
+				deviceList.add( device );
+			}
+		}
+		return (Device[]) deviceList.toArray( new Device[ deviceList.size() ] );
+	}
+
+}

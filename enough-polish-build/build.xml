@@ -58,6 +58,7 @@
 		    deleteConfirm="Do you really want to kill me?" 
 		    deleteNotify="http://www.enough.de/killed?MyProject"
 		    installNotify="http://www.enough.de/installed?MyProject"
+		    dataSize="120kb"
 		    >
 		    <!-- problem: texts need to be adjusted during the internationalisation! (description, info, deleteConfirm etc)  -->
 			<vendorInfo
@@ -88,6 +89,7 @@
 			symbols="ExampleSymbol, AnotherExample"
 			imageLoadStrategy="background"
 			fullscreen="menu"
+			usePolishGui="true"
 			>
 			<!-- midlets definition -->
 			<midlets>

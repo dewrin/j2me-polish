@@ -6,7 +6,8 @@
  */
 package de.enough.polish;
 
-import de.enough.polish.ant.build.Variable;
+
+import de.enough.polish.util.TextUtil;
 
 import java.util.*;
 
@@ -24,8 +25,10 @@ public class PolishComponent {
 	
 	protected String preprocessName;
 	protected PolishComponent parent;
-	protected ArrayList symbols;
-	protected ArrayList variables;
+	private HashMap features;
+	private ArrayList featuresList;
+	private HashMap capabilities;
+	private ArrayList capabilitiesList;
 
 	/**
 	 * Creates a new component.
@@ -46,8 +49,14 @@ public class PolishComponent {
 	public PolishComponent( String preprocessName, PolishComponent parent ) {
 		this.preprocessName = preprocessName;
 		this.parent = parent;
-		this.variables = new ArrayList();
-		this.symbols = new ArrayList();
+		this.capabilities = new HashMap();
+		this.capabilitiesList = new ArrayList();
+		this.features = new HashMap();
+		this.featuresList = new ArrayList();
+		if (parent != null) {
+			this.capabilities.putAll( parent.getCapabilities() );
+			this.features.putAll(  parent.getFeatures() );
+		}
 	}
 	
 	/**
@@ -61,7 +70,7 @@ public class PolishComponent {
 	 * 				group or device used.</li>
 	 * 	<li><b>project.symbol-name</b>: this name can be used to check for symbols which
 	 * 				need to be defined in the project itself.</li>
-	 * 	<li><b>manufacturer.symbol-name</b>: this name can be used to check for symbols which
+	 * 	<li><b>vendor.symbol-name</b>: this name can be used to check for symbols which
 	 * 				need to be defined in the current manufacturer definition (e.g. Nokia) itself.</li>
 	 * 	<li><b>group.symbol-name</b>: this name can be used to check for symbols which
 	 * 				need to be defined in the current groups (e.g. Series 60) itself.</li>
@@ -71,27 +80,8 @@ public class PolishComponent {
 	 * </p>
 	 * @return the HashMap containing all names of the defined symbols as keys.
 	 */
-	public HashMap getSymbols() {
-		HashMap definedSymbols;
-		if (this.parent != null) {
-			definedSymbols  = this.parent.getSymbols();
-		} else {
-			definedSymbols  = new HashMap();
-		}
-		// adding all defined symbols:
-		for (Iterator iter = this.symbols.iterator(); iter.hasNext();) {
-			String symbol = (String) iter.next();
-			definedSymbols.put( "polish." + symbol, Boolean.TRUE );
-			definedSymbols.put( this.preprocessName + "." + symbol, Boolean.TRUE );
-		}
-		// adding all variables-names as symbols:
-		for (Iterator iter = this.variables.iterator(); iter.hasNext();) {
-			Variable variable = (Variable) iter.next();
-			String varName = variable.getName() + ":defined";
-			definedSymbols.put( "polish." + varName, Boolean.TRUE );
-			definedSymbols.put( this.preprocessName + "." + varName , Boolean.TRUE );
-		}
-		return definedSymbols;
+	public HashMap getFeatures() {
+		return new HashMap( this.features );
 	}
 	
 	/**
@@ -111,7 +101,7 @@ public class PolishComponent {
 	 * 				device.</li>
 	 * 	<li><b>project.variable-name</b>: this name can be used to check for variables which
 	 * 				need to be defined in the project itself.</li>
-	 * 	<li><b>manufacturer.variable-name</b>: this name can be used to check for variables which
+	 * 	<li><b>vendor.variable-name</b>: this name can be used to check for variables which
 	 * 				need to be defined in the current manufacturer definition (e.g. Nokia) itself.</li>
 	 * 	<li><b>group.variable-name</b>: this name can be used to check for variables which
 	 * 				need to be defined in the current groups (e.g. Series 60) itself.</li>
@@ -121,19 +111,91 @@ public class PolishComponent {
 	 * </p>
 	 * @return a HashMap containing all names of the defined variables as the keys.
 	 */
-	public HashMap getVariables() {
-		HashMap definedVars;
-		if (this.parent != null) {
-			definedVars = this.parent.getVariables();
-		} else {
-			definedVars = new HashMap();
+	public HashMap getCapabilities() {
+		return new HashMap( this.capabilities );
+	}
+	
+	/**
+	 * Adds a capability to this component.
+	 * 
+	 * @param name the name of the capability
+	 * @param value the value of the capability
+	 */
+	protected void addCapability( String name, String value ) {
+		addSingleCapability( name, value );
+		
+		// when the capability starts with "SoftwarePlatform." or similiar, 
+		// make it also accessible without it:
+		int dotPos = name.lastIndexOf('.');
+		if (dotPos != -1) {
+			name = name.substring( dotPos + 1);
+			addSingleCapability( name, value );
 		}
-		for (Iterator iter = this.variables.iterator(); iter.hasNext();) {
-			Variable variable = (Variable) iter.next();
-			definedVars.put( "polish." + variable.getName(), variable.getValue() );
-			definedVars.put( this.preprocessName + "." + variable.getName(), variable.getValue() );
+		// when the capability is a size, then also add a height and a width:
+		if (name.endsWith("Size") && value.indexOf('x') > 0) {
+			String[] values = TextUtil.splitAndTrim( value, 'x' );
+			String nameStart = name.substring(0, name.length() - 4);
+			String width = nameStart + "Width";
+			addSingleCapability( width, values[0]);
+			String height = nameStart + "Height";
+			addSingleCapability( height, values[1]);
+			if (values.length == 3) {
+				String depth = nameStart + "Depth";
+				addSingleCapability( depth, values[1]);
+			}
 		}
-		return definedVars;
+		// add all capability-values as symbols/features:
+		String[] values = TextUtil.splitAndTrim( value, ',' );
+		for (int i = 0; i < values.length; i++) {
+			addFeature( name + "." + values[i] );
+		}
+	}
+	
+	/**
+	 * Adds a single capability to this component.
+	 * 
+	 * @param name the name of the capability
+	 * @param value the value of the capability
+	 */
+	private void addSingleCapability( String name, String value ) {
+		String polishName = "polish." + name;
+		String componentName = this.preprocessName + "." + name; 
+		this.capabilities.put( polishName, value );
+		this.capabilities.put( componentName, value );
+		this.features.put( polishName + ":defined", Boolean.TRUE );
+		this.features.put( componentName + ":defined" , Boolean.TRUE );
+	}
+	
+	/**
+	 * Adds a feature this this component.
+	 * 
+	 * @param feature the name of the feature
+	 */
+	protected void addFeature( String feature ) {
+		this.features.put( "polish." + feature, Boolean.TRUE );
+		this.features.put( this.preprocessName + "." + feature, Boolean.TRUE );
 	}
 
+	/**
+	 * Checks if this component has a specific feature.
+	 * A feature is a capability without a value.
+	 * 
+	 * @param feature the feature which should be defined, e.g. "hardware.camera"
+	 * @return true when this feature is defined.
+	 */
+	public boolean hasFeature(String feature) {
+		return (this.features.get(feature) != null);
+	}
+
+	/**
+	 * Retrieves a specific capability of this component.
+	 * 
+	 * @param key the name of the capability. 
+	 * @return the value of the capability or null when the given capability is not defined.
+	 */
+	public String getCapability(String key) {
+		return (String) this.capabilities.get( key );
+	}
+
+	
 }

@@ -6,10 +6,17 @@
  */
 package de.enough.polish;
 
+import de.enough.polish.exceptions.InvalidDeviceException;
+
+import org.jdom.*;
+import org.jdom.input.SAXBuilder;
+
 import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 /**
- * <p>Manages all knwown devices.</p>
+ * <p>Manages all known J2ME devices.</p>
  * <p>The devices are defined in the devices.xml file</p>
  *
  * <p>copyright enough software 2004</p>
@@ -29,8 +36,12 @@ public class DeviceManager {
 	 * Creates a new device manager which looks at the current directory for the devices.xml file.
 	 * 
 	 * @param project the polish project settings.
+	 * 
+	 * @throws JDOMException when there are syntax errors in devices.xml
+	 * @throws IOException when devices.xml could not be read
+	 * @throws InvalidDeviceException when a device definition has errors
 	 */
-	public DeviceManager( Project project ) {
+	public DeviceManager( Project project ) throws JDOMException, IOException, InvalidDeviceException {
 		this( project, new File("./devices.xml") );
 	}
 
@@ -40,8 +51,12 @@ public class DeviceManager {
 	 * @param project the polish project settings.
 	 * @param devicesFile the file containing the device definitions.
 	 * 			Usally this is the devices.xml file in the current directory.
+	 * 
+	 * @throws JDOMException when there are syntax errors in devices.xml
+	 * @throws IOException when devices.xml could not be read
+	 * @throws InvalidDeviceException when a device definition has errors
 	 */
-	public DeviceManager( Project project, File devicesFile ) {
+	public DeviceManager( Project project, File devicesFile ) throws JDOMException, IOException, InvalidDeviceException {
 		this.project = project;
 		this.devicesFile = devicesFile;
 		loadDevices();
@@ -49,8 +64,22 @@ public class DeviceManager {
 	
 	/**
 	 * Loads the device definitions.
+	 * 
+	 * @throws JDOMException when there are syntax errors in devices.xml
+	 * @throws IOException when devices.xml could not be read
+	 * @throws InvalidDeviceException when a device definition has errors
 	 */
-	private void loadDevices() {
+	private void loadDevices() throws JDOMException, IOException, InvalidDeviceException {
+		SAXBuilder builder = new SAXBuilder( false );
+		Document document = builder.build( this.devicesFile );
+		ArrayList devicesList = new ArrayList();
+		List xmlList = document.getRootElement().getChildren();
+		for (Iterator iter = xmlList.iterator(); iter.hasNext();) {
+			Element deviceElement = (Element) iter.next();
+			Device device = new Device( deviceElement );
+			devicesList.add( device );
+		}
+		this.devices = (Device[]) devicesList.toArray( new Device[ devicesList.size()]);
 		// TODO enough implement loadDevices
 		
 	}

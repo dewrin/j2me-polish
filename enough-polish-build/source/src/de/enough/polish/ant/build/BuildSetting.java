@@ -6,6 +6,8 @@
  */
 package de.enough.polish.ant.build;
 
+import de.enough.polish.*;
+
 import org.apache.tools.ant.BuildException;
 
 /**
@@ -29,7 +31,7 @@ public class BuildSetting {
 	private String symbols;
 	private int imageLoadStrategy;
 	private FullScreenSetting fullScreenSetting;
-	private Variable[] variables;
+	private Capability[] variables;
 	private Source source;
 	private boolean usePolishGui;
 	
@@ -69,7 +71,7 @@ public class BuildSetting {
 		this.variables = vars.getVariables();
 	}
 	
-	public Variable[] getVariables() {
+	public Capability[] getVariables() {
 		return this.variables;
 	}
 	

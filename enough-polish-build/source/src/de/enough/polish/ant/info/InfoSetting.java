@@ -31,6 +31,7 @@ public class InfoSetting {
 	private String installNotify;
 	private Author[] authors;
 	private VendorInfo vendorInfo;
+	private String dataSize;
 	
 	/**
 	 * Creates a new InfoSetting
@@ -182,6 +183,20 @@ public class InfoSetting {
 	
 	public VendorInfo getVendorInfo() {
 		return this.vendorInfo;
+	}
+
+	/**
+	 * @return the size which this midlet needs for the storage of data
+	 */
+	public String getDataSize() {
+		return this.dataSize;
+	}
+
+	/**
+	 * @param dataSize the size which this midlet needs for the storage of data
+	 */
+	public void setDataSize(String dataSize) {
+		this.dataSize = dataSize;
 	}
 
 }

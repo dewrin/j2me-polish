@@ -7,6 +7,8 @@
 package de.enough.polish.ant.build;
 
 
+import de.enough.polish.*;
+
 import org.apache.tools.ant.BuildException;
 
 import java.util.ArrayList;
@@ -32,7 +34,7 @@ public class Variables {
 		this.variables = new ArrayList();
 	}
 	
-	public void addConfiguredVariable( Variable var ) {
+	public void addConfiguredVariable( Capability var ) {
 		if (var.getName() == null) {
 			throw new BuildException("Please check your variable definition, each variable needs to have the attribute [name]");
 		}
@@ -42,8 +44,8 @@ public class Variables {
 		this.variables.add( var );
 	}
 	
-	public Variable[] getVariables() {
-		return (Variable[]) this.variables.toArray( new Variable[ this.variables.size() ] );
+	public Capability[] getVariables() {
+		return (Capability[]) this.variables.toArray( new Capability[ this.variables.size() ] );
 	}
 
 }

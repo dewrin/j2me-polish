@@ -8,6 +8,11 @@ package de.enough.polish.ant.requirements;
 
 import de.enough.polish.Device;
 
+import org.apache.tools.ant.BuildException;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
 /**
  * <p>A requirement which a supported device needs to satisfy.</p>
  *
@@ -42,12 +47,12 @@ public abstract class Requirement {
 	 * @return the property-value or null when no such property is defined.
 	 */
 	public String getProperty( Device device ) {
-		String property = device.getProperty( this.propertyName );
+		String property = device.getCapability( this.propertyName );
 		if (property == null) {
-			property = device.getProperty( "SoftwarePlatform." + this.propertyName );
+			property = device.getCapability( "SoftwarePlatform." + this.propertyName );
 		}
 		if (property == null) {
-			property = device.getProperty( "HardwarePlatform." + this.propertyName );
+			property = device.getCapability( "HardwarePlatform." + this.propertyName );
 		}
 		return property;
 	}
@@ -74,7 +79,76 @@ public abstract class Requirement {
 	 * @param property the property-value of the given device. Property is never null.
 	 * @return true when this requirement is satisfied by the given device.
 	 */
-	protected abstract boolean isMet( Device device, String property ); 
+	protected abstract boolean isMet( Device device, String property );
+	
+	public static final Requirement getInstance( String name, String value, String type ) {
+		if (name == null) {
+			throw new BuildException("A device requirement needs to have the attribute [name] defined.");
+		}
+		if (value == null) {
+			throw new BuildException("The device requirement [" + name + "] needs to have the attribute [value] defined.");
+		}
+		
+		Class reqClass = null;
+		if (type != null) {
+			if (type.equalsIgnoreCase("Size")) {
+				return new SizeRequirement( name, value );
+			} else if (type.equalsIgnoreCase("Int")) {
+				return new IntRequirement( name, value );
+			} else if (type.equalsIgnoreCase("String")) {
+				return new StringRequirement( name, value );
+			} else if (type.equalsIgnoreCase("Version")) {
+				return new VersionRequirement( name, value );
+			} else {
+				try {
+					reqClass = Class.forName( type );
+				} catch (ClassNotFoundException e) {
+					throw new BuildException("The device requirement [" + name + "] could not b eloaded - the type [" + type + "] could not be found: " + e.getMessage());
+				}
+			}
+		}
+		if (reqClass == null) {
+			try {
+				reqClass = Class.forName( "de.enough.polish.ant.requirements." + name + "Requirement");
+			} catch (ClassNotFoundException e) {
+				if (name.startsWith("SoftwarePlatform.") || name.startsWith("HardwarePlatform.")) {
+					name = name.substring( 18 );
+					try {
+						reqClass = Class.forName( "de.enough.polish.ant.requirements." + name + "Requirement");
+					} catch (ClassNotFoundException e1) {
+						throw new BuildException("The device requirement [" + name + "] is not supported.");
+					}
+				} else {
+					// could be an external requirement with full path:
+					try {
+						reqClass = Class.forName( name );
+					} catch (ClassNotFoundException e1) {
+						throw new BuildException("The device requirement [" + name + "] is not supported.");
+					}
+				}
+			}
+		} // if reqClass == null / loading class dynamically
+		try {
+			Constructor reqConstructor = reqClass.getConstructor( new Class[]{ String.class } );
+			return (Requirement) reqConstructor.newInstance( new Object[] { value } );
+		} catch (SecurityException e) {
+			throw new BuildException( e );
+		} catch (NoSuchMethodException e) {
+			throw new BuildException( "The requirement-class ["+ reqClass.getName() + "] does not have the necessary constructor with the single String-parameter defined: " + e.getMessage() );
+		} catch (IllegalArgumentException e) {
+			throw new BuildException( e );
+		} catch (InstantiationException e) {
+			throw new BuildException( e );
+		} catch (IllegalAccessException e) {
+			throw new BuildException( e );
+		} catch (InvocationTargetException e) {
+			if (e.getTargetException() instanceof BuildException) {
+				throw (BuildException) e.getTargetException();
+			}
+			throw new BuildException( e );
+		}
+		
+	}
 	
 	
 }
