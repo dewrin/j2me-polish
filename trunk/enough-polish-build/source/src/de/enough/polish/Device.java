@@ -12,6 +12,8 @@ import de.enough.polish.util.TextUtil;
 
 import org.jdom.Element;
 
+import java.io.File;
+
 
 /**
  * <p>Represents a J2ME device.</p>
@@ -60,6 +62,7 @@ public class Device extends PolishComponent {
 	private String classesDir;
 	private String baseDir;
 	private String[] groups;
+	private File jarFile;
 	
 
 	/**
@@ -304,6 +307,26 @@ public class Device extends PolishComponent {
 	 */
 	public String[] getGroups() {
 		return this.groups;
+	}
+
+
+	/**
+	 * Sets the jar file.
+	 * This method ist used to transport the setting to other modules.
+	 * 
+	 * @param jarFile The JAR file of the application for this device.
+	 */
+	public void setJarFile(File jarFile) {
+		this.jarFile = jarFile;
+	}
+	
+	/**
+	 * Retrives the jar file for this device.
+	 * 
+	 * @return The jar file for this device.
+	 */
+	public File getJarFile() {
+		return this.jarFile;
 	}
 
 }

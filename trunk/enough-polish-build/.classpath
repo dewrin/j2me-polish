@@ -7,5 +7,6 @@
 	<classpathentry kind="src" path="source/src"/>
 	<classpathentry output="bin/test" kind="src" path="source/test"/>
 	<classpathentry kind="lib" path="import/jdom.jar"/>
+	<classpathentry kind="lib" path="import/proguard.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

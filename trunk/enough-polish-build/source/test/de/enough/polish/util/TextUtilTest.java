@@ -77,6 +77,15 @@ public class TextUtilTest extends TestCase {
 		assertEquals( "12345abc12345abc", replacement );		
 	}
 	
+	public void testReplaceChar() {
+		String original = "123456";
+		String replacement = TextUtil.replace( original, '7', '9' );
+		assertEquals( "123456", replacement );
+		original = "de.enough.polish.util.TextUtil";
+		replacement = TextUtil.replace( original, '.', '/');
+		assertEquals("de/enough/polish/util/TextUtil", replacement );
+	}
+	
 	public void testReplaceFirst() {
 		String input = "abc defg hijkl defg abc";
 		String replacement = TextUtil.replaceFirst( input, "defg", "1234" );

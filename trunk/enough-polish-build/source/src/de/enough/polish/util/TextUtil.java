@@ -24,11 +24,12 @@ public final class TextUtil {
 	/**
 	 * Replaces all search-strings in the given input.
 	 *  
-	 * @param input the original string
-	 * @param search the string which should be replaced in the input
-	 * @param replacement the replacement for the search-string
-	 * @return the input string in which all search-strings are replaced with the replacement-string.
+	 * @param input The original string
+	 * @param search The string which should be replaced in the input
+	 * @param replacement The replacement for the search-string
+	 * @return The input string in which all search-strings are replaced with the replacement-string.
 	 * @throws IllegalArgumentException when on of the parameters is null.
+	 * @see #replace(String, char, char) for a fast alternative
 	 */
 	public static final String replace(String input, String search, String replacement) {
 		if (input == null || search == null || replacement == null) {
@@ -48,6 +49,27 @@ public final class TextUtil {
 		return replace.toString();
 	}
 
+	/**
+	 * Replaces all search-chars in the given string.
+	 * This method is much faster than replace*(String, String, String).
+	 * 
+	 * @param input The original string
+	 * @param search The char which should be replaced in the input
+	 * @param replacement The replacement for the search-char
+	 * @return The input string in which all search-chars are replaced with the replacement-char.
+	 * @throws NullPointerException when the input is null.
+	 */
+	public static String replace(String input, char search, char replacement) {
+		char[] chars = input.toCharArray();
+		for (int i = 0; i < chars.length; i++) {
+			char c = chars[i];
+			if (c == search) {
+				chars[i] = replacement;
+			}
+		}
+		return new String( chars );
+	}
+	
 	/**
 	 * Replaces the first search-string in the given input.
 	 *  
@@ -171,5 +193,6 @@ public final class TextUtil {
 		}
 		return result;
 	}
-	
+
+
 }
