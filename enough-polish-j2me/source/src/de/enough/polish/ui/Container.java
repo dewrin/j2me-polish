@@ -15,7 +15,13 @@ import javax.microedition.lcdui.Graphics;
 /**
  * <p>Contains a number of items.</p>
  * <p>Main purpose is to manage all items of a Form or similiar canvasses.</p>
- *
+ * <p>Containers support following CSS attributes:
+ * <ul>
+ * 		<li><b>focussed</b>: The name of the focussed style, e.g. "style( funnyFocussed );"
+ * 				</li>
+ * 		<li><b></b>: </li>
+ * </ul>
+ * </p>
  * <p>copyright enough software 2004</p>
  * <pre>
  * history
@@ -28,6 +34,7 @@ public class Container extends Item {
 	protected ArrayList itemsList;
 	protected Item[] items;
 	protected boolean focusFirstElement;
+	protected Style focussedStyle;
 	private Style itemStyle;
 	private Item focussedItem;
 	private int focussedIndex = -1;
@@ -41,6 +48,9 @@ public class Container extends Item {
 		super();
 		this.itemsList = new ArrayList();
 		this.focusFirstElement = focusFirstElement;
+		if (this.focussedStyle == null) {
+			this.focussedStyle = StyleSheet.focussedStyle;
+		}
 	}
 	
 	public void add( Item item ) {
@@ -143,7 +153,7 @@ public class Container extends Item {
 		this.itemStyle = item.getStyle();
 		this.focussedIndex = index;
 		this.focussedItem = item;
-		item.setStyle( StyleSheet.focussedStyle );
+		item.setStyle( this.focussedStyle );
 	}
 
 	/* (non-Javadoc)
@@ -293,6 +303,13 @@ public class Container extends Item {
 			this.background = null;
 			this.border = null;
 			this.borderWidth = 0;
+		}
+		String focussed = style.getProperty("focussed");
+		if (focussed != null) {
+			Style focStyle = StyleSheet.getStyle( focussed );
+			if (focStyle != null) {
+				this.focussedStyle = focStyle;
+			}
 		}
 	}
 

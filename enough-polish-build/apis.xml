@@ -6,8 +6,8 @@
 			some advanced drawing functionalities.
 		</description>
 		<names>nokia-ui,nokiaui, nokiauiapi<names>
+		<symbol>nokia-ui</symbol>
 		<files>nokia-ui.jar, nokiaui.zip</files>
-		<!-- the optional path element defines the default path to this library -->
 		<path>import/nokia-ui.jar</path>
 	</api>
 	<api>
@@ -16,6 +16,7 @@
 			functionalities for playing and capturing sounds and videos.
 		</description>
 		<names>mmapi,mm-api<names>
+		<symbol>mmapi</symbol>
 		<files>j2me-mmapi.jar, mma.zip</files>
 		<path>import/j2me-mmapi.jar</path>
 	</api>
@@ -25,6 +26,7 @@
 			functionalities for sending and receiving messages (SMS).
 		</description>
 		<names>wmapi,wm-api<names>
+		<symbol>wmapi</symbol>
 		<files>j2me-wmapi.jar, wma.zip</files>
 		<path>import/j2me-wmapi.jar</path>
 	</api>
@@ -34,6 +36,7 @@
 			functionalities for data exchange with other bluetooth devices.
 		</description>
 		<names>btapi,bt-api, bluetooth, bluetooth-api<names>
+		<symbol>btapi</symbol>
 		<files>j2me-btapi.jar, bluetooth.zip</files>
 		<path>import/j2me-btapi.jar</path>
 	</api>

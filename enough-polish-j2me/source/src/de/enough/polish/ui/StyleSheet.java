@@ -36,9 +36,7 @@ public final class StyleSheet {
 	public static final Style defaultStyle = null;
 	public static Style focussedStyle = null;
 	//#endif
-	//#ifdef polish.useDynamicStyles
 	private static Hashtable stylesByName = new Hashtable();
-	//#endif
 	
 	
 	// do not change the following line!
@@ -116,6 +114,17 @@ public final class StyleSheet {
 		timer.schedule( task, 10 );
 		return null;
 		//#endif
+	}
+	
+	/**
+	 * Gets the style with the specified name.
+	 * 
+	 * @param name the name of the style
+	 * @return the specified style or null when no style with the given 
+	 * 	       name has been defined.
+	 */
+	public static Style getStyle( String name ) {
+		return (Style) stylesByName.get( name );
 	}
 	
 	//#ifdef polish.useDynamicStyles
