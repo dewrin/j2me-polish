@@ -1,0 +1,115 @@
+<project 
+	name="enough-polish-build" 
+	default="polish">
+
+  <!-- needed polish settings -->
+  <property name="polish.preverify" location="/home/enough/dev/WTK2.1/bin/preverify" />
+  
+  <!-- optional J2ME apis -->
+  <property name="polish.api.mmapi" location="/home/enough/Nokia/Devices/Series_60_MIDP_Concept_SDK_Beta_0_3_1_Nokia_edition/lib/ext/mma.zip" />
+  <property name="polish.api.wmapi" location="/home/enough/Nokia/Devices/Series_60_MIDP_Concept_SDK_Beta_0_3_1_Nokia_edition/lib/ext/wma.zip" />
+  <property name="polish.api.nokia-ui" location="/home/enough/Nokia/Devices/Series_60_MIDP_Concept_SDK_Beta_0_3_1_Nokia_edition/lib/ext/nokiaui.zip" />
+  <property name="polish.api.bluetooth" location="/home/enough/Nokia/Devices/Series_60_MIDP_Concept_SDK_Beta_0_3_1_Nokia_edition/lib/ext/bluetooth.zip" />
+
+
+<!-- task definitions -->
+
+<taskdef name="polish" classname="de.enough.polish.ant.PolishTask" classpath="import/enough-polish.jar:import/jdom.jar"/>
+
+
+<!-- build targets, each target can be called via "ant [name]", e.g. "ant clean" -->
+
+<target name="init">
+	<!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create distribution dirs -->
+	<mkdir dir="dist" />
+</target>
+
+    
+<target name="polish" >
+	<polish>
+	    <!-- info settings -->
+		<info
+			name="MyProject"
+			version="1.3.4"
+			description="A test project"
+			vendorName="enough software"
+			infoUrl="http://www.enough.de/dictionary"
+			icon="icon.png"
+			jarName="${polish.vendor}-${polish.name}-dict.jar" 
+			jarUrl="${polish.jarName}"
+		    copyright="Copyright 2004 enough software. All rights reserved."
+		    deleteConfirm="Do you really want to kill me?" 
+		    deleteNotify="http://www.enough.de/killed?MyProject"
+		    installNotify="http://www.enough.de/installed?MyProject"
+		    dataSize="120kb"
+		    >
+		    <authors>
+				<author name="Robert Virkus" email="robert@enough.de" />
+			</authors>
+	    </info>
+		<!-- selection of supported devices -->
+		<deviceRequirements>
+			<requirement name="JavaPackage" value="nokia-ui" />
+			<!--
+			<requirement name="ScreenSize" value="100+ x 100+" />
+			<requirement name="BitsPerPixel" value="4+" />
+			<or>
+				<requirement name="JavaPackage" value="nokia-ui, mmapi" />
+				<and>
+					<requirement name="JavaPackage" value="mmapi" />
+					<requirement name="JavaPlatform" value="MIDP/2.0+" />
+				</and>
+			</or>
+			<requirement name="Vendor" value="Nokia, SonyEricsson" />
+			<requirement name="Identifier" value="Nokia/6600, SonyEricsson/P900" />
+			<requirement name="JavaProtocol" value="https, socket" />
+			<requirement name="JavaPlatform" value="MIDP/1.0+" />
+			<requirement name="HeapSize" value="500+kb" />
+			-->
+		</deviceRequirements>
+	    <!-- build settings -->
+		<build
+			version="0.6"
+			symbols="ExampleSymbol, AnotherExample"
+			imageLoadStrategy="background"
+			fullscreen="menu"
+			usePolishGui="true"
+			midp1Path="/home/enough/dev/WTK2.1/wtklib/emptyapi.zip"
+			midp2Path="/home/enough/dev/WTK2.1/wtklib/emptyapi.zip"
+			preverify="${polish.preverify}"
+			>
+			<!-- midlets definition -->
+			<midlets>
+				<midlet class="de.enough.polish.dict.DictMidlet" />
+			</midlets>
+			<!-- project-wide variables - used for preprocessing  -->
+			<variables>
+				<variable name="update-url" value="http://www.enough.de/update" />
+			</variables>
+			<!-- sources -->
+			<source
+				url="./source/src"
+				/>
+			<!--
+			<source
+				url="./source/src"
+				polish="/home/enough/workspace/enough-polish-j2me/source/src"
+				/>
+			-->
+			<!-- debug settings -->
+			<debug enable="true" visual="true" verbose="false" level="error">
+				<filter pattern="de.enough.dict.*" level="debug" />
+			</debug>
+		</build>
+	</polish>
+</target>
+
+<target name="clean" depends="init">
+	<delete dir="build" />
+	<delete dir="dist" />
+</target>
+
+
+</project>
