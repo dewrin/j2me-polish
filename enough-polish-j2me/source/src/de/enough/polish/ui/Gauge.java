@@ -684,13 +684,15 @@ implements ImageConsumer
 	 * @see de.enough.polish.ui.Item#initItem()
 	 */
 	protected void initContent(int firstLineWidth, int lineWidth) {
-		if (this.image != null && !this.isIndefinite) {
+		// setting height:
+		if (this.image != null) {
 			this.contentHeight = this.image.getHeight();
 		} else if (this.preferredHeight > 0 ) {
 			this.contentHeight = this.preferredHeight;
 		} else {
 			this.contentHeight = 10;
 		}
+		// setting width:
 		if (this.image != null 
 				&& !this.isIndefinite 
 				&& this.preferredWidth == 0 ) {
@@ -700,6 +702,7 @@ implements ImageConsumer
 		} else { //if (this.isLayoutExpand) {
 			this.contentWidth = firstLineWidth;
 		}
+		// update other settings:
 		if (this.isIndefinite) {
 			if (this.image != null ) {
 				if (this.value == CONTINUOUS_IDLE  || this.value == CONTINUOUS_RUNNING ) {
