@@ -12,6 +12,7 @@ import de.enough.polish.ant.info.InfoSetting;
 import de.enough.polish.ant.requirements.Requirements;
 import de.enough.polish.exceptions.InvalidComponentException;
 import de.enough.polish.obfuscate.Obfuscator;
+import de.enough.polish.preprocess.*;
 import de.enough.polish.preprocess.PreprocessException;
 import de.enough.polish.preprocess.Preprocessor;
 import de.enough.polish.util.*;
@@ -52,7 +53,7 @@ public class PolishTask extends ConditionalTask {
 	private Device[] devices;
 	private Preprocessor preprocessor;
 	private File[] sourceDirs;
-	private String[][] sourceFiles;
+	private TextFile[][] sourceFiles;
 	private Path midp1BootClassPath;
 	private Path midp2BootClassPath;
 	private HashMap apiPaths;
@@ -144,7 +145,6 @@ public class PolishTask extends ConditionalTask {
 		DebugManager debugManager = null;
 		if (isDebugEnabled) {
 			try {
-				// init debug manager
 				debugManager = new DebugManager( this.buildSetting.getDebugSetting() );
 			} catch (PreprocessException e) {
 				throw new BuildException( e.getMessage() );
@@ -194,7 +194,7 @@ public class PolishTask extends ConditionalTask {
 		String[] urls = TextUtil.splitAndTrim( url, splitChar );
 		if (source.getPolish() != null) {
 			this.sourceDirs = new File[ urls.length + 1];
-			this.sourceFiles = new String[ urls.length + 1][]; 
+			this.sourceFiles = new TextFile[ urls.length + 1][]; 
 			File polishDir = new File( source.getPolish() );
 			if (!polishDir.exists()) {
 				throw new BuildException("The polish source-directory [" + source.getPolish() + "] does not exist. Please check your settings of the [polish] attribute in the <source> element of the <build> section.");
@@ -202,21 +202,21 @@ public class PolishTask extends ConditionalTask {
 			this.sourceDirs[ urls.length ] = polishDir;
 			dirScanner.setBasedir(polishDir);
 			dirScanner.scan();
-			this.sourceFiles[ urls.length ] = dirScanner.getIncludedFiles();
+			this.sourceFiles[ urls.length ] = getTextFiles( source.getPolish(),  dirScanner.getIncludedFiles() );
 		} else {
 			this.sourceDirs = new File[ urls.length ];
-			this.sourceFiles = new String[ urls.length][]; 
+			this.sourceFiles = new TextFile[ urls.length][]; 
 		}
 		for (int i = 0; i < urls.length; i++) {
-			File dir = new File( urls[i] );
+			String dirName = urls[i];
+			File dir = new File( dirName );
 			if (!dir.exists()) {
 				throw new BuildException("The source-directory [" + urls[i] + "] does not exist. Please check your settings in the <source> element of the <build> section.");
 			}
 			this.sourceDirs[i] = dir; 
 			dirScanner.setBasedir(dir);
 			dirScanner.scan();
-			this.sourceFiles[i] = dirScanner.getIncludedFiles();
-			//TODO read source files content
+			this.sourceFiles[i] = getTextFiles( dirName,  dirScanner.getIncludedFiles() );
 		}
 		
 		// init boot class path:
@@ -237,6 +237,27 @@ public class PolishTask extends ConditionalTask {
 			System.arraycopy( midletClasses, 0, this.preserveClasses, keepClasses.length, midletClasses.length  );
 			this.obfuscator = Obfuscator.getInstance( obfuscatorSetting.getName(), obfuscatorSetting.getClassName() );
 		}
+	}
+
+	/**
+	 * Creates an array of text files.
+	 * 
+	 * @param baseDir The base directory.
+	 * @param fileNames The full names of the files.
+	 * @return an array of text-files
+	 */
+	private TextFile[] getTextFiles(String baseDir, String[] fileNames) 
+	{
+		TextFile[] files = new TextFile[ fileNames.length ];
+		for (int i = 0; i < fileNames.length; i++) {
+			String fileName = fileNames[i];
+			try {
+				files[i] = new TextFile( baseDir, fileName );
+			} catch (FileNotFoundException e) {
+				throw new BuildException("Unable to load java source [" + fileName + "]: " + e.getMessage(), e );
+			}
+		}
+		return files;
 	}
 
 	/**
@@ -262,26 +283,78 @@ public class PolishTask extends ConditionalTask {
 	 * @param device The device for which the preprocessing should be done.
 	 */
 	private void preprocess( Device device ) {
+		System.out.println("now preprocessing for device [" +  device.getIdentifier() + "]." );
 		try {
 			String targetDir = this.buildSetting.getWorkDir().getAbsolutePath() 
-				+ File.separatorChar + device.getIdentifier();
+				+ File.separatorChar + device.getVendor() 
+				+ File.separatorChar + device.getName();
 			device.setBaseDir( targetDir );
 			targetDir += File.separatorChar + "source";
 			device.setSourceDir(targetDir);
 			this.preprocessor.setTargetDir( targetDir );
 			this.preprocessor.setSymbols( device.getFeatures() );
 			this.preprocessor.setVariables( device.getCapabilities() );
-			System.out.println("now preprocessing for device [" +  device.getIdentifier() + "]." );
+			// get the last modfication time of the build.xml file
+			// so that it can be checked whether there are any changes at all:
+			File buildXml = new File( this.project.getBaseDir().getAbsolutePath() 
+						+ File.separatorChar + "build.xml" );
+			long buildXmlLastModified = buildXml.lastModified();
+			// check if the polish gui is used at all:
+			boolean usePolishGui = this.buildSetting.usesPolishGui()
+								  && device.supportsPolishGui();
 			for (int i = 0; i < this.sourceDirs.length; i++) {
 				File sourceDir = this.sourceDirs[i];
-				String[] files = this.sourceFiles[i];
+				this.preprocessor.addVariable( "polish.source", sourceDir.getAbsolutePath() );
+				TextFile[] files = this.sourceFiles[i];
 				//System.out.println("current source dir: " + sourceDir );				
 				for (int j = 0; j < files.length; j++) {
-					String file = files[j];
-					//System.out.println("preprocesssing " + file);
-					this.preprocessor.preprocess( sourceDir, file);
-				}
-			}
+					TextFile file = files[j];
+					// check if file needs to be preprocessed at all:
+					long sourceLastModified = file.lastModified();
+					File targetFile = new File( targetDir
+							+ File.separatorChar + file.getFileName() );
+					long targetLastModified = targetFile.lastModified();
+					// preprocess this file, but only when there can
+					// be changes at all - this could be when
+					// 1. The preprocessed file does not yet exists
+					// 2. The source file has been modified since the last run
+					// 3, The build.xml has been modified since the last run
+					boolean saveInAnyCase =  ( !targetFile.exists() )
+							 || ( sourceLastModified > targetLastModified );
+					/*
+					if (( sourceLastModified > targetLastModified )) {
+						System.out.println("File has been modified: " + file.getFileName() 
+								+ "\n last mod of source: " + sourceLastModified + " last mod of target: " + targetLastModified );
+					}
+					if (( buildXmlLastModified > targetLastModified ) ) {
+						System.out.println("build.xml has been modified: " + file.getFileName() 
+								+ "\n last mod of target: " + targetLastModified + " last mod of build.xml: " + buildXmlLastModified );
+					}
+					*/
+					if (   ( saveInAnyCase )
+						|| ( buildXmlLastModified > targetLastModified ) )
+					{
+						// preprocess this file:
+						StringList sourceCode = new StringList( file.getContent() );
+						int result = this.preprocessor.preprocess( file.getFileName(), sourceCode );
+						if (result != Preprocessor.SKIP_FILE) {
+							if (usePolishGui) {
+								// now replace the import statements:
+							}
+							// save modified file:
+							if ( ( saveInAnyCase ) 
+							  || (result == Preprocessor.CHANGED) ) 
+							{
+								file.saveToDir(targetDir, sourceCode.getArray(), false );
+							//} else {
+							//	System.out.println("not saving " + file.getFileName() );
+							}
+						} else {
+							System.out.println("Skipping file " + file.getFileName() );
+						}
+					} // when preprocessing should be done.
+				} // for each file
+			} // for each source folder
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			throw new BuildException( e.getMessage() );
@@ -442,12 +515,6 @@ public class PolishTask extends ConditionalTask {
 	private void preverify( Device device ) {
 		System.out.println("preverifying for device [" + device.getIdentifier() + "].");
 		String preverify = this.buildSetting.getPreverify();
-		if (preverify == null ) {
-			//TODO try to call preverify directly when no property has been defined
-			throw new BuildException("You need to define the property ${polish.preverify} in your build.xml."
-				+ " It needs to point to the preverify-command of your wirless toolkit." ); 
-
-		}
 		String classPath;
 		if (device.isMidp1()) {
 			classPath = this.midp1BootClassPath.toString();

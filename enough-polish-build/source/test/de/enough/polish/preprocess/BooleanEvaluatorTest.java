@@ -135,6 +135,20 @@ public class BooleanEvaluatorTest extends TestCase {
 		assertTrue( matcher.find() );
 		assertEquals( "test-5:defined", matcher.group() );
 		assertFalse( matcher.find() );
+
+		term = " test.1:defined && test.2:defined || test.3:defined ^ test.4:defined || test.5:defined";
+		matcher = BooleanEvaluator.SYMBOL_PATTERN.matcher( term );
+		assertTrue( matcher.find() );
+		assertEquals( "test.1:defined", matcher.group() );
+		assertTrue( matcher.find() );
+		assertEquals( "test.2:defined", matcher.group() );
+		assertTrue( matcher.find() );
+		assertEquals( "test.3:defined", matcher.group() );
+		assertTrue( matcher.find() );
+		assertEquals( "test.4:defined", matcher.group() );
+		assertTrue( matcher.find() );
+		assertEquals( "test.5:defined", matcher.group() );
+		assertFalse( matcher.find() );
 	}
 	
 	public void testEvaluateTerm() throws PreprocessException {
@@ -145,6 +159,8 @@ public class BooleanEvaluatorTest extends TestCase {
 		symbols.put( "sym-2", Boolean.TRUE );
 		symbols.put( "var-1:defined", Boolean.TRUE );
 		symbols.put( "var-2:defined", Boolean.TRUE );
+		symbols.put( "polish.midp1", Boolean.TRUE );
+		symbols.put( "polish.midp2", Boolean.TRUE );
 		
 		BooleanEvaluator evaluator = new BooleanEvaluator( symbols );
 		String term = "test1 ||  test2";
@@ -174,6 +190,15 @@ public class BooleanEvaluatorTest extends TestCase {
 		assertTrue( evaluator.evaluateTerm( term, "MyClass", 12) );
 		term = "var-1:defined ^  var-2:defined";
 		assertFalse( evaluator.evaluateTerm( term, "MyClass", 12) );
+		
+		term = "polish.midp1 ||  polish.midp2";
+		assertTrue( evaluator.evaluateTerm( term, "MyClass", 12) );
+		term = "polish.midp1 &&  polish.midp2";
+		assertTrue( evaluator.evaluateTerm( term, "MyClass", 12) );
+		term = "polish.midp1 ^  polish.midp2";
+		assertFalse( evaluator.evaluateTerm( term, "MyClass", 12) );
+		term = "polish.midp1";
+		assertTrue( evaluator.evaluateTerm( term, "MyClass", 12) );
 		
 		term = "true ||  true";
 		assertTrue( evaluator.evaluateTerm( term, "MyClass", 12) );

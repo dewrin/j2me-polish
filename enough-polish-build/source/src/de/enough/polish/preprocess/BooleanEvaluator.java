@@ -31,12 +31,13 @@ public class BooleanEvaluator {
 	public static final int OR = 3;
 	public static final int XOR = 4;
 
-	protected static final Pattern SYMBOL_PATTERN = 
-		Pattern.compile("(\\w|-|:)+"); 
-	protected static final Pattern OPERATOR_PATTERN = 
-		Pattern.compile("(&&|\\^|\\|\\|)"); 
-	protected static final Pattern TERM_PATTERN = 
-		Pattern.compile("\\(\\s*!?\\s*(\\w|-|:)+\\s*((&&|\\|\\||\\^)\\s*!?\\s*(\\w|-|:)+\\s*)+\\)"); 
+	private static final String SYMBOL = "(\\w|-|:|\\.)+"; 
+	protected static final Pattern SYMBOL_PATTERN = Pattern.compile( SYMBOL ); 
+	private static final String OPERATOR = "(&&|\\^|\\|\\|)"; 
+	protected static final Pattern OPERATOR_PATTERN = Pattern.compile( OPERATOR ); 
+	private static final String TERM = "\\(\\s*!?\\s*" + SYMBOL + "\\s*(" + OPERATOR 
+								       + "\\s*!?\\s*" + SYMBOL + "\\s*)+\\)";
+	protected static final Pattern TERM_PATTERN = Pattern.compile( TERM );
 
 	private HashMap symbols;
 
@@ -44,8 +45,25 @@ public class BooleanEvaluator {
 	 * Creates a new boolean evaluator.
 	 * 
 	 * @param symbols a map containing all defined symbols
+	 * @throws NullPointerException when symbols is null
 	 */ 
 	public BooleanEvaluator( HashMap symbols ) {
+		if (symbols == null) {
+			throw new NullPointerException("Got invalid symbols: [null].");
+		} 
+		this.symbols = symbols;
+	}
+
+	/**
+	 * Sets the symbols for this evaluator.
+	 * 
+	 * @param symbols a map containing all defined symbols
+	 * @throws NullPointerException when symbols is null
+	 */
+	public void setSymbols( HashMap symbols ) {
+		if (symbols == null) {
+			throw new NullPointerException("Got invalid symbols: [null].");
+		} 
 		this.symbols = symbols;
 	}
 	

@@ -6,6 +6,8 @@
  */
 package de.enough.polish;
 
+import de.enough.polish.preprocess.*;
+
 
 /**
  * <p>Represents a J2ME project defined by the ant settings in the build.xml file.</p>

@@ -4,11 +4,10 @@
  * the enough-software-licence for commercial use.
  * Please refer to accompanying LICENSE.txt or visit www.enough.de for details.
  */
-package de.enough.polish;
+package de.enough.polish.preprocess;
 
 import de.enough.polish.ant.build.DebugSetting;
 import de.enough.polish.ant.build.Filter;
-import de.enough.polish.preprocess.PreprocessException;
 
 import java.util.HashMap;
 
@@ -109,10 +108,8 @@ public class DebugManager {
 		Filter[] filters = setting.getFilters();
 		for (int i = 0; i < filters.length; i++) {
 			Filter filter = filters[i];
-			System.out.println("adding filter: " + filter.getPattern() + "=" + filter.getLevel() );
 			addDebugSetting( filter.getPattern(), filter.getLevel() );
 		}
-		// TODO take isVisual into account!
 	}
 
 	/**

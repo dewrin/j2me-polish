@@ -4,7 +4,7 @@
  * the enough-software-licence for commercial use.
  * Please refer to accompanying LICENSE.txt or visit www.enough.de for details.
  */
-package de.enough.polish;
+package de.enough.polish.preprocess;
 
 import de.enough.polish.preprocess.PreprocessException;
 
