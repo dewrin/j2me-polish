@@ -41,6 +41,8 @@ import org.jdom.JDOMException;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * <p>Manages a J2ME project from the preprocessing to the packaging and obfuscation.</p>
@@ -79,6 +81,9 @@ public class PolishTask extends ConditionalTask {
 	private ImportConverter importConverter;
 	private TextFile styleSheetFile;
 	private ResourceUtil resourceUtil;
+	private HashMap midletClassesByName;
+	private static final Pattern START_APP_PATTERN = 
+		Pattern.compile("\\s*void\\s+startApp\\s*\\(\\s*\\)");
 	
 	/**
 	 * Creates a new empty task 
@@ -331,6 +336,13 @@ public class PolishTask extends ConditionalTask {
 				this.styleSheet = cssReader.getStyleSheet();
 			}
 		}
+		
+		// set the names of the midlets:
+		this.midletClassesByName = new HashMap();
+		String[] midletClasses = this.buildSetting.getMidletClassNames();
+		for (int i = 0; i < midletClasses.length; i++) {
+			this.midletClassesByName.put( midletClasses[i], Boolean.TRUE );			
+		}
 	}
 
 	/**
@@ -474,9 +486,9 @@ public class PolishTask extends ConditionalTask {
 					// 4. One of the polish.css files has been modified since the last run 
 					// when only the CSS files have changed
 					boolean saveInAnyCase =  ( !targetFile.exists() )
-							 || ( sourceLastModified > targetLastModified );
+							 || ( sourceLastModified > targetLastModified )
+							 || ( buildXmlLastModified > targetLastModified ); 
 					boolean preprocess = ( saveInAnyCase )
-							 || ( buildXmlLastModified > targetLastModified ) 
 							 || ( lastCssModification > targetLastModified);
 					if (   preprocess ) {
 						// preprocess this file:
@@ -486,6 +498,12 @@ public class PolishTask extends ConditionalTask {
 						if (className.endsWith(".java")) {
 							className = className.substring(0, className.length() - 5 );
 							className = TextUtil.replace(className, '/', '.' );
+						}
+						// set the StyleSheet.display variable in all MIDlets
+						if ( (this.midletClassesByName.get( className ) != null) 
+								&& usePolishGui) {
+							insertDisplaySetting( className, sourceCode );
+							sourceCode.reset();
 						}
 						int result = this.preprocessor.preprocess( className, sourceCode );
 						// only think about saving when the file should not be skipped 
@@ -559,6 +577,43 @@ public class PolishTask extends ConditionalTask {
 			e.printStackTrace();
 			throw new BuildException( e.getMessage() );
 		}
+	}
+
+	/**
+	 * Sets the StyleSheet.display variable in a MIDlet class.
+	 * 
+	 * @param className the name of the class
+	 * @param sourceCode the source code
+	 * @throws BuildException when the MIDlet constructor or startApp()-method could not be found
+	 */
+	private void insertDisplaySetting( String className, StringList sourceCode ) {
+		// at first try to find the startApp method:
+		while (sourceCode.next()) {
+			String line = sourceCode.getCurrent();
+			Matcher matcher = START_APP_PATTERN.matcher(line);
+			if (matcher.find()) {
+				int lineIndex = sourceCode.getCurrentIndex();
+				while ((line.indexOf('{') == -1) && (sourceCode.next()) ) {
+					line = sourceCode.getCurrent();
+				}
+				if (!sourceCode.hasNext()) {
+					throw new BuildException("Unable to process MIDlet [" + className + "]: startApp method is not opened with '{': line [" + (++lineIndex) + "].");
+				}
+				sourceCode.insert("StyleSheet.display = Display.getDisplay( this );");
+				return;
+			}
+		}
+		System.out.println(START_APP_PATTERN.pattern());
+		throw new BuildException("Unable to find startApp method in MIDlet [" + className + "].");
+		// the startApp method could not be found,
+		// so see if the constructor can be found:
+		/*
+		sourceCode.reset();
+		String name = className;
+		if (className.lastIndexOf('.') != -1) {
+			name = className.substring( className.lastIndexOf('.') + 1 );
+		}
+		*/
 	}
 
 	/**

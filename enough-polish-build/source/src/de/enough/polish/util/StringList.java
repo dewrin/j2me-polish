@@ -157,6 +157,32 @@ public class StringList {
 	}
 
 	/**
+	 * Determines if there is a line after the current one.
+	 * @return true when there is a line after the current one.
+	 */
+	public boolean hasNext() {
+		if (this.currentIndex < this.lines.length - 1) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Returns to the previous line.
+	 * 
+	 * @return true when there is a previous line
+	 */
+	public boolean prev() {
+		if (this.currentIndex < 0) {
+			return false;
+		} else {
+			this.currentIndex--;
+			return true;
+		}
+	}
+	
+	/**
 	 * Sets the new index from where lines can be read.
 	 * The current index will also be set on one less than the new start index.
 	 * So after calling next() the getCurrent()-method will return lines[startIndex] 
@@ -187,20 +213,6 @@ public class StringList {
 	}
 
 	/**
-	 * Returns to the previous line.
-	 * 
-	 * @return true when there is a previous line
-	 */
-	public boolean prev() {
-		if (this.currentIndex < 0) {
-			return false;
-		} else {
-			this.currentIndex--;
-			return true;
-		}
-	}
-
-	/**
 	 * Sets the current index.
 	 * 
 	 * @param index The new index.
@@ -208,7 +220,6 @@ public class StringList {
 	 */
 	public void setCurrentIndex(int index) {
 		this.currentIndex = index;
-	}
-	
+	}	
 
 }
