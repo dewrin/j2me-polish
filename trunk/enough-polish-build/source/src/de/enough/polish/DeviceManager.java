@@ -7,6 +7,7 @@
 package de.enough.polish;
 
 import de.enough.polish.exceptions.InvalidComponentException;
+import de.enough.polish.util.TextUtil;
 
 import org.jdom.*;
 import org.jdom.input.SAXBuilder;
@@ -79,8 +80,21 @@ public class DeviceManager {
 		ArrayList devicesList = new ArrayList();
 		List xmlList = document.getRootElement().getChildren();
 		for (Iterator iter = xmlList.iterator(); iter.hasNext();) {
-			Element deviceElement = (Element) iter.next();
-			Device device = new Device( deviceElement, vendorManager, groupManager );
+			Element definition = (Element) iter.next();
+			String identifier = definition.getChildTextTrim( "identifier");
+			if (identifier == null) {
+				throw new InvalidComponentException("Unable to initialise device. Every device needs to define either its [identifier] or its [name] and [vendor]. Check your [devices.xml].");
+			}
+			//System.out.println("\ninitialising device " + this.identifier);
+			String[] chunks = TextUtil.split( identifier, '/');
+			if (chunks.length != 2) {
+				//TODO there could be several device definitions in one xml-block
+				throw new InvalidComponentException("The device [" + identifier + "] has an invalid [identifier] - every identifier needs to consists of the vendor and the name, e.g. \"Nokia/6600\". Please check you [devices.xml].");
+			}
+			String vendorName = chunks[0];
+			String deviceName = chunks[1];
+			Vendor vendor = vendorManager.getVendor( vendorName );
+			Device device = new Device( definition, identifier, deviceName, vendor, groupManager );
 			devicesList.add( device );
 		}
 		this.devices = (Device[]) devicesList.toArray( new Device[ devicesList.size()]);
