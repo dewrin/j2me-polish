@@ -46,7 +46,8 @@ public final class ImportConverter {
 	private HashMap polishToMidp1;
 	private HashMap midp1ToPolish;
 	private HashMap midp2ToPolish;
-	private String[] completeLcdUiReplacement;
+	private String[] completeMidp1;
+	private String[] completeMidp2;
 	
 	/**
 	 * Creates a new import converter.
@@ -86,7 +87,7 @@ public final class ImportConverter {
 		// when javax.microedition.lcdui.* is imported, there are still
 		// some base classes which cannot be implemented by the polish framework,
 		// these have to be inserted as well:
-		this.completeLcdUiReplacement = new String[]{
+		this.completeMidp1 = new String[]{
 				"import javax.microedition.lcdui.CommandListener;",
 				"import javax.microedition.lcdui.Alert;",
 				"import javax.microedition.lcdui.AlertType;",
@@ -100,6 +101,19 @@ public final class ImportConverter {
 				"import de.enough.polish.ui.*;"
 		};
 
+		this.completeMidp2 = new String[]{
+				"import javax.microedition.lcdui.CommandListener;",
+				"import javax.microedition.lcdui.Alert;",
+				"import javax.microedition.lcdui.AlertType;",
+				"import javax.microedition.lcdui.Canvas;",
+				"import javax.microedition.lcdui.Command;",
+				"import javax.microedition.lcdui.Display;",
+				"import javax.microedition.lcdui.Displayable;",
+				"import javax.microedition.lcdui.Font;",
+				"import javax.microedition.lcdui.Graphics;",
+				"import javax.microedition.lcdui.Image;",
+				"import de.enough.polish.ui.*;"
+		};
 		
 		// init import statements to translate from the polish- to the J2ME-GUI:
 		HashMap toJavax = new HashMap();
@@ -145,9 +159,15 @@ public final class ImportConverter {
 						// neutralise this import:
 						sourceCode.setCurrent( "// neutralised: " + importContent );
 						// insert replacement:
-						sourceCode.insert( this.completeLcdUiReplacement );
-						int index = sourceCode.getCurrentIndex() + this.completeLcdUiReplacement.length;
-						sourceCode.setCurrentIndex( index );
+						if (isMidp1) {
+							sourceCode.insert( this.completeMidp1 );
+							int index = sourceCode.getCurrentIndex() + this.completeMidp1.length;
+							sourceCode.setCurrentIndex( index );
+						} else {
+							sourceCode.insert( this.completeMidp2 );
+							int index = sourceCode.getCurrentIndex() + this.completeMidp2.length;
+							sourceCode.setCurrentIndex( index );
+						}
 					}
 				} else {
 					// translate import statements from polish to javax.microedition.lcdui:
