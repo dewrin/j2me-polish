@@ -181,6 +181,7 @@ extends Canvas
 		// inform all root items that they belong to this screen:
 		if (this.container != null) {
 			this.container.screen = this;
+			//TODO rob check scrolling dimensions
 			// this.container.setVerticalDimensions( this.titleHeight, this.screenHeight );
 			this.container.setVerticalDimensions( 0, this.screenHeight );
 		}

@@ -588,10 +588,6 @@ implements CommandListener
 	 */
 	public static final int CONSTRAINT_MASK = 0xFFFF;
 	
-	//TODO rob i18n OK & Cancel commands
-	private static final Command OK_CMD = new Command("OK", Command.OK, 0 ); 
-	private static final Command CANCEL_CMD = new Command("Cancel", Command.CANCEL, 1 ); 
-
 	private int maxSize;
 	private int constraints;
 	private javax.microedition.lcdui.TextBox midpTextBox;
@@ -672,8 +668,8 @@ implements CommandListener
 	 */
 	private void createTextBox() {
 		this.midpTextBox = new javax.microedition.lcdui.TextBox( this.title, getText(), this.maxSize, this.constraints );
-		this.midpTextBox.addCommand(OK_CMD);
-		this.midpTextBox.addCommand(CANCEL_CMD);
+		this.midpTextBox.addCommand(StyleSheet.OK_CMD);
+		this.midpTextBox.addCommand(StyleSheet.CANCEL_CMD);
 		this.midpTextBox.setCommandListener( this );
 		
 	}
@@ -1100,8 +1096,8 @@ implements CommandListener
 	 * @see javax.microedition.lcdui.CommandListener#commandAction(javax.microedition.lcdui.Command, javax.microedition.lcdui.Displayable)
 	 */
 	public void commandAction(Command cmd, Displayable box) {
-		if (cmd == CANCEL_CMD) {
-			this.midpTextBox.setString( getText() );
+		if (cmd == StyleSheet.CANCEL_CMD) {
+			this.midpTextBox.setString( this.text );
 		} else {
 			setText( this.midpTextBox.getString() );
 		}

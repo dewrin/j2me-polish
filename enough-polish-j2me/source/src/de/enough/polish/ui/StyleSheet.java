@@ -68,6 +68,9 @@ public final class StyleSheet {
 	public static AnimationThread animationThread;
 	/** the gauge which is currently in CONTINUOUS_RUNNING mode */
 	public static Item gauge;
+	//TODO rob i18n OK & Cancel commands
+	public static final Command OK_CMD = new Command("OK", Command.OK, 0 ); 
+	public static final Command CANCEL_CMD = new Command("Cancel", Command.CANCEL, 1 ); 
 
 	/**
 	 * Retrieves the image with the given name.

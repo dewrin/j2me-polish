@@ -184,7 +184,7 @@ public class StringItem extends Item
 	public void setText( String text)
 	{
 		this.text = text;
-		this.isInitialised = false;
+		requestInit();
 	}
 
 	/**
