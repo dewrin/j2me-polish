@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry output="test-classes" kind="src" path="test-scr"/>
+	<classpathentry kind="src" path="source/src"/>
+	<classpathentry output="bin/test" kind="src" path="source/test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="import/bluetooth.zip"/>
 	<classpathentry kind="lib" path="import/junit.jar"/>
@@ -10,5 +10,5 @@
 	<classpathentry kind="lib" path="import/mma.zip"/>
 	<classpathentry kind="lib" path="import/nokiaui.zip"/>
 	<classpathentry kind="lib" path="import/wma.zip"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

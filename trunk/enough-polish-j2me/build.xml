@@ -14,9 +14,9 @@
         	version="true" 
         	nodeprecatedlist="false" 
         	nodeprecated="false" 
-        	packagenames="de.enough.polish.ui.tasks,de.enough.polish.ui.game,de.enough.polish.ui,de.enough.polish.util" 
-        	sourcepath="src" 
-        	classpath="classes:import/midpapi.zip:import/bluetooth.zip:import/mma.zip:import/nokiaui.zip:import/wma.zip:import/junit.jar" 
+        	packagenames="de.enough.*" 
+        	sourcepath="source/src" 
+        	classpath="bin/classes:import/midpapi.zip:import/bluetooth.zip:import/mma.zip:import/nokiaui.zip:import/wma.zip:import/junit.jar" 
         	doctitle="the polish framework"/>
     </target>
     
