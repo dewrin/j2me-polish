@@ -24,6 +24,8 @@
  */
 package de.enough.polish.ui;
 
+import javax.microedition.lcdui.*;
+import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.Graphics;
 
 /**
@@ -301,7 +303,8 @@ import javax.microedition.lcdui.Graphics;
  * @author Robert Virkus, robert@enough.de
  * @since MIDP 1.0
  */
-public class TextField extends Item
+public class TextField extends StringItem
+implements CommandListener
 {
 	/**
 	 * The user is allowed to enter any text.
@@ -584,13 +587,20 @@ public class TextField extends Item
 	 * 
 	 */
 	public static final int CONSTRAINT_MASK = 0xFFFF;
+	
+	//TODO rob i18n OK & Cancel commands
+	private static final Command OK_CMD = new Command("OK", Command.OK, 0 ); 
+	private static final Command CANCEL_CMD = new Command("Cancel", Command.CANCEL, 1 ); 
 
-	//following variables are implicitely defined by getter- or setter-methods:
-	private String string;
 	private int maxSize;
-	private int caretPosition;
 	private int constraints;
-	private String initialInputMode;
+	private javax.microedition.lcdui.TextBox midpTextBox;
+	private boolean showCaret;
+	private int originalWidth;
+	private int originalHeight;
+	protected String title;
+
+	private long lastCaretSwitch;
 
 	/**
 	 * Creates a new <code>TextField</code> object with the given label, initial
@@ -606,20 +616,68 @@ public class TextField extends Item
 	 * contents exceeds the newly assigned maximum size, the contents are
 	 * truncated from the end in order to fit, and no exception is thrown.
 	 * 
-	 * @param label - item label
-	 * @param text - the initial contents, or null if the TextField is to be empty
-	 * @param maxSize - the maximum capacity in characters
-	 * @param constraints - see input constraints
-	 * @throws IllegalArgumentException - if maxSize is zero or less
-	 * 												   or if the value of the constraints parameter is invalid
-	 * 												   or if text is illegal for the specified constraints
-	 * 												   or if the length of the string exceeds the requested maximum capacity
+	 * @param label item label
+	 * @param text the initial contents, or null if the TextField is to be empty
+	 * @param maxSize the maximum capacity in characters
+	 * @param constraints see input constraints
+	 * @throws IllegalArgumentException if maxSize is zero or less
+	 * 					or if the value of the constraints parameter is invalid
+	 * 					or if text is illegal for the specified constraints
+	 * 					or if the length of the string exceeds the requested maximum capacity
 	 */
 	public TextField( String label, String text, int maxSize, int constraints)
 	{
-		//TODO implement TextField
+		this( label, text, maxSize, constraints, null );
 	}
-
+	
+	/**
+	 * Creates a new <code>TextField</code> object with the given label, initial
+	 * contents, maximum size in characters, and constraints.
+	 * If the text parameter is <code>null</code>, the
+	 * <code>TextField</code> is created empty.
+	 * The <code>maxSize</code> parameter must be greater than zero.
+	 * An <code>IllegalArgumentException</code> is thrown if the
+	 * length of the initial contents string exceeds <code>maxSize</code>.
+	 * However,
+	 * the implementation may assign a maximum size smaller than the
+	 * application had requested.  If this occurs, and if the length of the
+	 * contents exceeds the newly assigned maximum size, the contents are
+	 * truncated from the end in order to fit, and no exception is thrown.
+	 * 
+	 * @param label item label
+	 * @param text the initial contents, or null if the TextField is to be empty
+	 * @param maxSize the maximum capacity in characters
+	 * @param constraints see input constraints
+	 * @param style the CSS style for this field
+	 * @throws IllegalArgumentException if maxSize is zero or less
+	 * 					or if the value of the constraints parameter is invalid
+	 * 					or if text is illegal for the specified constraints
+	 * 					or if the length of the string exceeds the requested maximum capacity
+	 */
+	public TextField( String label, String text, int maxSize, int constraints, Style style)
+	{
+		super( label, text, INTERACTIVE, style );
+		this.constraints = constraints;
+		this.maxSize = maxSize;
+		if (label != null) {
+			this.title = label;
+		} else {
+			//TODO rob i18n default input title
+			this.title = "Input";
+		}
+	}
+	
+	/**
+	 * Creates the TextBox used for the actual input mode.
+	 */
+	private void createTextBox() {
+		this.midpTextBox = new javax.microedition.lcdui.TextBox( this.title, getText(), this.maxSize, this.constraints );
+		this.midpTextBox.addCommand(OK_CMD);
+		this.midpTextBox.addCommand(CANCEL_CMD);
+		this.midpTextBox.setCommandListener( this );
+		
+	}
+	
 	/**
 	 * Gets the contents of the <code>TextField</code> as a string value.
 	 * 
@@ -628,7 +686,7 @@ public class TextField extends Item
 	 */
 	public String getString()
 	{
-		return this.string;
+		return getText();
 	}
 
 	/**
@@ -636,38 +694,45 @@ public class TextField extends Item
 	 * value, replacing the
 	 * previous contents.
 	 * 
-	 * @param text - the new value of the TextField, or null if the TextField is to be made empty
-	 * @throws IllegalArgumentException - if text is illegal for the current input constraints
-	 * 												   or  if the text would exceed the current maximum capacity
+	 * @param text the new value of the TextField, or null if the TextField is to be made empty
+	 * @throws IllegalArgumentException if text is illegal for the current input constraints
+	 * 									or  if the text would exceed the current maximum capacity
 	 * @see #getString()
 	 */
 	public void setString( String text)
 	{
-		this.string = text;
+		//TODO rob check text-value
+		setText(text);
+		if (this.midpTextBox != null) {
+			this.midpTextBox.setString( text );
+		}
 	}
 
 	/**
-	 * Copies the contents of the <code>TextField</code> into a
-	 * character array starting at
-	 * index zero. Array elements beyond the characters copied are left
+	 * Copies the contents of the <code>TextField</code> into a character array starting at index zero. 
+	 * Array elements beyond the characters copied are left
 	 * unchanged.
 	 * 
-	 * @param data - the character array to receive the value
+	 * @param data the character array to receive the value
 	 * @return the number of characters copied
-	 * @throws ArrayIndexOutOfBoundsException - if the array is too short for the contents
-	 * @throws NullPointerException - if data is null
+	 * @throws ArrayIndexOutOfBoundsException if the array is too short for the contents
+	 * @throws NullPointerException if data is null
 	 * @see #setChars(char[], int, int)
 	 */
 	public int getChars(char[] data)
 	{
-		return 0;
-		//TODO implement getChars
+		if (this.text == null) {
+			return 0;
+		}
+		char[] textArray = this.text.toCharArray();
+		System.arraycopy(textArray, 0, data, 0, textArray.length );
+		return textArray.length;
 	}
 
 	/**
-	 * Sets the contents of the <code>TextField</code> from a
-	 * character array, replacing the
-	 * previous contents. Characters are copied from the region of the
+	 * Sets the contents of the <code>TextField</code> from a  character array, 
+	 * replacing the previous contents. 
+	 * Characters are copied from the region of the
 	 * <code>data</code> array
 	 * starting at array index <code>offset</code> and running for
 	 * <code>length</code> characters.
@@ -683,9 +748,9 @@ public class TextField extends Item
 	 * must be a non-negative integer such that
 	 * <code>(offset + length) &lt;= data.length</code>.</p>
 	 * 
-	 * @param data - the source of the character data
-	 * @param offset - the beginning of the region of characters to copy
-	 * @param length - the number of characters to copy
+	 * @param data the source of the character data
+	 * @param offset the beginning of the region of characters to copy
+	 * @param length the number of characters to copy
 	 * @throws ArrayIndexOutOfBoundsException - if offset and length do not specify a valid range within the data array
 	 * @throws IllegalArgumentException - if data is illegal for the current input constraints
 	 *												   or if the text would exceed the current maximum capacity
@@ -693,7 +758,9 @@ public class TextField extends Item
 	 */
 	public void setChars(char[] data, int offset, int length)
 	{
-		//TODO implement setChars
+		char[] copy = new char[ length ];
+		System.arraycopy(data, offset, copy, 0, length );
+		setString( new String( copy ));
 	}
 
 	/**
@@ -718,20 +785,22 @@ public class TextField extends Item
 	 * <p>If the application needs to simulate typing of characters it can
 	 * determining the location of the current insertion point
 	 * (&quot;caret&quot;)
-	 * using the with <A HREF="../../../javax/microedition/lcdui/TextField.html#getCaretPosition()"><CODE>getCaretPosition()</CODE></A> method.
+	 * using the with <CODE>getCaretPosition()</CODE> method.
 	 * For example,
 	 * <code>text.insert(s, text.getCaretPosition())</code> inserts the string
 	 * <code>s</code> at the current caret position.</p>
 	 * 
-	 * @param src - the String to be inserted
-	 * @param position - the position at which insertion is to occur
-	 * @throws IllegalArgumentException - if the resulting contents would be illegal for the current input constraints
-	 *												   or if the insertion would exceed the current maximum capacity
-	 * @throws NullPointerException - if src is null
+	 * @param src the String to be inserted
+	 * @param position the position at which insertion is to occur
+	 * @throws IllegalArgumentException if the resulting contents would be illegal for the current input constraints
+	 *		   or if the insertion would exceed the current maximum capacity
+	 * @throws NullPointerException if src is null
 	 */
 	public void insert( String src, int position)
 	{
-		//TODO implement insert
+		String start = this.text.substring( 0, position );
+		String end = this.text.substring( position );
+		setString( start + src + end );
 	}
 
 	/**
@@ -761,7 +830,9 @@ public class TextField extends Item
 	 */
 	public void insert(char[] data, int offset, int length, int position)
 	{
-		//TODO implement insert
+		char[] copy = new char[ length ];
+		System.arraycopy( data, offset, copy, 0, length);
+		insert( new String( copy ), position );
 	}
 
 	/**
@@ -776,14 +847,16 @@ public class TextField extends Item
 	 * must be a non-negative integer such that
 	 * <code>(offset + length) &lt;= size()</code>.</p>
 	 * 
-	 * @param offset - the beginning of the region to be deleted
-	 * @param length - the number of characters to be deleted
-	 * @throws IllegalArgumentException - if the resulting contents would be illegal for the current input constraints
-	 * @throws StringIndexOutOfBoundsException - if offset and length do not specify a valid range within the contents of the TextField
+	 * @param offset the beginning of the region to be deleted
+	 * @param length the number of characters to be deleted
+	 * @throws IllegalArgumentException if the resulting contents would be illegal for the current input constraints
+	 * @throws StringIndexOutOfBoundsException if offset and length do not specify a valid range within the contents of the TextField
 	 */
 	public void delete(int offset, int length)
 	{
-		//TODO implement delete
+		String start = this.text.substring(0, offset );
+		String end = this.text.substring( offset + length );
+		setString( start + end );
 	}
 
 	/**
@@ -805,16 +878,24 @@ public class TextField extends Item
 	 * <code>TextField</code> are larger than
 	 * <code>maxSize</code>, the contents are truncated to fit.
 	 * 
-	 * @param maxSize - the new maximum size
-	 * @return assigned maximum capacity - may be smaller than requested.
-	 * @throws IllegalArgumentException - if maxSize is zero or less.
-	 *												   or if the contents after truncation would be illegal for the current input constraints
+	 * @param maxSize the new maximum size
+	 * @return assigned maximum capacity may be smaller than requested.
+	 * @throws IllegalArgumentException if maxSize is zero or less.
+	 *									or if the contents after truncation would be illegal for the current input constraints
 	 * @see #getMaxSize()
 	 */
 	public int setMaxSize(int maxSize)
 	{
-		return 0;
-		//TODO implement setMaxSize
+		if ((this.text != null && maxSize < this.text.length()) || (maxSize < 1)) {
+			throw new IllegalArgumentException();
+		}
+		if (this.midpTextBox != null) {
+			this.maxSize = this.midpTextBox.setMaxSize(maxSize);
+			return this.maxSize;
+		} else {
+			this.maxSize = maxSize;
+			return maxSize;
+		}
 	}
 
 	/**
@@ -825,8 +906,11 @@ public class TextField extends Item
 	 */
 	public int size()
 	{
-		return 0;
-		//TODO implement size
+		if (this.text == null) {
+			return 0;
+		} else {
+			return this.text.length();
+		}
 	}
 
 	/**
@@ -838,7 +922,10 @@ public class TextField extends Item
 	 */
 	public int getCaretPosition()
 	{
-		return this.caretPosition;
+		if (this.midpTextBox != null) {
+			return this.midpTextBox.getCaretPosition();
+		}
+		return 0;
 	}
 
 	/**
@@ -848,8 +935,8 @@ public class TextField extends Item
 	 * <code>constraints</code>, the contents are
 	 * set to empty.
 	 * 
-	 * @param constraints - see input constraints
-	 * @throws IllegalArgumentException - if constraints is not any of the ones specified in input constraints
+	 * @param constraints see input constraints
+	 * @throws IllegalArgumentException if constraints is not any of the ones specified in input constraints
 	 * @see #getConstraints()
 	 */
 	public void setConstraints(int constraints)
@@ -876,31 +963,69 @@ public class TextField extends Item
 	 * input mode.  If <code>null</code> is passed, the implementation should
 	 * choose a default input mode.
 	 * 
-	 * <p>See <a href="#modes">Input Modes</a> for a full explanation of input
+	 * <p>See Input Modes for a full explanation of input
 	 * modes. </p>
 	 * 
-	 * @param characterSubset - a string naming a Unicode character subset, or null
+	 * @param characterSubset a string naming a Unicode character subset, or null
 	 * @since  MIDP 2.0
 	 */
 	public void setInitialInputMode( String characterSubset)
 	{
-		this.initialInputMode = characterSubset;
+		//#ifdef polish.midp2
+			if (this.midpTextBox == null) {
+				createTextBox();
+			}
+			//# this.midpTextBox.setInitialInputMode( characterSubset );
+		//#endif
 	}
 
 	/* (non-Javadoc)
 	 * @see de.enough.polish.ui.Item#paint(int, int, javax.microedition.lcdui.Graphics)
 	 */
 	public void paintContent(int x, int y, int leftBorder, int rightBorder, Graphics g) {
-		// TODO Auto-generated method stub
-		
+		super.paintContent(x, y, leftBorder, rightBorder, g);
+		if (this.showCaret) {
+			if (this.text == null) {
+				// when the text is null the appropriate font and color
+				// might not have been set, so set them now:
+				g.setFont( this.font );
+				g.setColor( this.textColor );
+			}
+			if (this.isLayoutCenter) {
+				int centerX = leftBorder 
+					+ (rightBorder - leftBorder) / 2 
+					+ this.originalWidth / 2
+					+ 2;
+				if (this.originalHeight > 0) {
+					y += this.originalHeight - this.font.getHeight();
+				}
+				g.drawChar('|', centerX, y, Graphics.TOP | Graphics.LEFT );
+			} else {
+				x += this.originalWidth + 2;
+				if (this.originalHeight > 0) {
+					y += this.originalHeight - this.font.getHeight();
+				}
+				g.drawChar('|', x, y, Graphics.TOP | Graphics.LEFT );
+			}
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see de.enough.polish.ui.Item#initItem()
 	 */
 	protected void initContent(int firstLineWidth, int lineWidth) {
-		// TODO enough implement initItem
-		
+		super.initContent(firstLineWidth, lineWidth);
+		this.originalWidth = this.contentWidth;
+		this.originalHeight = this.contentHeight;
+		if (this.contentWidth < this.minimumWidth) {
+			this.contentWidth = this.minimumWidth;
+		} 
+		if (this.contentHeight < this.minimumHeight) {
+			this.contentHeight = this.minimumHeight;
+		} else  if (this.contentHeight < this.font.getHeight()) {
+			this.contentHeight = this.font.getHeight();
+			this.originalHeight = this.contentHeight;
+		}
 	}
 
 	//#ifdef polish.useDynamicStyles
@@ -908,9 +1033,78 @@ public class TextField extends Item
 	 * @see de.enough.polish.ui.Item#getCssSelector()
 	 */
 	protected String createCssSelector() {
-		// TODO enough implement getCssSelector
-		return null;
+		return "textfield";
 	}
 	//#endif
 
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#setStyle(de.enough.polish.ui.Style)
+	 */
+	public void setStyle(Style style) {
+		super.setStyle(style);
+		String widthStr = style.getProperty("textfield-width");
+		if (widthStr != null) {
+			this.minimumWidth = Integer.parseInt( widthStr );
+		}
+		String heightStr = style.getProperty("textfield-height");
+		if (heightStr != null) {
+			this.minimumHeight = Integer.parseInt( heightStr );
+		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#animate()
+	 */
+	public boolean animate() {
+		long currentTime = System.currentTimeMillis();
+		if ( currentTime - this.lastCaretSwitch > 500 ) {
+			this.lastCaretSwitch = currentTime;
+			this.showCaret = ! this.showCaret;
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#defocus(de.enough.polish.ui.Style)
+	 */
+	protected void defocus(Style originalStyle) {
+		super.defocus(originalStyle);
+		this.showCaret = false;
+	}
+	
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#handleKeyPressed(int, int)
+	 */
+	protected boolean handleKeyPressed(int keyCode, int gameAction) {
+		if ((gameAction == Canvas.UP && keyCode != Canvas.KEY_NUM2) 
+				|| (gameAction == Canvas.DOWN && keyCode != Canvas.KEY_NUM8)) {
+			return false;
+		}
+		showTextBox();
+		return true;
+	}
+	
+	/**
+	 * Shows the TextBox for entering texts.
+	 */
+	private void showTextBox() {
+		if (this.midpTextBox == null) {
+			createTextBox();
+		}
+		StyleSheet.display.setCurrent( this.midpTextBox );
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.microedition.lcdui.CommandListener#commandAction(javax.microedition.lcdui.Command, javax.microedition.lcdui.Displayable)
+	 */
+	public void commandAction(Command cmd, Displayable box) {
+		if (cmd == CANCEL_CMD) {
+			this.midpTextBox.setString( getText() );
+		} else {
+			setText( this.midpTextBox.getString() );
+		}
+		StyleSheet.display.setCurrent( StyleSheet.currentScreen );
+	}
 }

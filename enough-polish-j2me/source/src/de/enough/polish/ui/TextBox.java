@@ -25,8 +25,6 @@
  */
 package de.enough.polish.ui;
 
-import javax.microedition.lcdui.Canvas;
-import javax.microedition.lcdui.Graphics;
 
 /**
  * The <code>TextBox</code> class is a <code>Screen</code> that allows the user to enter and edit text.
@@ -84,16 +82,10 @@ import javax.microedition.lcdui.Graphics;
  * 
  * @since MIDP 1.0
  */
-public class TextBox extends Canvas
+public class TextBox extends Screen
 {
-	//following variables are implicitely defined by getter- or setter-methods:
-	private String string;
-	private int maxSize;
-	private int caretPosition;
-	private int constraints;
-	private String initialInputMode;
-	private String title;
-	private Ticker ticker;
+	
+	private TextField textField;
 
 	/**
 	 * Creates a new <code>TextBox</code> object with the given title
@@ -110,20 +102,55 @@ public class TextBox extends Canvas
 	 * contents exceeds the newly assigned maximum size, the contents are
 	 * truncated from the end in order to fit, and no exception is thrown.
 	 * 
-	 * @param title - the title text to be shown with the display
-	 * @param text - the initial contents of the text editing area, null may be used to indicate no initial content
-	 * @param maxSize - the maximum capacity in characters. The implementation may limit boundary maximum capacity and the actually assigned capacity may me smaller than requested. A defensive application will test the actually given capacity with getMaxSize().
-	 * @param constraints - see input constraints
-	 * @throws IllegalArgumentException - if maxSize is zero or less
-	 * 												  or if the constraints parameter is invalid
-	 * 												  or if text is illegal for the specified constraints
-	 * 												  or if the length of the string exceeds the requested maximum capacity
+	 * @param title the title text to be shown with the display
+	 * @param text the initial contents of the text editing area, null may be used to indicate no initial content
+	 * @param maxSize the maximum capacity in characters. The implementation may limit boundary maximum capacity and the actually assigned capacity may me smaller than requested. A defensive application will test the actually given capacity with getMaxSize().
+	 * @param constraints see input constraints
+	 * @throws IllegalArgumentException if maxSize is zero or less
+	 * 				or if the constraints parameter is invalid
+	 * 				or if text is illegal for the specified constraints
+	 * 				or if the length of the string exceeds the requested maximum capacity
 	 */
 	public TextBox( String title, String text, int maxSize, int constraints)
 	{
-		//TODO implement TextBox
+		this( title, text, maxSize, constraints, null );
 	}
 
+	/**
+	 * Creates a new <code>TextBox</code> object with the given title
+	 * string, initial
+	 * contents, maximum size in characters, and constraints.
+	 * If the text parameter is <code>null</code>, the
+	 * <code>TextBox</code> is created empty.
+	 * The <code>maxSize</code> parameter must be greater than zero.
+	 * An <code>IllegalArgumentException</code> is thrown if the
+	 * length of the initial contents string exceeds <code>maxSize</code>.
+	 * However,
+	 * the implementation may assign a maximum size smaller than the
+	 * application had requested.  If this occurs, and if the length of the
+	 * contents exceeds the newly assigned maximum size, the contents are
+	 * truncated from the end in order to fit, and no exception is thrown.
+	 * 
+	 * @param title the title text to be shown with the display
+	 * @param text the initial contents of the text editing area, null may be used to indicate no initial content
+	 * @param maxSize the maximum capacity in characters. The implementation may limit boundary maximum capacity and the actually assigned capacity may me smaller than requested. A defensive application will test the actually given capacity with getMaxSize().
+	 * @param constraints see input constraints
+	 * @param style the style for this screen
+	 * @throws IllegalArgumentException if maxSize is zero or less
+	 * 				or if the constraints parameter is invalid
+	 * 				or if text is illegal for the specified constraints
+	 * 				or if the length of the string exceeds the requested maximum capacity
+	 */
+	public TextBox( String title, String text, int maxSize, int constraints, Style style)
+	{
+		super( title, style );
+		this.textField = new TextField( null, text, maxSize, constraints, style );
+		if (title != null) {
+			this.textField.title = title;
+		}
+		this.container.add( this.textField );
+	}
+	
 	/**
 	 * Gets the contents of the <code>TextBox</code> as a string value.
 	 * 
@@ -132,21 +159,21 @@ public class TextBox extends Canvas
 	 */
 	public String getString()
 	{
-		return this.string;
+		return this.textField.getText();
 	}
 
 	/**
 	 * Sets the contents of the <code>TextBox</code> as a string
 	 * value, replacing the previous contents.
 	 * 
-	 * @param text - the new value of the TextBox, or null if the TextBox is to be made empty
-	 * @throws IllegalArgumentException - if text is illegal for the current input constraints
-	 * 												   or if the text would exceed the current maximum capacity
+	 * @param text the new value of the TextBox, or null if the TextBox is to be made empty
+	 * @throws IllegalArgumentException if text is illegal for the current input constraints
+	 * 									or if the text would exceed the current maximum capacity
 	 * @see #getString()
 	 */
 	public void setString( String text)
 	{
-		this.string = text;
+		this.textField.setString(text);
 	}
 
 	/**
@@ -155,7 +182,7 @@ public class TextBox extends Canvas
 	 * index zero. Array elements beyond the characters copied are left
 	 * unchanged.
 	 * 
-	 * @param data - the character array to receive the value
+	 * @param data the character array to receive the value
 	 * @return the number of characters copied
 	 * @throws ArrayIndexOutOfBoundsException - if the array is too short for the contents
 	 * @throws NullPointerException - if data is null
@@ -163,8 +190,7 @@ public class TextBox extends Canvas
 	 */
 	public int getChars(char[] data)
 	{
-		return 0;
-		//TODO implement getChars
+		return this.textField.getChars(data);
 	}
 
 	/**
@@ -186,17 +212,17 @@ public class TextBox extends Canvas
 	 * must be a non-negative integer such that
 	 * <code>(offset + length) &lt;= data.length</code>.</p>
 	 * 
-	 * @param data - the source of the character data
-	 * @param offset - the beginning of the region of characters to copy
-	 * @param length - the number of characters to copy
-	 * @throws ArrayIndexOutOfBoundsException - if offset and length do not specify a valid range within the data array
-	 * @throws IllegalArgumentException - if data is illegal for the current input constraints
-	 * 												  or if the text would exceed the current maximum capacity
+	 * @param data the source of the character data
+	 * @param offset the beginning of the region of characters to copy
+	 * @param length the number of characters to copy
+	 * @throws ArrayIndexOutOfBoundsException if offset and length do not specify a valid range within the data array
+	 * @throws IllegalArgumentException if data is illegal for the current input constraints
+	 * 									or if the text would exceed the current maximum capacity
 	 * @see #getChars(char[])
 	 */
 	public void setChars(char[] data, int offset, int length)
 	{
-		//TODO implement setChars
+		this.textField.setChars(data, offset, length);
 	}
 
 	/**
@@ -226,15 +252,15 @@ public class TextBox extends Canvas
 	 * <code>text.insert(s, text.getCaretPosition())</code> inserts the string
 	 * <code>s</code> at the current caret position.</p>
 	 * 
-	 * @param src - the String to be inserted
-	 * @param position - the position at which insertion is to occur
-	 * @throws IllegalArgumentException - if the resulting contents would be illegal for the current input constraints
-	 * 												   or if the insertion would exceed the current maximum capacity
-	 * @throws NullPointerException - if src is null
+	 * @param src the String to be inserted
+	 * @param position the position at which insertion is to occur
+	 * @throws IllegalArgumentException if the resulting contents would be illegal for the current input constraints
+	 * 									or if the insertion would exceed the current maximum capacity
+	 * @throws NullPointerException if src is null
 	 */
 	public void insert( String src, int position)
 	{
-		//TODO implement insert
+		this.textField.insert(src, position);
 	}
 
 	/**
@@ -253,18 +279,18 @@ public class TextBox extends Canvas
 	 * must be a non-negative integer such that
 	 * <code>(offset + length) &lt;= data.length</code>.</p>
 	 * 
-	 * @param data - the source of the character data
-	 * @param offset - the beginning of the region of characters to copy
-	 * @param length - the number of characters to copy
-	 * @param position - the position at which insertion is to occur
-	 * @throws ArrayIndexOutOfBoundsException - if offset and length do not specify a valid range within the data array
-	 * @throws IllegalArgumentException - if the resulting contents would be illegal for the current input constraints
-	 * 												   or if the insertion would exceed the current maximum capacity
-	 * @throws NullPointerException - if data is null
+	 * @param data the source of the character data
+	 * @param offset the beginning of the region of characters to copy
+	 * @param length the number of characters to copy
+	 * @param position the position at which insertion is to occur
+	 * @throws ArrayIndexOutOfBoundsException if offset and length do not specify a valid range within the data array
+	 * @throws IllegalArgumentException if the resulting contents would be illegal for the current input constraints
+	 * 									or if the insertion would exceed the current maximum capacity
+	 * @throws NullPointerException if data is null
 	 */
 	public void insert(char[] data, int offset, int length, int position)
 	{
-		//TODO implement insert
+		this.textField.insert(data, offset, length, position);
 	}
 
 	/**
@@ -279,14 +305,14 @@ public class TextBox extends Canvas
 	 * must be a non-negative integer such that
 	 * <code>(offset + length) &lt;= size()</code>.</p>
 	 * 
-	 * @param offset - the beginning of the region to be deleted
-	 * @param length - the number of characters to be deleted
-	 * @throws IllegalArgumentException - if the resulting contents would be illegal for the current input constraints
-	 * @throws StringIndexOutOfBoundsException - if offset and length do not specify a valid range within the contents of the TextBox
+	 * @param offset the beginning of the region to be deleted
+	 * @param length the number of characters to be deleted
+	 * @throws IllegalArgumentException if the resulting contents would be illegal for the current input constraints
+	 * @throws StringIndexOutOfBoundsException if offset and length do not specify a valid range within the contents of the TextBox
 	 */
 	public void delete(int offset, int length)
 	{
-		//TODO implement delete
+		this.textField.delete(offset, length);
 	}
 
 	/**
@@ -298,7 +324,7 @@ public class TextBox extends Canvas
 	 */
 	public int getMaxSize()
 	{
-		return this.maxSize;
+		return this.textField.getMaxSize();
 	}
 
 	/**
@@ -308,16 +334,15 @@ public class TextBox extends Canvas
 	 * <code>TextBox</code> are larger than
 	 * <code>maxSize</code>, the contents are truncated to fit.
 	 * 
-	 * @param maxSize - the new maximum size
+	 * @param maxSize the new maximum size
 	 * @return assigned maximum capacity - may be smaller than requested.
-	 * @throws IllegalArgumentException - if maxSize is zero or less.
-	 * 												   Or if the contents after truncation would be illegal for the current input constraints
+	 * @throws IllegalArgumentException if maxSize is zero or less.
+	 * 									Or if the contents after truncation would be illegal for the current input constraints
 	 * @see #getMaxSize()
 	 */
 	public int setMaxSize(int maxSize)
 	{
-		return 0;
-		//TODO implement setMaxSize
+		return this.textField.setMaxSize(maxSize);
 	}
 
 	/**
@@ -328,8 +353,7 @@ public class TextBox extends Canvas
 	 */
 	public int size()
 	{
-		return 0;
-		//TODO implement size
+		return this.textField.size();
 	}
 
 	/**
@@ -341,7 +365,7 @@ public class TextBox extends Canvas
 	 */
 	public int getCaretPosition()
 	{
-		return this.caretPosition;
+		return this.textField.getCaretPosition();
 	}
 
 	/**
@@ -351,13 +375,13 @@ public class TextBox extends Canvas
 	 * the contents are
 	 * set to empty.
 	 * 
-	 * @param constraints - see input constraints
+	 * @param constraints see input constraints
 	 * @throws IllegalArgumentException - if the value of the constraints parameter is invalid
 	 * @see #getConstraints()
 	 */
 	public void setConstraints(int constraints)
 	{
-		this.constraints = constraints;
+		this.textField.setConstraints(constraints);
 	}
 
 	/**
@@ -368,7 +392,7 @@ public class TextBox extends Canvas
 	 */
 	public int getConstraints()
 	{
-		return this.constraints;
+		return this.textField.getConstraints();
 	}
 
 	/**
@@ -383,79 +407,19 @@ public class TextBox extends Canvas
 	 * <p>See <a href="TextField#modes">Input Modes</a> for a full
 	 * explanation of input modes. </p>
 	 * 
-	 * @param characterSubset - a string naming a Unicode character subset, or null
+	 * @param characterSubset a string naming a Unicode character subset, or null
 	 * @since  MIDP 2.0
 	 */
 	public void setInitialInputMode( String characterSubset)
 	{
-		this.initialInputMode = characterSubset;
-	}
-
-	/**
-	 * Sets the title of the <code>Displayable</code>. If
-	 * <code>null</code> is given,
-	 * removes the title.
-	 * 
-	 * <P>If the <code>Displayable</code> is actually visible on
-	 * the display,
-	 * the implementation should update
-	 * the display as soon as it is feasible to do so.</P>
-	 * 
-	 * <P>The existence of a title  may affect the size
-	 * of the area available for <code>Displayable</code> content.
-	 * If the application adds, removes, or sets the title text at runtime,
-	 * this can dynamically change the size of the content area.
-	 * This is most important to be aware of when using the
-	 * <code>Canvas</code> class.</p>
-	 * 
-	 * @param s - the new title, or null for no title
-	 * @see javax.microedition.lcdui.Screen#setTitle(String) in class Displayable
-	 * @see javax.microedition.lcdui.Screen#getTitle()
-	 * @since  MIDP 2.0
-	 */
-	public void setTitle( String s)
-	{
-		this.title = s;
-	}
-
-	/**
-	 * Sets a ticker for use with this <code>Displayable</code>,
-	 * replacing any
-	 * previous ticker.
-	 * If <code>null</code>, removes the ticker object
-	 * from this <code>Displayable</code>. The same ticker may be shared by
-	 * several <code>Displayable</code>
-	 * objects within an application. This is done by calling
-	 * <code>setTicker()</code>
-	 * with the same <code>Ticker</code> object on several
-	 * different <code>Displayable</code> objects.
-	 * If the <code>Displayable</code> is actually visible on the display,
-	 * the implementation should update
-	 * the display as soon as it is feasible to do so.
-	 * 
-	 * <p>The existence of a ticker may affect the size
-	 * of the area available for <code>Displayable's</code> contents.
-	 * If the application adds, removes, or sets the ticker text at runtime,
-	 * this can dynamically change the size of the content area.
-	 * This is most important to be aware of when using the
-	 * <code>Canvas</code> class.
-	 * 
-	 * @param ticker - the ticker object used on this screen
-	 * @see javax.microedition.lcdui.Screen#setTicker(javax.microedition.lcdui.Ticker) in class Displayable
-	 * @see javax.microedition.lcdui.Screen#getTicker()
-	 * @since  MIDP 2.0
-	 */
-	public void setTicker( Ticker ticker)
-	{
-		this.ticker = ticker;
+		this.textField.setInitialInputMode(characterSubset);
 	}
 
 	/* (non-Javadoc)
-	 * @see javax.microedition.lcdui.Canvas#paint(javax.microedition.lcdui.Graphics)
+	 * @see de.enough.polish.ui.Screen#createCssSelector()
 	 */
-	protected void paint(Graphics arg0) {
-		// TODO Auto-generated method stub
-		
+	protected String createCssSelector() {
+		return "textbox";
 	}
 
 }

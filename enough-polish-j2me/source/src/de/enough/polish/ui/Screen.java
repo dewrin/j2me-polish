@@ -237,6 +237,9 @@ extends Canvas
 		if (this.background != null) {
 			animated = this.background.animate();
 		}
+		if (this.container != null) {
+			animated = animated | this.container.animate();
+		}
 		//#if polish.useFullScreen && polish.api.nokia-ui 
 		if (animated || this.repaintRequested) {
 			this.repaintRequested = false;

@@ -589,6 +589,8 @@ public abstract class Item extends Object
 	protected String label;
 	protected Font labelFont;
 	protected int labelColor;
+	protected int labelWidth;
+	protected int labelHeight;
 	protected int itemWidth;
 	protected int itemHeight;
 	protected int paddingLeft;
@@ -609,21 +611,20 @@ public abstract class Item extends Object
 	protected int backgroundWidth;
 	protected int backgroundHeight;
 	protected int appearanceMode;
-	protected int labelWidth;
 	/**
 	 * The screen to which this item belongs to.
 	 */
 	protected Screen screen;
 	//#ifdef polish.useDynamicStyles
-	/**
-	 * The appropriate CSS selector of this item. 
-	 * This is either the style's name or a selector
-	 * depending on the state of this item. A StringItem
-	 * can have the selector "p", "a" or "button", for example.
-	 * This variable can only be used, when the proprocessing variable
-	 * "polish.useDynamicStyles" is defined.
-	 */
-	protected String cssSelector;
+		/**
+		 * The appropriate CSS selector of this item. 
+		 * This is either the style's name or a selector
+		 * depending on the state of this item. A StringItem
+		 * can have the selector "p", "a" or "button", for example.
+		 * This variable can only be used, when the proprocessing variable
+		 * "polish.useDynamicStyles" is defined.
+		 */
+		protected String cssSelector;
 	//#endif
 	/**
 	 * Determines whether the style has be dynamically assigned already.
@@ -646,15 +647,15 @@ public abstract class Item extends Object
 	protected boolean isFocused;
 	
 	//#ifdef polish.useBeforeStyle
-	private int beforeWidth;
-	private int beforeHeight;
-	private Image beforeImage;
+		private int beforeWidth;
+		private int beforeHeight;
+		private Image beforeImage;
 	//#endif
 
 	//#ifdef polish.useAfterStyle
-	private int afterWidth;
-	private int afterHeight;
-	private Image afterImage;
+		private int afterWidth;
+		private int afterHeight;
+		private Image afterImage;
 	//#endif
 	
 	protected Item() {
@@ -1215,6 +1216,8 @@ public abstract class Item extends Object
 	
 	/**
 	 * Paints this item on the screen.
+	 * This method should normally not be overriden. Override it
+	 * only when you know what you are doing!
 	 * 
 	 * @param x the left start position of this item.
 	 * @param y the top start position of this item.
@@ -1234,14 +1237,14 @@ public abstract class Item extends Object
 		this.xRightPos = x + this.itemWidth; //TODO rob: Item.xRightPos might differ when this item contains line breaks
 		this.yBottomPos = y + this.itemHeight;
 		
-		leftBorder += (this.marginLeft + this.borderWidth + this.paddingLeft);
+		leftBorder += (this.marginLeft + this.borderWidth + this.paddingLeft + this.labelWidth);
 		//#ifdef polish.useBeforeStyle
-		leftBorder += this.beforeWidth;
+			leftBorder += this.beforeWidth;
 		//#endif
 		//System.out.println( this.style.name + ":  increasing leftBorder by " + (this.marginLeft + this.borderWidth + this.paddingLeft));
 		rightBorder -= (this.marginRight + this.borderWidth + this.paddingRight);
 		//#ifdef polish.useAfterStyle
-		rightBorder -= this.afterWidth;
+			rightBorder -= this.afterWidth;
 		//#endif
 		
 		//System.out.println( this.style.name + ":  decreasing rightBorder by " + (this.marginRight + this.borderWidth + this.paddingRight));
@@ -1359,15 +1362,17 @@ public abstract class Item extends Object
 			setStyle( this.style );
 		}
 		//#ifdef polish.useDynamicStyles
-		initStyle();
+			initStyle();
 		//#endif
-		if (this.labelFont == null && this.label != null) {
-			this.labelFont = Font.getDefaultFont();
-		}
 		if (this.label != null) {
+			if (this.labelFont == null ) {
+				this.labelFont = Font.getDefaultFont();
+			}
 			this.labelWidth = this.labelFont.stringWidth( this.label ) + this.paddingHorizontal;
+			this.labelHeight = this.labelFont.getHeight();
 		} else {
 			this.labelWidth = 0;
+			this.labelHeight = 0;
 		}
 		// calculate content width and content height:
 		int noneContentWidth = this.labelWidth 
@@ -1393,15 +1398,18 @@ public abstract class Item extends Object
 		}
 		int cHeight = this.contentHeight;
 		//#ifdef polish.useBeforeStyle
-		if (this.contentHeight < this.beforeHeight) {
-			cHeight = this.beforeHeight;
-		}
+			if (this.contentHeight < this.beforeHeight) {
+				cHeight = this.beforeHeight;
+			}
 		//#endif
 		//#ifdef polish.useAfterStyle
-		if (this.contentHeight < this.afterHeight) {
-			cHeight = this.afterHeight;
-		}
+			if (this.contentHeight < this.afterHeight) {
+				cHeight = this.afterHeight;
+			}
 		//#endif
+		if (cHeight < this.labelHeight) {
+			cHeight = this.labelHeight;
+		}
 		this.backgroundWidth = this.itemWidth - this.marginLeft - this.marginRight;
 		this.backgroundHeight = this.borderWidth + this.paddingTop 
 		 					  + cHeight 
