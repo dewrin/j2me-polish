@@ -86,12 +86,6 @@ public abstract class Screen
 	implements CommandListener
 //#endif
 {
-	//#ifdef false
-		public static final int SCREEN_WIDTH = 80;
-		public static final int SCREEN_HEIGHT = 100;
-	//#endif
-	//#= public final static int SCREEN_WIDTH = ${ polish.ScreenWidth };
-	//#= public final static int SCREEN_HEIGHT = ${ polish.ScreenHeight };
 	
 	protected StringItem title;
 	protected String titleText;
@@ -367,7 +361,9 @@ public abstract class Screen
 			g.setClip(0, this.titleHeight, this.screenWidth, this.screenHeight - this.titleHeight );
 			g.translate( 0, this.titleHeight );
 			// paint content:
+			//System.out.println("starting to paint content of screen");
 			paintScreen( g);
+			//System.out.println("done painting content of screen");
 			
 			g.translate( 0, -this.titleHeight );
 			// allow painting outside of the screen again:
@@ -402,7 +398,7 @@ public abstract class Screen
 					g.setColor( this.menuBarColor );
 					g.fillRect(0, this.originalScreenHeight, this.screenWidth,  this.menuBarHeight );
 				}
-				if (this.menuContainer.size() > 0) {
+				if (this.menuContainer != null && this.menuContainer.size() > 0) {
 					String menuText = null;
 					if (this.menuOpened) {
 						//TODO rob internationalise cmd.selectMenu
@@ -433,17 +429,11 @@ public abstract class Screen
 			//#endif
 		} catch (RuntimeException e) {
 			//#mdebug error
-				g.setColor( 0xFF0000 );
-				g.fillRect( 0, 0, this.screenWidth, this.screenHeight );
-				g.setColor( 0 );
-				String msg = e.toString();
-				g.drawString( msg, 10, 10, Graphics.TOP | Graphics.LEFT );
 				Debug.debug( "unable to paint screen", e );
 				if (true) {
 					return;
 				}
 			//#enddebug
-			//throw e;
 		}
 		//#if polish.useFullScreen && polish.api.nokia-ui 
 			this.lastPaintTime = System.currentTimeMillis();
@@ -507,7 +497,11 @@ public abstract class Screen
 			// The name of the field does not matter by the way. This is 
 			// a very interesting behaviour and should be analysed
 			// at some point...
-			//#= this.titleHeight = this.title.getItemHeight(${polish.ScreenWidth}, ${polish.ScreenWidth});
+			//#ifdef polish.ScreenWidth:defined
+				//#= this.titleHeight = this.title.getItemHeight(${polish.ScreenWidth}, ${polish.ScreenWidth});
+			//#else
+				this.titleHeight = this.title.getItemHeight( getWidth(), getWidth() );
+			//#endif
 		} else {
 			this.title = null;
 			this.titleHeight = 0;
@@ -570,7 +564,9 @@ public abstract class Screen
 						callCommandListener( this.menuSingleLeftCommand );
 						return;
 					} else {
-						if (!this.menuOpened) {
+						if (!this.menuOpened 
+								&& this.menuContainer != null 
+								&&  this.menuContainer.size() != 0 ) {
 							this.menuOpened = true;
 							repaint();
 							return;

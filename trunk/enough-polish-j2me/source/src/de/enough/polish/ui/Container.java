@@ -327,10 +327,9 @@ public class Container extends Item {
 	 * @see de.enough.polish.ui.Item#initItem( int, int )
 	 */
 	protected void initContent(int firstLineWidth, int lineWidth) {
-		//System.out.println("intialising container");
 		Item[] myItems = (Item[]) this.itemsList.toArray( new Item[ this.itemsList.size() ]);
 		this.items = myItems;
-		if (this.columnsSetting == NO_COLUMNS) {
+		if (this.columnsSetting == NO_COLUMNS || myItems.length <= 1) {
 			int myContentWidth = 0;
 			int myContentHeight = 0;
 			boolean hasFocusableItem = false;
@@ -385,11 +384,13 @@ public class Container extends Item {
 		boolean trackColumnWidths = (this.columnsSetting == NORMAL_WIDTH_COLUMNS);
 		int maxWidth = 0;
 		int myContentHeight = 0;
-		//System.out.println("starting item init.");
+		//System.out.println("starting init of " + myItems.length + " container items.");
 		for (int i=0; i< myItems.length; i++) {
 			Item item = myItems[i];
 			int availableWidth = this.columnsWidths[columnIndex];
+			//System.out.println("available with: " + availableWidth);
 			int width = item.getItemWidth( availableWidth, availableWidth );
+			//System.out.println("got item width");
 			int height = item.getItemHeight( availableWidth, availableWidth );
 			
 			// now the item should have a style, so it can be safely focused
@@ -437,6 +438,7 @@ public class Container extends Item {
 		}
 		this.contentWidth = myContentWidth;
 		this.contentHeight = myContentHeight;
+		System.out.println("done intialising container");
 	}
 
 	
