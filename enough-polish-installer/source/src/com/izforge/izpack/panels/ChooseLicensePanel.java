@@ -1,8 +1,27 @@
 /*
  * Created on May 31, 2004
+ * 
+ * Copyright (c) 2004 Robert Virkus / enough software
  *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * This file is part of J2ME Polish.
+ *
+ * J2ME Polish is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * J2ME Polish is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ * Commercial licenses are also available, please
+ * refer to the accompanying LICENSE.txt or visit
+ * www.enough.de/j2mepolish for details.
  */
 package com.izforge.izpack.panels;
 import java.awt.*;
@@ -83,7 +102,7 @@ implements KeyListener, ChangeListener, DocumentListener {
 	    
 	    this.radioBox = new ButtonGroup();
 	    JRadioButton radioButton = new JRadioButton("GPL");
-	    radioBox.add( radioButton );
+	    this.radioBox.add( radioButton );
 	    constraints.gridy = 2;
 	    constraints.gridx = 1;
 	    constraints.gridwidth = 2;
@@ -93,7 +112,7 @@ implements KeyListener, ChangeListener, DocumentListener {
 	    this.gplButton = radioButton;
 	    
 	    radioButton = new JRadioButton("Evaluation");
-	    radioBox.add( radioButton );
+	    this.radioBox.add( radioButton );
 	    constraints.gridy = 3;
 	    layout.setConstraints( radioButton, constraints );
 	    add( radioButton );
@@ -101,7 +120,7 @@ implements KeyListener, ChangeListener, DocumentListener {
 	    this.evaluationButton = radioButton;
 	    
 	    radioButton = new JRadioButton("Commercial / None-GPL");
-	    radioBox.add( radioButton );
+	    this.radioBox.add( radioButton );
 	    constraints.gridy = 4;
 	    layout.setConstraints( radioButton, constraints );
 	    add( radioButton );
@@ -130,7 +149,7 @@ implements KeyListener, ChangeListener, DocumentListener {
 	    constraints.gridx = 1;
 	    constraints.gridwidth = 2;
 	    constraints.gridheight = 1;
-	    layout.setConstraints( licenseField, constraints );
+	    layout.setConstraints( this.licenseField, constraints );
 		add( this.licenseField );
 	}
 
@@ -155,12 +174,14 @@ implements KeyListener, ChangeListener, DocumentListener {
 	 * @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent)
 	 */
 	public void keyPressed(KeyEvent event) {
+		// ignore
 	}
 
 	/* (non-Javadoc)
 	 * @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent)
 	 */
 	public void keyReleased(KeyEvent event) {
+		// ignore
 	}
 
 	/* (non-Javadoc)
