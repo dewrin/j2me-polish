@@ -3,3 +3,7 @@ CSS-attributes should always named like "font-family", not "fontFamily" (princip
 
 The types.xml, borders.xml and backgrounds.xml could be compiled to increase the performance of the
 build-process.
+
+When in css-definition only "background-color" is defined, then automatically a simple background
+is assumed. When there are "background-image" (and possibly "background-color") defined,
+then an ImageBackground is assumed.

@@ -1,0 +1,37 @@
+<!-- here are the definitions of all supported J2ME devices -->
+<!-- the format is not totally clear so far, it might be that the 
+      xml format used in the J2EE client provisioning mechanism
+      is a more flexible approach, even though it is not really
+      human readable anymore (everything is just a capability) 
+      -->
+<devices>
+<!-- Nokia devices -->
+	<device>
+		<name>7650</name>
+		<vendor>Nokia</vendor>
+		<midp>1</midp>
+		<groups>Series60</groups>
+		<apis>mmapi</apis>
+		<protocols>http, socket</protocols>
+		<screen width="126" height="100" fullScreenWidth="129" fullScreenHeight="300" bitsPerPixel="8" />
+	</device>
+
+	<device>
+		<name>3650</name>
+		<midp>1</midp>
+		<vendor>Nokia</vendor>
+		<groups>Series60</groups>
+		<apis>mmapi</apis>
+	</device>
+
+	<device>
+		<name>6650</name>
+		<midp>2</midp>
+		<vendor>Nokia</vendor>
+		<groups>Series60</groups>
+		<apis>mmapi,bluetooth,wmapi</apis>
+	</device>
+
+<!-- Siemens devices -->
+
+</devices>
