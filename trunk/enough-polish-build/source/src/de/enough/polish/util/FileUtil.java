@@ -123,26 +123,13 @@ public final class FileUtil {
 	 * @param target The file to which the source-file should be copied to.
 	 * @throws FileNotFoundException when the source file was not found
 	 * @throws IOException when there is an error while copying the file.
-	private static void copy(File source, File target) 
+	 */
+	public static void copy(File source, File target) 
 	throws FileNotFoundException, IOException 
 	{
-		byte[] buffer = new byte[ 1024 * 1024 ];
-		InputStream in = new FileInputStream( source );
-		OutputStream out = new FileOutputStream( target );
-		int read;
-		try {
-			while ( (read = in.read(buffer)) != -1) {
-				out.write(buffer, 0, read );
-			}
-		} catch (IOException e) {
-			throw e;
-		} finally {
-			in.close();
-			out.close();
-		}
+		copy( source, target, new byte[ 1024 * 1024 ] );
 	}
-	 */
-
+	
 	/**
 	 * Copies a file.
 	 * 
@@ -156,6 +143,11 @@ public final class FileUtil {
 	throws FileNotFoundException, IOException 
 	{
 		InputStream in = new FileInputStream( source );
+		// create parent directory of target-file if necessary:
+		File parent = target.getParentFile();
+		if (!parent.exists()) {
+			parent.mkdirs();
+		}
 		OutputStream out = new FileOutputStream( target );
 		int read;
 		try {

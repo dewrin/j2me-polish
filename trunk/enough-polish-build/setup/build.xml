@@ -3,8 +3,8 @@
 <!-- which controls for what devices the application should   -->
 <!-- be created and so on.                                    -->
 <!--                                                          -->
-<!-- Important: please adjust the property "wtk.home"!        -->
-<!-- Alternatively you can define the "preverify"-attribute   -->
+<!-- Important: when you have no Wireless Toolkit installed   -->
+<!-- you need to define the "preverify"-attribute             -->
 <!-- of the <build>-element of the J2ME Polish task.          -->
 <!--                                                          -->
 <!-- When you call Ant from the command-line, you can         -->
@@ -19,10 +19,9 @@
 	name="enough-j2mepolish-example" 
 	default="j2mepolish">
 	
-<!-- PLEASE ADJUST THIS PROPERTY!                             -->
 <!-- The wtk.home property should point to the directory      -->
 <!-- containing the Wireless Toolkit.                         -->
-<property name="wtk.home" value="C:\WTK21" />
+<property name="wtk.home" value="%{WTK_HOME}" />
 	
 <!-- Definition of the J2ME Polish task:                      -->
 <taskdef name="j2mepolish" classname="de.enough.polish.ant.PolishTask" classpath="import/enough-j2mepolish-build.jar:import/jdom.jar:import/proguard.jar:import/retroguard.jar"/>
@@ -53,7 +52,7 @@
 	<j2mepolish>
 	    <!-- general settings -->
 		<info
-			license="GPL"
+			license="%{J2ME_POLISH_LICENSE}"
 			name="J2ME Polish"
 			version="1.3.4"
 			description="A test project"

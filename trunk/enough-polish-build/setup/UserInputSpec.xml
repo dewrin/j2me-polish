@@ -1,0 +1,51 @@
+<userInput>
+<panel order="0">
+	<field type="title" txt="J2ME Polish ${ Version }" />
+	<field type="staticText" txt="${ VersionMessage }" />
+	<divider alignment="top"/>
+	<field type="staticText" txt="J2ME Polish consists of an build-tool and an optional J2ME GUI which can be designed using the web-standard CSS." />
+	<field type="staticText" txt="Find more information about J2ME Polish at www.j2mepolish.org." />
+	<divider alignment="top"/>
+	<field type="staticText" txt="Copyright 2003, 2004 Enough Software" />
+</panel>
+
+
+
+<!-- where to find the wireless toolkit -->
+<panel order="1">
+	<field type="title" txt="Wireless Toolkit" />
+	<field type="search" variable="WTK_HOME">
+  		<description align="left" 
+               txt="Please specify the location of the Wireless Toolkit:"
+               />
+		<spec txt="Path to Wireless Toolkit:"		        		      type="directory" 
+                      result="directory">
+		  <choice value="/opt/WTK21" os="unix" />
+		  <choice value="/opt/WTK20" os="unix" />
+		  <choice value="/opt/WTK104" os="unix" />
+		  <choice value="~/WTK21" os="unix" />
+		  <choice value="~/WTK20" os="unix" />
+		  <choice value="~/WTK104" os="unix" />
+		  <choice value="C:\WTK21" os="windows" />
+		  <choice value="C:\WTK20" os="windows" />
+		  <choice value="C:\WTK104" os="windows" />
+  		</spec>
+	</field>
+	<space/>
+	<field type="staticText" txt="Please note: when you enter an invalid location, you need to specify either the wtk.home-property or the preverify-attribute in the build.xml-file." />
+</panel>
+
+<!-- installation success panel -->
+<panel order="2">
+	<field type="title" txt="Installation Finished" />
+	<field type="staticText" txt="You have successfully installed J2ME Polish ${ Version }." />
+	<divider alignment="top"/>
+	<field type="staticText" txt="You can find the documentation in the &quot;doc&quot;-folder." />
+	<field type="staticText" txt="If you have installed the sample application, you can create your first MIDlet by calling Ant either from the command-line or from within your favorite Java IDE." />
+	<field type="staticText" txt="For migrating J2ME Polish into existing projects, just copy the file &quot;build.xml&quot; and the folder &quot;import&quot; to your project." />
+	<divider alignment="top"/>
+	<field type="staticText" txt="Just remove the installation directory for de-installing J2ME Polish." />
+</panel>
+
+
+</userInput>

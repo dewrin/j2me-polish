@@ -3,6 +3,8 @@
 	default="bin-dist">
 
 <!-- global properties -->
+	  <property name="Version" value="1.0-RC1" />
+	  <property name="VersionMessage" value="Welcome to the first release candidate of J2ME Polish 1.0." />
 
   <path id="thirdparty">
     <fileset dir="import">
@@ -11,19 +13,14 @@
   </path>
   <!-- needed polish settings -->
   <property name="polish.preverify" location="/home/enough/dev/WTK2.1/bin/preverify" />
-  
-  <!-- optional J2ME apis -->
-  <property name="polish.api.mmapi" location="/home/enough/Nokia/Devices/Series_60_MIDP_Concept_SDK_Beta_0_3_1_Nokia_edition/lib/ext/mma.zip" />
-  <property name="polish.api.wmapi" location="/home/enough/Nokia/Devices/Series_60_MIDP_Concept_SDK_Beta_0_3_1_Nokia_edition/lib/ext/wma.zip" />
-  <property name="polish.api.nokia-ui" location="/home/enough/Nokia/Devices/Series_60_MIDP_Concept_SDK_Beta_0_3_1_Nokia_edition/lib/ext/nokiaui.zip" />
-  <property name="polish.api.bluetooth" location="/home/enough/Nokia/Devices/Series_60_MIDP_Concept_SDK_Beta_0_3_1_Nokia_edition/lib/ext/bluetooth.zip" />
-  <property name="polish.api.btapi" location="/home/enough/Nokia/Devices/Series_60_MIDP_Concept_SDK_Beta_0_3_1_Nokia_edition/lib/ext/bluetooth.zip" />
-	
 
 <!-- task definitions -->
 
 <taskdef name="polish" classname="de.enough.polish.ant.PolishTask" classpath="bin/classes:import/jdom.jar:import/proguard.jar"/>
 <taskdef name="indexWriter" classname="de.enough.polish.ant.WriteFileListTask" classpath="bin/classes"/>
+<taskdef name="propertyWriter" classname="de.enough.polish.ant.PropertyWriterTask" classpath="bin/classes"/>
+<taskdef name="izpack" classpath="import/compiler.jar"
+	         classname="com.izforge.izpack.ant.IzPackTask"/>
 	
 
 <!-- build targets, each target can be called via "ant [name]", e.g. "ant clean" -->
@@ -31,9 +28,7 @@
 <target name="init">
 	<!-- Create the time stamp -->
     <tstamp/>
-    <!-- Create distribution dirs -->
-	<mkdir dir="dist" />
-</target>
+ </target>
 
 <!-- Creates the Source Code documentation -->
 <target name="javadoc">
@@ -167,6 +162,9 @@
 
 
 <target name="bin-dist" depends="init">
+	<delete dir="dist" />
+	<mkdir dir="dist" />
+	
 	<!-- create a list of all J2ME source files: -->
 	<indexWriter 
 		target="build/j2mepolish.index.txt"
@@ -189,6 +187,12 @@
 		 index="true"
 	     >
 	</jar>
+	<!-- create the zip file containing the jars -->
+	<zip destfile="dist/j2mepolish-${Version}.zip">
+		<fileset dir="dist" includes="enough-j2mepolish-client.jar,enough-j2mepolish-build.jar,setup/Update.txt,LICENSE.txt" />
+		<fileset dir="setup" includes="Update.txt" />
+		<fileset dir="." includes="LICENSE.txt" />
+	</zip>
 </target>
 	
 <target name="setup" 
@@ -197,27 +201,99 @@
 	>
 	<delete dir="tmp" />
 	<mkdir dir="tmp/import" />
-	<!-- create the installation zip file -->
+	<!-- copy the installation files -->
+	<!-- copy the core files of J2ME Polish -->
 	<copy todir="tmp/" >
-		<fileset dir="." includes="apis.xml,vendors.xml,groups.xml,devices.xml,LICENSE.txt,INSTALL.txt" />
-		<fileset dir="setup" />
-		<fileset dir="../enough-polish-example" includes="resources/**/*.css,resources/**/*.png" />
-		<fileset dir="../enough-polish-example" includes="resources2**/*.css,resources2/**/*.png" />
-			</copy>
+		<fileset dir="." includes="apis.xml,vendors.xml,groups.xml,devices.xml,LICENSE.txt,Readme.txt" />
+	</copy>
 	<copy todir="tmp/import">
 		<fileset dir="import" includes="jdom.jar,proguard.jar,retroguard.jar,midp1.jar,midp2.jar,wmapi.jar,nokia-ui.jar,mmapi.jar" />
 		<fileset dir="dist" includes="*.jar" />
 	</copy>
-	<mkdir dir="tmp/source" />
-	<copy todir="tmp/source">
+	<!-- copy sample application -->
+	<mkdir dir="tmp/src" />
+	<copy todir="tmp/src">
 		<fileset dir="../enough-polish-example/source/src" includes="**/*.java" />
 	</copy>
-	<!-- create ZIP file -->
-	<zip destfile="dist/j2mepolish.zip" 
-		 basedir="tmp" 
-		 />
+	<copy todir="tmp/" >
+		<fileset dir="setup" />
+		<fileset dir="../enough-polish-example" includes="resources/**/*.css,resources/**/*.png" />
+		<fileset dir="../enough-polish-example" includes="resources2**/*.css,resources2/**/*.png" />
+	</copy>
+	<!-- copy source of J2ME Polish -->
+	<mkdir dir="tmp/j2mepolish-src/build" />
+	<copy todir="tmp/j2mepolish-src/build">
+		<fileset dir="../enough-polish-build/source" includes="**/*.java" />
+	</copy>
+	<mkdir dir="tmp/j2mepolish-src/j2me" />
+	<copy todir="tmp/j2mepolish-src/j2me">
+		<fileset dir="../enough-polish-j2me/source" includes="**/*.java" />
+	</copy>
+	<!-- create / copy documentation -->
+	<mkdir dir="tmp/doc/javadoc/build" />
+	<mkdir dir="tmp/doc/javadoc/j2me" />
+	<copy todir="tmp/doc" >
+		<fileset dir="setup" includes="javadoc.html,Complete_Guide_to_J2ME_Polish.pdf" />
+	</copy>
+	<javadoc 
+	    	destdir="tmp/doc/javadoc/build" 
+	    	access="public" 
+	    	use="true" 
+	    	notree="false" 
+	    	nonavbar="false" 
+	    	noindex="false" 
+	    	splitindex="true" 
+	    	author="true" 
+	    	version="true" 
+	    	nodeprecatedlist="false" 
+	    	nodeprecated="false" 
+	    	packagenames="de.enough.*" 
+	    	sourcepath="source/src" 
+	    	classpath="bin/classes:import/ant.jar:import/junit.jar" 
+	    	doctitle="The J2ME Polish Build Framework, Version ${ Version }"
+	/>	
+	<javadoc 
+	    	destdir="tmp/doc/javadoc/j2me" 
+	    	access="public" 
+	    	use="true" 
+	    	notree="false" 
+	    	nonavbar="false" 
+	    	noindex="false" 
+	    	splitindex="true" 
+	    	author="true" 
+	    	version="true" 
+	    	nodeprecatedlist="false" 
+	    	nodeprecated="false" 
+	    	packagenames="de.enough.*" 
+	    	sourcepath="../enough-polish-j2me/source/src" 
+	    	classpath="../enough-polish-j2me/bin/classes:import/midp2.jar" 
+	    	doctitle="The J2ME Polish Client Framework, Version ${ Version }"
+	/>	
+	<!-- update installation settings -->
+	<propertyWriter srcfile="setup/install.xml"
+		            destfile="tmp/install.xml" />
+	<propertyWriter srcfile="setup/UserInputSpec.xml"
+		            destfile="tmp/userInputSpec.xml" />
+	<propertyWriter srcfile="setup/Readme.txt"
+		            destfile="tmp/Readme.txt" />
+	<!-- create installation file -->
+	<izpack input="tmp/install.xml"
+	        output="dist/j2mepolish-${Version}.jar"
+	        installerType="standard"
+	        basedir="tmp"
+	        izPackDir="/Applications/IzPack"
+	/>
 </target>
-		
+	
+<target name="IzPack" >
+	<izpack input="setup/install.xml"
+	        output="dist/j2mepolish-${Version}.jar"
+	        installerType="standard-kunststoff"
+	        basedir="setup"
+	        izPackDir="/Applications/IzPack"
+	/>
+</target>
+	
 <target name="test" depends="bin-dist">
 	<copy file="dist/enough-j2mepolish-build.jar" todir="../enough-polish-dict/import/" />
 	<copy file="dist/enough-j2mepolish-build.jar" todir="../enough-polish-example/import/" />
