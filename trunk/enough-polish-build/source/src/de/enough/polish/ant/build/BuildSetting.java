@@ -65,6 +65,7 @@ public class BuildSetting {
 	private File devices;
 	private File vendors;
 	private File groups;
+	private File apis;
 	private Variable[] variables;
 	private boolean usePolishGui;
 	private File midp1Path;
@@ -398,6 +399,30 @@ public class BuildSetting {
 		return dirs;
 	}
 	
+	/**
+	 * Retrieves the apis.xml file as input stream.
+	 * 
+	 * @return Returns the apis.xml file as input stream.
+	 */
+	public InputStream openApis() {
+		try {
+			return getResource( this.apis, "apis.xml" );
+		} catch (FileNotFoundException e) {
+			throw new BuildException("Unable to open apis.xml: " + e.getMessage(), e );
+		}
+	}
+	
+	/**
+	 * Sets the path to the apis.xml file.
+	 * 
+	 * @param apis the apis.xml file
+	 */
+	public void setApis( File apis ) {
+		if (!apis.exists()) {
+			throw new BuildException("The [apis]-attribute of the <build> element points to a non existing file: [" + apis.getAbsolutePath() + "].");
+		}
+		this.apis = apis;		
+	}
 
 	/**
 	 * @return Returns the the directory which contains device specific libraries.
@@ -452,6 +477,7 @@ public class BuildSetting {
 			throw new BuildException("Unable to open devices.xml: " + e.getMessage(), e );
 		}
 	}
+	
 	/**
 	 * @param groups The groups to set.
 	 */
@@ -463,18 +489,20 @@ public class BuildSetting {
 	}
 
 	/**
-	 * @return Returns the vendors.
+	 * Retrieves the vendors.xml file as input stream.
+	 * 
+	 * @return Returns the vendors.xml file as input stream.
 	 */
 	public InputStream getVendors() {
 		try {
 			return getResource( this.vendors, "vendors.xml" );
 		} catch (FileNotFoundException e) {
-			throw new BuildException("Unable to open devices.xml: " + e.getMessage(), e );
+			throw new BuildException("Unable to open vendors.xml: " + e.getMessage(), e );
 		}
 	}
 	
 	/**
-	 * @param vendors The vendors to set.
+	 * @param vendors The vendors.xml file
 	 */
 	public void setVendors(File vendors) {
 		if (!vendors.exists()) {

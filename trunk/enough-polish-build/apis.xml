@@ -1,41 +1,41 @@
 <!-- this file describes some often used libraries -->
 <apis>
 	<api>
-		<name>Nokia User Interface API</api>
+		<name>Nokia User Interface API</name>
 		<description>The Nokia User Interface API provides
 			some advanced drawing functionalities.
 		</description>
-		<names>nokia-ui,nokiaui, nokiauiapi<names>
+		<names>nokia-ui,nokiaui, nokiauiapi</names>
 		<symbol>nokia-ui</symbol>
 		<files>nokia-ui.jar, nokiaui.zip</files>
 		<path>import/nokia-ui.jar</path>
 	</api>
 	<api>
-		<name>Mobile Media API</api>
+		<name>Mobile Media API</name>
 		<description>The Mobile Media API provides
 			functionalities for playing and capturing sounds and videos.
 		</description>
-		<names>mmapi,mm-api<names>
+		<names>mmapi,mm-api</names>
 		<symbol>mmapi</symbol>
 		<files>j2me-mmapi.jar, mma.zip</files>
 		<path>import/j2me-mmapi.jar</path>
 	</api>
 	<api>
-		<name>Wireless Messaging API</api>
+		<name>Wireless Messaging API</name>
 		<description>The Wireless Messaging API provides
 			functionalities for sending and receiving messages (SMS).
 		</description>
-		<names>wmapi,wm-api<names>
+		<names>wmapi,wm-api</names>
 		<symbol>wmapi</symbol>
 		<files>j2me-wmapi.jar, wma.zip</files>
 		<path>import/j2me-wmapi.jar</path>
 	</api>
 	<api>
-		<name>Bluetooth API</api>
+		<name>Bluetooth API</name>
 		<description>The Bluetooth API provides
 			functionalities for data exchange with other bluetooth devices.
 		</description>
-		<names>btapi,bt-api, bluetooth, bluetooth-api<names>
+		<names>btapi,bt-api, bluetooth, bluetooth-api</names>
 		<symbol>btapi</symbol>
 		<files>j2me-btapi.jar, bluetooth.zip</files>
 		<path>import/j2me-btapi.jar</path>

@@ -72,18 +72,19 @@ public class PolishTask extends ConditionalTask {
 	private File[] sourceDirs;
 	private TextFile[][] sourceFiles;
 	private Path midp1BootClassPath;
-	private Path midp2BootClassPath;
-	private HashMap apiPaths;
-	private File apiDir;
+	private Path midp2BootClassPath;	
 	private Obfuscator obfuscator;
 	private String[] preserveClasses;
 	private StyleSheet styleSheet;
 	private ImportConverter importConverter;
 	private TextFile styleSheetFile;
 	private ResourceUtil resourceUtil;
+	private String wtkHome;
 	private HashMap midletClassesByName;
 	private static final Pattern START_APP_PATTERN = 
 		Pattern.compile("\\s*void\\s+startApp\\s*\\(\\s*\\)");
+
+	private LibraryManager libraryManager;
 	
 	/**
 	 * Creates a new empty task 
@@ -173,8 +174,33 @@ public class PolishTask extends ConditionalTask {
 		if (midlets == null || midlets.length == 0) {
 			throw new BuildException("Midlets need to be defined in the build section with either <midlets> or <midlet>.");
 		}
+		// check if the ant-property WTK_HOME has been set:
+		//e.g. with: <property name="wtk.home" value="c:\Java\wtk-1.0.4"/>
+		this.wtkHome = this.project.getProperty("wtk.home");
 		if (this.buildSetting.getPreverify() == null) {
-			throw new BuildException("Nested element [build] needs to define the attribute [preverify] which points to the preverify-executable of the wireless toolkit.");
+			// no preverify has been set, that's okay when the wtk.home ant-property has been set:
+			if (this.wtkHome == null) { 
+				throw new BuildException("Nested element [build] needs to define the attribute [preverify] which points to the preverify-executable of the wireless toolkit. Alternatively you can set the home directory of the Wireless Toolkit by defining the Ant-property [wtk.home]: <property name=\"wtk.home\" location=\"/home/user/WTK2.1\"/>");
+			}
+			if (!this.wtkHome.endsWith( File.separator )) {
+				this.wtkHome += File.separator;
+			}
+			String preverifyPath = this.wtkHome + "bin" + File.separator + "preverify";
+			if ( File.separatorChar == '\\') {
+				preverifyPath += ".exe";
+			}
+			File preverifyFile = new File( preverifyPath );
+			if (preverifyFile.exists()) {
+				this.buildSetting.setPreverify( preverifyFile );
+			} else {
+				// probably the wtk.home path is wrong:
+				File file = new File( this.wtkHome );
+				if (!file.exists()) {
+					throw new BuildException("The Ant-property [wtk.home] points to a non-existing directory. Please adjust his setting in the build.xml file.");
+				} else {
+					throw new BuildException("Unable to find the preverify tool at the default location [" + preverifyPath + "]. Please specify where to find it with the \"preverify\"-attribute of the <build> element (in the build.xml file).");
+				}
+			}
 		}
 	}
 	
@@ -236,11 +262,23 @@ public class PolishTask extends ConditionalTask {
 				this.polishProject.addDirectFeature( symbols[i] );
 			}
 		}
+		
+		// create LibraryManager:
+		try {
+			this.libraryManager = new LibraryManager( this.project.getProperties(), this.buildSetting.getApiDir().getAbsolutePath(), this.wtkHome, this.buildSetting.getPreverify().getAbsolutePath(), this.buildSetting.openApis() );
+		} catch (JDOMException e) {
+			throw new BuildException("unable to create api manager: " + e.getMessage(), e );
+		} catch (IOException e) {
+			throw new BuildException("unable to create api manager: " + e.getMessage(), e );
+		} catch (InvalidComponentException e) {
+			throw new BuildException("unable to create api manager: " + e.getMessage(), e );
+		}
+
 		// create vendor/group/device manager:
 		try {
 			VendorManager vendorManager = new VendorManager( this.polishProject, this.buildSetting.getVendors());
 			DeviceGroupManager groupManager = new DeviceGroupManager( this.buildSetting.getGroups() ); 
-			this.deviceManager = new DeviceManager( vendorManager, groupManager, this.buildSetting.getDevices() );
+			this.deviceManager = new DeviceManager( vendorManager, groupManager, this.libraryManager, this.buildSetting.getDevices() );
 		} catch (JDOMException e) {
 			throw new BuildException("unable to create device manager: " + e.getMessage(), e );
 		} catch (IOException e) {
@@ -249,6 +287,7 @@ public class PolishTask extends ConditionalTask {
 			throw new BuildException("unable to create device manager: " + e.getMessage(), e );
 		}
 		this.preprocessor = new Preprocessor( this.polishProject, null, null, null, false, true, null );
+		
 		
 		//	initialise the preprocessing-source-directories:
 		DirectoryScanner dirScanner = new DirectoryScanner();
@@ -301,11 +340,7 @@ public class PolishTask extends ConditionalTask {
 		// init boot class path:
 		this.midp1BootClassPath = new Path( this.project, this.buildSetting.getMidp1Path().getAbsolutePath());
 		this.midp2BootClassPath = new Path( this.project, this.buildSetting.getMidp2Path().getAbsolutePath());
-		
-		// init path for device APIs:
-		this.apiPaths = new HashMap();
-		this.apiDir = this.buildSetting.getApiDir();
-		
+				
 		// init obfuscator:
 		ObfuscatorSetting obfuscatorSetting = this.buildSetting.getObfuscatorSetting();
 		if ((obfuscatorSetting != null) && (obfuscatorSetting.isEnabled())) {
@@ -699,6 +734,17 @@ public class PolishTask extends ConditionalTask {
 		// check for each supported api, if the appropriate path-property
 		// has been set: mmapi = ${polish.api.mmapi}
 		// when this has not been defined, just look in the import-dir
+		String[] classPaths = this.libraryManager.getClassPaths(device);
+		device.setClassPaths( classPaths );
+		StringBuffer buffer = new StringBuffer();
+		for (int i = 0; i < classPaths.length; i++) {
+			String path = classPaths[i];
+			buffer.append( path )
+			      .append( File.pathSeparatorChar );
+		}
+		device.setClassPath( buffer.toString() );
+		
+		/*
 		String apisStr = device.getSupportedApisAsString();
 		if(apisStr == null) {
 			apisStr = "";
@@ -739,6 +785,7 @@ public class PolishTask extends ConditionalTask {
 			device.setClassPath(classPath);
 			//System.out.println( "using classpath [" + classPath.toString().substring(1) + "]." );
 		}
+		*/
 		// setting target directory:
 		String targetDirName = device.getBaseDir() + File.separatorChar + "classes";
 		device.setClassesDir( targetDirName );
@@ -767,15 +814,15 @@ public class PolishTask extends ConditionalTask {
 		} else {
 			javac.setBootclasspath(this.midp2BootClassPath);
 		}
-		if (classPath != null) {
-			javac.setClasspath( new Path(this.project, classPath ) );
+		if (device.getClassPath() != null) {
+			javac.setClasspath( new Path(this.project, device.getClassPath() ) );
 		}
 		// start compile:
 		try {
 			javac.execute();
 		} catch (BuildException e) {
 			System.out.println("If an error occured in the J2ME Polish packages, please try a clean rebuild - e.g. [ant clean] and then [ant].");
-			System.out.println("Alternatively you might need to define where to find the device-APIs. Following classpath has been used: [" + classPath + "].");
+			System.out.println("Alternatively you might need to define where to find the device-APIs. Following classpath has been used: [" + device.getClassPath() + "].");
 			throw new BuildException( "Unable to compile source code for device [" + device.getIdentifier() + "]: " + e.getMessage(), e );
 		}
 		

@@ -32,6 +32,7 @@ import org.jdom.JDOMException;
 import java.io.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.Hashtable;
 
 import junit.framework.TestCase;
 
@@ -55,7 +56,8 @@ public class DeviceManagerTest extends TestCase {
 	{	
 		VendorManager vendorManager = new VendorManager( null, new FileInputStream( new File("vendors.xml") ));
 		DeviceGroupManager groupManager = new DeviceGroupManager( new FileInputStream( new File("groups.xml")));
-		DeviceManager manager = new DeviceManager( vendorManager, groupManager, new FileInputStream( new File("devices.xml")));
+		LibraryManager apiManager = new LibraryManager( new Hashtable(),"import", "/home/enough/dev/WTK21/", null,  new FileInputStream( new File("apis.xml")) );
+		DeviceManager manager = new DeviceManager( vendorManager, groupManager, apiManager, new FileInputStream( new File("devices.xml")));
 		System.out.println("initialisation done.");
 		Device[] devices = manager.getDevices();
 		for (int i = 0; i < devices.length; i++) {

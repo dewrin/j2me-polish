@@ -54,8 +54,8 @@ public class VendorManager {
 	 * 
 	 * @param project The j2me project settings.
 	 * @param vendorsIS The input stream containing the vendor-definitions. This is usually "./vendors.xml".
-	 * @throws JDOMException when there are syntax errors in devices.xml
-	 * @throws IOException when devices.xml could not be read
+	 * @throws JDOMException when there are syntax errors in vendors.xml
+	 * @throws IOException when vendors.xml could not be read
 	 * @throws InvalidComponentException when a vendor definition has errors
 	 */
 	public VendorManager( PolishProject project, InputStream vendorsIS ) 
@@ -71,8 +71,8 @@ public class VendorManager {
 	 * 
 	 * @param project The j2me project settings.
 	 * @param vendorsIS The input stream containing the vendor-definitions. This is usually "./vendors.xml".
-	 * @throws JDOMException when there are syntax errors in devices.xml
-	 * @throws IOException when devices.xml could not be read
+	 * @throws JDOMException when there are syntax errors in vendors.xml
+	 * @throws IOException when vendors.xml could not be read
 	 * @throws InvalidComponentException when a vendor definition has errors
 	 */
 	private void loadVendors(PolishProject project, InputStream vendorsIS) 

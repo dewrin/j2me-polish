@@ -55,16 +55,17 @@ public class DeviceManager {
 	 * 
 	 * @param vendorManager The manager of the device-manufacturers
 	 * @param groupManager The manager for device-groups.
+	 * @param libraryManager the manager for device-specific APIs
 	 * @param devicesIS the InputStream containing the device definitions.
 	 * 			Usally this is the devices.xml file in the current directory.
 	 * @throws JDOMException when there are syntax errors in devices.xml
 	 * @throws IOException when devices.xml could not be read
 	 * @throws InvalidComponentException when a device definition has errors
 	 */
-	public DeviceManager( VendorManager vendorManager, DeviceGroupManager groupManager, InputStream devicesIS ) 
+	public DeviceManager( VendorManager vendorManager, DeviceGroupManager groupManager, LibraryManager libraryManager, InputStream devicesIS ) 
 	throws JDOMException, IOException, InvalidComponentException 
 	{
-		loadDevices( vendorManager, groupManager, devicesIS );
+		loadDevices( vendorManager, groupManager, libraryManager, devicesIS );
 		devicesIS.close();
 	}
 	
@@ -79,7 +80,7 @@ public class DeviceManager {
 	 * @throws IOException when devices.xml could not be read
 	 * @throws InvalidComponentException when a device definition has errors
 	 */
-	private void loadDevices( VendorManager vendorManager, DeviceGroupManager groupManager, InputStream devicesIS ) 
+	private void loadDevices( VendorManager vendorManager, DeviceGroupManager groupManager, LibraryManager libraryManager, InputStream devicesIS ) 
 	throws JDOMException, IOException, InvalidComponentException 
 	{
 		if (devicesIS == null) {
@@ -107,7 +108,7 @@ public class DeviceManager {
 				String vendorName = chunks[0];
 				String deviceName = chunks[1];
 				Vendor vendor = vendorManager.getVendor( vendorName );
-				Device device = new Device( definition, identifier, deviceName, vendor, groupManager );
+				Device device = new Device( definition, identifier, deviceName, vendor, groupManager, libraryManager );
 				devicesList.add( device );
 			}
 		}
