@@ -19,7 +19,7 @@ import junit.framework.TestCase;
  */
 public class ArrayListTest extends TestCase {
 	
-	Object o1 = "1"; Object o2 = "2"; Object o3 = "3"; Object o4 = "4"; Object o5 = "5"; Object o6 = "6";
+	String o1 = "1"; String o2 = "2"; String o3 = "3"; String o4 = "4"; String o5 = "5"; String o6 = "6";
 	Object[] array1 = new Object[] { this.o1, this.o2, this.o3, this.o4, this.o5, this.o6 };
 	
 	public ArrayListTest() {
@@ -32,13 +32,39 @@ public class ArrayListTest extends TestCase {
 	}
 	
 	public void testAdd() {
-		ArrayList list = new ArrayList();
+		ArrayList list = new ArrayList(); // initial capacity == 10
+		assertEquals( 0, list.size() );
+		assertEquals( 0, list.toArray().length );
 		list.add( this.o1 );
+		assertEquals( 1, list.size() );
 		list.add( this.o2 );
+		assertEquals( 2, list.size() );
 		list.add( this.o3 );
-		Object[] store = list.toArray();
-		for (int i = 0; i < store.length; i++) {
-			assertEquals( store[i], this.array1[i] );
+		assertEquals( 3, list.size() );
+		compareWithArray( list );
+		list.add( this.o4 );
+		assertEquals( 4, list.size() );
+		list.add( this.o5 );
+		assertEquals( 5, list.size() );
+		list.add( this.o6 );
+		assertEquals( 6, list.size() );
+		compareWithArray( list );
+		list.add( this.o1 );
+		assertEquals( 7, list.size() );
+		list.add( this.o2 );
+		assertEquals( 8, list.size() );
+		list.add( this.o3 );
+		assertEquals( 9, list.size() );
+		list.add( this.o2 );
+		assertEquals( 10, list.size() );
+		list.add( this.o3 );
+		assertEquals( 11, list.size() );
+		assertEquals( 11, list.toArray().length );
+		try {
+			list.add(null);
+			fail("add(null) should throw IllegalArgumentException");
+		} catch (IllegalArgumentException e) {
+			// expected behaviour
 		}
 	}
 	
@@ -60,14 +86,137 @@ public class ArrayListTest extends TestCase {
 		} catch (IndexOutOfBoundsException e) {
 			// okay, expected behaviour!
 		}
-		// now remove the third element:
+		// now try remove an element which does not exist in list:
+		assertEquals( false, list.remove( this.o6 ));
+		// now remove the third (and last) element:
 		Object o = list.remove( 2 );
 		assertEquals( this.o3, o );
 		list.add(this.o3);
-		boolean success = list.remove( this.o3 );
-		assertEquals( true, success );
+		assertTrue( list.remove( this.o3 ) );
 		list.add( this.o3 );
+		assertEquals( 3, list.size() );
+		compareWithArray( list );
+		assertTrue(list.remove( this.o1 ) );
+		assertEquals( 2, list.size() );
+		assertEquals( this.o2, list.remove( 0 ) ); // == o2
+		assertEquals( 1, list.size() );
+		assertTrue( list.remove( this.o3 ) );
+		assertEquals( 0, list.size() );
+		list.add(this.o1);
+		assertEquals(1, list.size() );
+		try {
+			list.remove(null);
+			fail("remove(null) should throw IllegalArgumentException");
+		} catch (IllegalArgumentException e) {
+			// expected behaviour
+		}
+	}
+	
+	public void testInsert(){
+		ArrayList list = new ArrayList( 3 );
+		list.add( this.o2 );
+		list.add( this.o3 );
+		list.add( this.o4 );
+		assertEquals( 3, list.size() );
+		list.add( 0, this.o1 );
+		assertEquals( 4, list.size() );
+		compareWithArray( list );
+		assertTrue( list.remove( this.o3 ) );
+		assertEquals( 3, list.size() );
+		list.add( 2, this.o3 );
+		assertEquals( 4, list.size() );
+		compareWithArray( list );
+		// invalid insert:
+		try {
+			list.add( 4, this.o6 );
+			fail("insert should fail for an invalid position.");
+		} catch (IndexOutOfBoundsException e) {
+			// expected behaviour
+		}
+	}
+	
+	public void testClear() {
+		ArrayList list = new ArrayList( 3 );
+		list.add( this.o2 );
+		list.add( this.o3 );
+		list.add( this.o4 );
+		assertEquals( 3, list.size() );
+		list.clear();
+		assertEquals( 0, list.size() );
+	}
+	
+	public void testTrimToSize() {
+		ArrayList list = new ArrayList();
+		list.add( this.o1 );
+		list.add( this.o2 );
+		list.add( this.o3 );
+		list.add( this.o4 );
+		list.trimToSize();
+		compareWithArray( list );
+		list.clear();
+		assertEquals( 0, list.size() );
+		list.trimToSize();
+		assertEquals( 0, list.size() );
+		list.add( this.o1 );
+		assertEquals( 1, list.size() );
+	}
+	
+	public void testContains() {
+		ArrayList list = new ArrayList( 5 );
+		list.add( this.o1 );
+		list.add( this.o2 );
+		list.add( this.o3 );
+		list.add( this.o4 );
+		assertTrue( list.contains( this.o2 ));
+		assertTrue( list.contains( this.o4 ));
+		assertTrue( list.contains( this.o1 ));
+		assertTrue( list.contains( this.o3 ));
+		assertFalse( list.contains( this.o5 ));
+		assertFalse( list.contains( this.o6 ));
+	}
+	
+	public void testGet() {
+		ArrayList list = new ArrayList( 5 );
+		list.add( this.o1 );
+		list.add( this.o2 );
+		list.add( this.o3 );
+		list.add( this.o4 );
+		assertEquals( this.o1, list.get(0));
+		assertEquals( this.o2, list.get(1));
+		assertEquals( this.o3, list.get(2));
+		assertEquals( this.o4, list.get(3));
+		try {
+			list.get(4);
+			fail("get() should throw IndexOutOfBoundsException when invalid position is given.");
+		} catch (IndexOutOfBoundsException e) {
+			// expected behaviour
+		}
+	}
+	
+	public void testToArray() {
+		ArrayList list = new ArrayList( 5 );
+		list.add( this.o1 );
+		list.add( this.o2 );
+		list.add( this.o3 );
+		list.add( this.o4 );
+		// this should result in a class cast exception:
+		try {
+			String[] strings = (String[]) list.toArray();
+			fail( "toArray() cannot be casted to a String[]");
+			assertEquals( list.size(), strings.length );
+		} catch (ClassCastException e) {
+			// exptected behaviour
+		}
+		// this should work now:
+		String[] strings = new String[ list.size() ];
+		strings = (String[]) list.toArray( strings );
+		assertEquals( list.size(), strings.length );
+		compareWithArray( list );
+	}
+	
+	private void compareWithArray( ArrayList list ) {
 		Object[] store = list.toArray();
+		assertEquals( list.size(), store.length );
 		for (int i = 0; i < store.length; i++) {
 			assertEquals( store[i], this.array1[i] );
 		}
