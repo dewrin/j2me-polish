@@ -34,6 +34,7 @@
 		<requirement name="JavaPlatform" value="MIDP/1.0+" />
 		<requirement name="JavaPackage" value="nokia-ui, mmapi" />
 		<requirement name="JavaProtocol" value="https, socket" />
+		<requirement name="HeapSize" value="500+kb" />
 		<requirement name="Vendor" value="Nokia | SonyEricsson" />
 	</device-requirements>
 	
@@ -51,6 +52,8 @@
 		<variables>
 			<variable name="update-url" value="http://www.enough.de/update" />
 		</variables>
+		<source>source/src</source>
+		<polish-source>/home/user/j2me/polish/source/src</polish-source>
 	</build>
 	
 </project>

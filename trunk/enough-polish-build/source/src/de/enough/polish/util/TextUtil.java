@@ -4,7 +4,7 @@
  * the enough-software-licence for commercial use.
  * Please refer to accompanying LICENSE.txt or visit www.enough.de for details.
  */
-package de.enough.polish.build.util;
+package de.enough.polish.util;
 
 import java.util.ArrayList;
 
@@ -21,17 +21,22 @@ import java.util.ArrayList;
  */
 public final class TextUtil {
 
+	/**
+	 * Replaces all search-strings in the given input.
+	 *  
+	 * @param input the original string
+	 * @param search the string which should be replaced in the input
+	 * @param replacement the replacement for the search-string
+	 * @return the input string in which all search-strings are replaced with the replacement-string.
+	 * @throws IllegalArgumentException when on of the parameters is null.
+	 */
 	public static final String replace(String input, String search, String replacement) {
 		if (input == null || search == null || replacement == null) {
-			throw new IllegalArgumentException( "given input parameters must not be null.");
+			throw new IllegalArgumentException( "TextUtil.replace: given input parameters must not be null.");
 		}
-		// start position for searching:
 		int startPos = 0;
-		// gefundene Position des zu ersetzenden Strings toReplace
 		int pos;
-		// soviel muss zwischen jedem gefundenen Ergebnis zur gef. Position hinzuaddiert werden:
 		int add = replacement.length() - search.length();
-		// soviel muss insgesamt zu jeder gefundener Pos. hinzuaddiert werden:
 		int totalAdd = 0;
 		int replaceLength = search.length();
 		StringBuffer replace = new StringBuffer(input);
@@ -43,18 +48,30 @@ public final class TextUtil {
 		return replace.toString();
 	}
 
-	public static final String[] toStringArray(String input, String delimiter) {
-		ArrayList lines = new ArrayList();
-		int delimiterLength = delimiter.length();
-		int cutPos = 0;
-		while ((cutPos = input.indexOf(delimiter)) != -1) {
-			lines.add( input.substring(0, cutPos).trim() );
-			input = input.substring(cutPos + delimiterLength );
+	/**
+	 * Replaces the first search-string in the given input.
+	 *  
+	 * @param input the original string
+	 * @param search the string which should be replaced in the input
+	 * @param replacement the replacement for the search-string
+	 * @return the input string in which all search-strings are replaced with the replacement-string.
+	 * @throws IllegalArgumentException when on of the parameters is null.
+	 */
+	public static String replaceFirst(String input, String search, String replacement) {
+		if (input == null || search == null || replacement == null) {
+			throw new IllegalArgumentException( "TextUtil.replace: given input parameters must not be null.");
 		}
-		lines.add( input.trim() );
-		return (String[]) lines.toArray( new String[ lines.size() ] );
-   }
-
+		int pos = input.indexOf( search ); 
+		if (pos == -1){
+			return input;
+		}
+		StringBuffer buffer = new StringBuffer();
+		buffer.append( input.substring(0, pos ))
+			    .append( replacement )
+				.append( input.substring( pos + search.length() ) );
+		return buffer.toString();
+	}
+	
 	/**
 	 * Splits the given String around the matches defined by the given delimiter into an array.
 	 * Example:
@@ -116,6 +133,6 @@ public final class TextUtil {
 		strings.add( new String( valueChars, lastIndex, valueChars.length - lastIndex ) );
 		return (String[]) strings.toArray( new String[ strings.size() ] );
 	}
-	
+
 
 }

@@ -4,7 +4,8 @@
  * the enough-software-licence for commercial use.
  * Please refer to accompanying LICENSE.txt or visit www.enough.de for details.
  */
-package de.enough.polish.build;
+package de.enough.polish;
+
 
 /**
  * <p>Represents a manufacturer of J2ME devices like Nokia, Sony-Ericsson, Motorola and so on.</p>

@@ -4,13 +4,11 @@
  * the enough-software-licence for commercial use.
  * Please refer to accompanying LICENSE.txt or visit www.enough.de for details.
  */
-package de.enough.polish.build;
+package de.enough.polish;
 
-import de.enough.polish.build.util.Variable;
+import de.enough.polish.ant.build.Variable;
 
 import java.util.*;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * <p>Provides common functionalities for Project, Vendor, DeviceGroup and Device.</p>
