@@ -25,6 +25,11 @@
  */
 package de.enough.polish.ui;
 
+import javax.microedition.lcdui.Font;
+import javax.microedition.lcdui.Graphics;
+
+import de.enough.polish.util.TextUtil;
+
 /**
  * Implements a &quot;ticker-tape&quot;, a piece of text that runs
  * continuously across the display. The direction and speed of scrolling are
@@ -66,22 +71,117 @@ package de.enough.polish.ui;
  * 
  * @since MIDP 1.0
  */
-public class Ticker extends javax.microedition.lcdui.Ticker
+public class Ticker extends Item
 {
-	private int position;
-	private int direction;
+	private int xOffset;
+	private String chunk;
+	private int chunkIndex;
+	private int chunkWidth;
+	private String[] chunks;
+	private String text;
+	private Font font;
+	private int textColor;
+	private int step = 2;
 
 	/**
 	 * Constructs a new <code>Ticker</code> object, given its initial
 	 * contents string.
 	 * 
-	 * @param str - string to be set for the Ticker
-	 * @throws NullPointerException - if str is null
+	 * @param str string to be set for the Ticker
+	 * @throws NullPointerException if str is null
 	 */
 	public Ticker( String str)
 	{
-		super( str );
+		this( str, null );
 	}
 
+	/**
+	 * Constructs a new <code>Ticker</code> object, given its initial
+	 * contents string.
+	 * 
+	 * @param str string to be set for the Ticker
+	 * @param style the CSS style for this item
+	 * @throws NullPointerException if str is null
+	 */
+	public Ticker( String str, Style style )
+	{
+		super( style );
+		setString( str );
+	}
+	
+	public String getString() {
+		return this.text;
+	}
+	
+	public void setString( String text ) {
+		this.text = text;
+		this.chunks = TextUtil.split( text, '\n');
+		this.chunk = this.chunks[0];
+	}
 
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#initContent(int, int)
+	 */
+	protected void initContent(int firstLineWidth, int lineWidth) {
+		if (this.font == null) {
+			this.font = Font.getFont( Font.FACE_PROPORTIONAL, Font.STYLE_PLAIN, Font.SIZE_SMALL );
+		}
+		this.chunkWidth = this.font.stringWidth( this.chunk );
+		this.contentWidth = firstLineWidth;
+		this.contentHeight = this.font.getHeight();
+		this.xOffset = - firstLineWidth;
+	}
+
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#paintContent(int, int, int, int, javax.microedition.lcdui.Graphics)
+	 */
+	protected void paintContent(int x, int y, int leftBorder, int rightBorder, Graphics g) {
+		x -= this.xOffset;
+		//System.out.println("painting ticker at " + x);
+		g.setColor( this.textColor );
+		g.setFont( this.font );
+		g.drawString( this.chunk, x, y, Graphics.TOP | Graphics.LEFT );
+	}
+
+	//#ifdef polish.useDynamicStyles
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#getCssSelector()
+	 */
+	protected String createCssSelector() {
+		return "ticker";
+	}
+	//#endif
+
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#setStyle(de.enough.polish.ui.Style)
+	 */
+	public void setStyle(Style style) {
+		this.font = style.font;
+		this.textColor = style.fontColor;
+		String stepStr = style.getProperty("ticker-step");
+		if (stepStr != null) {
+			this.step = Integer.parseInt( stepStr );
+		}
+		super.setStyle(style);
+	}
+
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#animate()
+	 */
+	public boolean animate() {
+		if (this.xOffset < this.chunkWidth) {
+			this.xOffset += this.step;
+			//System.out.println("changing offset");
+		} else {
+			//System.out.println("changing chunk: xOffset=" + this.xOffset + " chunkWidth=" + this.chunkWidth );
+			this.xOffset = -this.contentWidth;
+			this.chunkIndex++;
+			if ( this.chunks.length >= this.chunkIndex ) {
+				this.chunkIndex = 0;
+			}
+			this.chunk = this.chunks[ this.chunkIndex ];
+			this.chunkWidth = this.font.stringWidth( this.chunk );
+		}
+		return true;
+	}
 }

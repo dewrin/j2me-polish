@@ -509,7 +509,10 @@ implements ImageConsumer
 		if (this.midpGauge != null) {
 			this.midpGauge.setValue( value );
 		}
-		//#endif		
+		//#endif	
+		if (this.isInitialised) {
+			repaint();
+		}
 	}
 
 	/**
