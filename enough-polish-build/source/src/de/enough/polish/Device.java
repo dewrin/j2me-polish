@@ -61,7 +61,8 @@ public class Device extends PolishComponent {
 	private String sourceDir;
 	private String classesDir;
 	private String baseDir;
-	private String[] groups;
+	private String[] groupNames;
+	private DeviceGroup[] groups;
 	private File jarFile;
 	
 
@@ -92,16 +93,19 @@ public class Device extends PolishComponent {
 		//add groups:
 		String groupsDefinition = definition.getChildTextTrim( "groups");
 		if (groupsDefinition != null) {
-			this.groups = TextUtil.splitAndTrim(groupsDefinition, ',');
-			for (int i = 0; i < this.groups.length; i++) {
-				DeviceGroup group = groupManager.getGroup( this.groups[i] );
+			this.groupNames = TextUtil.splitAndTrim(groupsDefinition, ',');
+			this.groups = new DeviceGroup[ this.groupNames.length ];
+			for (int i = 0; i < this.groupNames.length; i++) {
+				DeviceGroup group = groupManager.getGroup( this.groupNames[i] );
 				if (group == null) {
-					throw new InvalidComponentException("The device [" + this.identifier + "] contains the undefined group [" + this.groups[i] + "] - please check either [devices.xml] or [groups.xml].");
+					throw new InvalidComponentException("The device [" + this.identifier + "] contains the undefined group [" + this.groupNames[i] + "] - please check either [devices.xml] or [groups.xml].");
 				}
+				this.groups[i] = group;
 				addComponent(group);
 			}
 		} else {
-			this.groups = new String[0];
+			this.groupNames = new String[0];
+			this.groups = new DeviceGroup[0];
 		}
 		
 		// set specific features:
@@ -281,12 +285,21 @@ public class Device extends PolishComponent {
 	public String getName() {
 		return this.name;
 	}
+	
+	/**
+	 * Retrieves the parent-vendor of this device.
+	 * 
+	 * @return the vendor of this device.
+	 */
+	public Vendor getVendor() {
+		return (Vendor) this.parent;
+	}
 
 
 	/**
 	 * @return The name of the Vendor, e.g. "Nokia" for a "Nokia/3650" device.
 	 */
-	public String getVendor() {
+	public String getVendorName() {
 		return this.vendorName;
 	}
 
@@ -296,7 +309,16 @@ public class Device extends PolishComponent {
 	 * 
 	 * @return The names of all groups of this device.
 	 */
-	public String[] getGroups() {
+	public String[] getGroupNames() {
+		return this.groupNames;
+	}
+	
+	/**
+	 * Retrieves all groups to which this device belongs to.
+	 *  
+	 * @return all groups of this device.
+	 */
+	public DeviceGroup[] getGroups() {
 		return this.groups;
 	}
 

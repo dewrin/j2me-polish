@@ -17,6 +17,7 @@ import de.enough.polish.preprocess.PreprocessException;
 import de.enough.polish.preprocess.Preprocessor;
 import de.enough.polish.util.*;
 
+import org.apache.tools.ant.*;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.taskdefs.*;
@@ -61,8 +62,8 @@ public class PolishTask extends ConditionalTask {
 	private File apiDir;
 	private Obfuscator obfuscator;
 	private String[] preserveClasses;
-
-	private ImportManager importManager;
+	private StyleSheet styleSheet;
+	private ImportConverter importConverter;
 	
 	/**
 	 * Creates a new empty task 
@@ -153,7 +154,7 @@ public class PolishTask extends ConditionalTask {
 	}
 	
 	/**
-	 * Initialises this project and instanciates several helper classes.
+	 * Initialises this project and instantiates several helper classes.
 	 */
 	private void initProject() {
 		// create debug manager:
@@ -267,7 +268,24 @@ public class PolishTask extends ConditionalTask {
 		}
 		
 		// init import manager:
-		this.importManager = new ImportManager();
+		this.importConverter = new ImportConverter();
+		
+		// init base style sheet:
+		if (this.buildSetting.usesPolishGui()) {
+			File cssFile = new File( this.buildSetting.getResDir().getAbsolutePath() + File.separatorChar + "polish.css");
+			if (!cssFile.exists()) {
+				log("Unable to find polish.css at [" + cssFile.getAbsolutePath() + "] - you should create this file when you want to make most of the polish GUI.", Project.MSG_WARN );
+				this.styleSheet = new StyleSheet();
+			} else {
+				CssReader cssReader = new CssReader();
+				try {
+					cssReader.add(cssFile);
+				} catch (IOException e) {
+					throw new BuildException("Unable to load polish.css: " + e.getMessage(), e );
+				}
+				this.styleSheet = cssReader.getStyleSheet();
+			}
+		}
 	}
 
 	/**
@@ -317,11 +335,12 @@ public class PolishTask extends ConditionalTask {
 		System.out.println("now preprocessing for device [" +  device.getIdentifier() + "]." );
 		try {
 			String targetDir = this.buildSetting.getWorkDir().getAbsolutePath() 
-				+ File.separatorChar + device.getVendor() 
+				+ File.separatorChar + device.getVendorName() 
 				+ File.separatorChar + device.getName();
 			device.setBaseDir( targetDir );
 			targetDir += File.separatorChar + "source";
 			device.setSourceDir(targetDir);
+			// initialise the preprocessor:
 			this.preprocessor.setTargetDir( targetDir );
 			this.preprocessor.setSymbols( device.getFeatures() );
 			this.preprocessor.setVariables( device.getCapabilities() );
@@ -333,6 +352,47 @@ public class PolishTask extends ConditionalTask {
 			// check if the polish gui is used at all:
 			boolean usePolishGui = this.buildSetting.usesPolishGui()
 								  && device.supportsPolishGui();
+			if (usePolishGui) {
+				// initialise the CSS-style sheet:
+				CssReader cssReader = new CssReader( this.styleSheet );
+				Vendor vendor = device.getVendor();
+				StyleSheet sheet = vendor.getStyleSheet();
+				if ( sheet != null ) {
+					cssReader.add( sheet );
+				} else {
+					// CSS file has not been read yet:
+					File cssFile = new File( this.buildSetting.getResDir().getAbsolutePath()
+							+ File.separator + vendor.getIdentifier() 
+							+ File.separator + "polish.css");
+					if (cssFile.exists()) {
+						CssReader reader = new CssReader( this.styleSheet );
+						reader.add( cssFile );
+						vendor.setStyleSheet( reader.getStyleSheet() );
+					} else {
+						vendor.setStyleSheet( new StyleSheet() );
+					}
+				}
+				DeviceGroup[] groups = device.getGroups();
+				for (int i = 0; i < groups.length; i++) {
+					DeviceGroup group = groups[i];
+					sheet = group.getStyleSheet();
+					if (sheet != null) {
+						cssReader.add(sheet);
+					} else {
+						File cssFile = new File( this.buildSetting.getResDir().getAbsolutePath()
+								+ File.separator + vendor.getIdentifier() 
+								+ File.separator + "polish.css");
+						if (cssFile.exists()) {
+							CssReader reader = new CssReader( this.styleSheet );
+							reader.add( cssFile );
+							group.setStyleSheet( reader.getStyleSheet() );
+						} else {
+							group.setStyleSheet( new StyleSheet() );
+						}
+					}
+				}
+				this.preprocessor.setSyleSheet( cssReader.getStyleSheet() );
+			}
 			for (int i = 0; i < this.sourceDirs.length; i++) {
 				File sourceDir = this.sourceDirs[i];
 				this.preprocessor.addVariable( "polish.source", sourceDir.getAbsolutePath() );
@@ -377,7 +437,7 @@ public class PolishTask extends ConditionalTask {
 						if (result != Preprocessor.SKIP_FILE) {
 							sourceCode.reset();
 							// now replace the import statements:
-							boolean changed = this.importManager.processImports(usePolishGui, device.isMidp1(), sourceCode);
+							boolean changed = this.importConverter.processImports(usePolishGui, device.isMidp1(), sourceCode);
 							if (changed) {
 								result = Preprocessor.CHANGED;
 							}
@@ -622,13 +682,13 @@ public class PolishTask extends ConditionalTask {
 			File[] files = resourceDir.listFiles( cssFilter );
 			FileUtil.copy( files, classesDir );
 			// 2. copy vendor resources:
-			resourceDir = new File( resourcePath + device.getVendor() );
+			resourceDir = new File( resourcePath + device.getVendorName() );
 			if (resourceDir.exists()) {
 				files = resourceDir.listFiles( cssFilter );
 				FileUtil.copy( files, classesDir );
 			}
 			// 3.: copy group resources:
-			String[] groups = device.getGroups();
+			String[] groups = device.getGroupNames();
 			for (int i = 0; i < groups.length; i++) {
 				String group = groups[i];
 				resourceDir = new File( resourcePath + group );
@@ -638,7 +698,7 @@ public class PolishTask extends ConditionalTask {
 				}
 			}
 			// 4.: copy device resources:
-			resourceDir = new File( resourcePath + device.getVendor() 
+			resourceDir = new File( resourcePath + device.getVendorName() 
 								+ File.separatorChar + device.getName() );
 			if (resourceDir.exists()) {
 				files = resourceDir.listFiles( cssFilter );
@@ -656,7 +716,7 @@ public class PolishTask extends ConditionalTask {
 		HashMap infoProperties = new HashMap();
 		infoProperties.put( "polish.identifier", device.getIdentifier() );
 		infoProperties.put( "polish.name", device.getName() );
-		infoProperties.put( "polish.vendor", device.getVendor() );
+		infoProperties.put( "polish.vendor", device.getVendorName() );
 		infoProperties.put( "polish.version", this.infoSetting.getVersion() );
 		String jarName = this.infoSetting.getJarName();
 		jarName = PropertyUtil.writeProperties(jarName, infoProperties);
@@ -713,7 +773,7 @@ public class PolishTask extends ConditionalTask {
 		HashMap infoProperties = new HashMap();
 		infoProperties.put( "polish.identifier", device.getIdentifier() );
 		infoProperties.put( "polish.name", device.getName() );
-		infoProperties.put( "polish.vendor", device.getVendor() );
+		infoProperties.put( "polish.vendor", device.getVendorName() );
 		infoProperties.put( "polish.version", this.infoSetting.getVersion() );
 		String jarName = this.infoSetting.getJarName();
 		jarName = PropertyUtil.writeProperties(jarName, infoProperties);

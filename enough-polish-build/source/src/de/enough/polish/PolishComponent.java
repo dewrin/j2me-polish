@@ -8,6 +8,7 @@ package de.enough.polish;
 
 
 import de.enough.polish.exceptions.InvalidComponentException;
+import de.enough.polish.preprocess.StyleSheet;
 import de.enough.polish.util.TextUtil;
 
 import org.jdom.Element;
@@ -32,6 +33,7 @@ public class PolishComponent {
 	private ArrayList featuresList;
 	private HashMap capabilities;
 	private ArrayList capabilitiesList;
+	private StyleSheet styleSheet;
 	
 	/**
 	 * Creates a new component.
@@ -312,4 +314,16 @@ public class PolishComponent {
 
 
 	
+	/**
+	 * @return Returns the StyleSheet of this component.
+	 */
+	public StyleSheet getStyleSheet() {
+		return this.styleSheet;
+	}
+	/**
+	 * @param styleSheet The StyleSheet to set.
+	 */
+	public void setStyleSheet(StyleSheet styleSheet) {
+		this.styleSheet = styleSheet;
+	}
 }

@@ -6,6 +6,10 @@
  */
 package de.enough.polish.preprocess;
 
+import de.enough.polish.util.StringList;
+
+import org.apache.tools.ant.BuildException;
+
 /**
  * <p>Converts CSS files to Java-Code.</p>
  * general thoughts:
@@ -30,14 +34,35 @@ package de.enough.polish.preprocess;
  *        04-Jan-2004 - rob creation
  * </pre>
  */
-public class Css2JavaConverter {
+public class CssConverter {
+	
+	private static final String INCLUDE = "//$$IncludeStyleSheetDefinitionHere$$//";
 
 	/**
 	 * 
 	 */
-	public Css2JavaConverter() {
+	public CssConverter() {
 		super();
 		// TODO enough implement Css2JavaConverter
+	}
+	
+	public void convertStyleSheet( StringList sourceCode, StyleSheet styleSheet ) {
+		// search for the position to include the style-sheet definitions:
+		int index = -1;
+		while (sourceCode.next()) {
+			String line = sourceCode.getCurrent();
+			if (INCLUDE.equals(line)) {
+				index = sourceCode.getCurrentIndex() + 1;
+				break;
+			}
+		}
+		if (index == -1) {
+			throw new BuildException("Unable to modify SytleSheet.java, include point [" + INCLUDE + "] not found.");
+		}
+		// now insert all used style-definitions:
+		String[] styleNames = styleSheet.getUsedStyleNames();
+		// problem: could be that there are dependencies between styles...
+		// than the base style needs to be defined before the dependent style.
 	}
 
 }
