@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="var" path="Workspace/enough-polish/import/midpapi.zip"/>
 	<classpathentry output="test-classes" kind="src" path="test-scr"/>
-	<classpathentry kind="var" path="Workspace/enough-polish/import/bluetooth.zip"/>
-	<classpathentry kind="var" path="Workspace/enough-polish/import/mma.zip"/>
-	<classpathentry kind="var" path="Workspace/enough-polish/import/nokiaui.zip"/>
-	<classpathentry kind="var" path="Workspace/enough-polish/import/wma.zip"/>
-	<classpathentry kind="var" path="Workspace/enough-polish/import/junit.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="output" path="classes"/>
+	<classpathentry kind="lib" path="import/bluetooth.zip"/>
+	<classpathentry kind="lib" path="import/junit.jar"/>
+	<classpathentry kind="lib" path="import/me4se.jar"/>
+	<classpathentry kind="lib" path="import/midpapi.zip"/>
+	<classpathentry kind="lib" path="import/mma.zip"/>
+	<classpathentry kind="lib" path="import/nokiaui.zip"/>
+	<classpathentry kind="lib" path="import/wma.zip"/>
+	<classpathentry kind="output" path="bin"/>
 </classpath>

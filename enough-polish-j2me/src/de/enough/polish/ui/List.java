@@ -264,8 +264,8 @@ public class List extends Canvas implements Choice
 	 * <code>Canvas</code> class.
 	 * 
 	 * @param ticker - the ticker object used on this screen
-	 * @see Displayable#setTicker(javax.microedition.lcdui.Ticker) in class Displayable
-	 * @see Displayable#getTicker()
+	 * @see Screen#setTicker(javax.microedition.lcdui.Ticker) in class Displayable
+	 * @see Screen#getTicker()
 	 * @since  MIDP 2.0
 	 */
 	public void setTicker( Ticker ticker)
@@ -291,8 +291,8 @@ public class List extends Canvas implements Choice
 	 * <code>Canvas</code> class.</p>
 	 * 
 	 * @param s - the new title, or null for no title
-	 * @see Displayable#setTitle(String) in class Displayable
-	 * @see Displayable#getTitle()
+	 * @see Screen#setTitle(String) in class Displayable
+	 * @see Screen#getTitle()
 	 * @since  MIDP 2.0
 	 */
 	public void setTitle( String s)

@@ -387,8 +387,8 @@ public class TextBox extends Canvas
 	 * <code>Canvas</code> class.</p>
 	 * 
 	 * @param s - the new title, or null for no title
-	 * @see javax.microedition.lcdui.Displayable#setTitle(String) in class Displayable
-	 * @see javax.microedition.lcdui.Displayable#getTitle()
+	 * @see javax.microedition.lcdui.Screen#setTitle(String) in class Displayable
+	 * @see javax.microedition.lcdui.Screen#getTitle()
 	 * @since  MIDP 2.0
 	 */
 	public void setTitle( String s)
@@ -419,8 +419,8 @@ public class TextBox extends Canvas
 	 * <code>Canvas</code> class.
 	 * 
 	 * @param ticker - the ticker object used on this screen
-	 * @see javax.microedition.lcdui.Displayable#setTicker(javax.microedition.lcdui.Ticker) in class Displayable
-	 * @see javax.microedition.lcdui.Displayable#getTicker()
+	 * @see javax.microedition.lcdui.Screen#setTicker(javax.microedition.lcdui.Ticker) in class Displayable
+	 * @see javax.microedition.lcdui.Screen#getTicker()
 	 * @since  MIDP 2.0
 	 */
 	public void setTicker( Ticker ticker)

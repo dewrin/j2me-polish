@@ -15,7 +15,6 @@ import java.util.Hashtable;
  * <p>This class is used by the widgets. If you only use the predefined
  *       widgets you do not need to work with this class.
  * </p>
- *
  * @author Robert Virkus, robert@enough.de
  * <pre>
  * history

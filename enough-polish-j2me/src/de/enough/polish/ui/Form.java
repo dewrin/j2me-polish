@@ -622,7 +622,6 @@ public class Form extends Canvas
 	 * laid out to fit within this width.
 	 * 
 	 * @return the width of the Form in pixels
-	 * @see Displayable#getWidth() in class Displayable
 	 * @since  MIDP 2.0
 	 */
 	public int getWidth()
@@ -639,7 +638,6 @@ public class Form extends Canvas
 	 * affected by the presence or absence of the ticker, title, or commands.
 	 * 
 	 * @return the height of the displayable area of the Form in pixels
-	 * @see Displayable#getHeight() in class Displayable
 	 * @since  MIDP 2.0
 	 */
 	public int getHeight()
