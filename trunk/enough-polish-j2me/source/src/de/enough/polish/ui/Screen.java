@@ -108,7 +108,8 @@ implements CommandListener
 	//#endif
 	//#if polish.useMenuFullScreen && polish.classes.fullscreen:defined
 		//#define tmp.menuFullScreen
-		private Command menuSingleCommand;
+		private Command menuSingleLeftCommand;
+		private Command menuSingleRightCommand;
 		private Container menuContainer;
 		private ArrayList menuCommands;
 		private boolean menuOpened;
@@ -191,14 +192,11 @@ implements CommandListener
 		if (this.style != null) {
 			setStyle( this.style );
 		}
-		// inform all root items that they belong to this screen:
 		if (this.container != null) {
 			this.container.screen = this;
-			//TODO rob check scrolling dimensions
-			// this.container.setVerticalDimensions( this.titleHeight, this.screenHeight );			
 			this.container.setVerticalDimensions( 0, this.screenHeight - this.titleHeight );
-			Debug.debug("using vertical dimensions: 0, " + (this.screenHeight - this.titleHeight));
 		}
+		// inform all root items that they belong to this screen:
 		Item[] items = getRootItems();
 		for (int i = 0; i < items.length; i++) {
 			Item item = items[i];
@@ -369,8 +367,8 @@ implements CommandListener
 					//TODO rob internationalise cmd.selectMenu
 					menuText = "Select";
 				} else {
-					if (this.menuSingleCommand != null) {
-						menuText = this.menuSingleCommand.getLabel();
+					if (this.menuSingleLeftCommand != null) {
+						menuText = this.menuSingleLeftCommand.getLabel();
 					} else {
 						//TODO rob internationalise cmd.openMenu
 						menuText = "Options";				
@@ -385,6 +383,11 @@ implements CommandListener
 					menuText = "Cancel";
 					g.drawString(menuText, this.screenWidth - 2, this.screenHeight + 1, Graphics.TOP | Graphics.RIGHT );
 				}
+			}
+			if (this.menuSingleRightCommand != null) {
+				g.setColor( this.menuFontColor );
+				g.setFont( this.menuFont );
+				g.drawString(this.menuSingleRightCommand.getLabel(), this.screenWidth - 2, this.screenHeight + 1, Graphics.TOP | Graphics.RIGHT );
 			}
 		//#endif
 		} catch (RuntimeException e) {
@@ -516,8 +519,8 @@ implements CommandListener
 		int gameAction = getGameAction(keyCode);
 		//#ifdef tmp.menuFullScreen
 			if (keyCode == FullCanvas.KEY_SOFTKEY1) {
-				if ( this.menuSingleCommand != null) {
-					callCommandListener( this.menuSingleCommand );
+				if ( this.menuSingleLeftCommand != null) {
+					callCommandListener( this.menuSingleLeftCommand );
 					return;
 				} else {
 					if (!this.menuOpened) {
@@ -527,6 +530,11 @@ implements CommandListener
 					} else {
 						gameAction = Canvas.FIRE;
 					}
+				}
+			} else if (keyCode == FullCanvas.KEY_SOFTKEY2) {
+				if (!this.menuOpened && this.menuSingleRightCommand != null) {
+					callCommandListener( this.menuSingleRightCommand );
+					return;
 				}
 			}
 			if (this.menuOpened) {
@@ -639,11 +647,21 @@ implements CommandListener
 		}
 		//#style menuitem, menu, default
 		StringItem menuItem = new StringItem( null, cmd.getLabel(), Item.HYPERLINK );
+		int type = cmd.getCommandType(); 
+		if ( (this.menuSingleRightCommand == null)
+			&& (type == Command.BACK || type == Command.CANCEL ) ) {
+			// this is a command for the right side of the menu:
+			this.menuSingleRightCommand = cmd;
+			if (isShown()) {
+				repaint();
+			}
+			return;
+		}
 		this.menuContainer.add( menuItem );
 		if (this.menuContainer.size() == 1) {
-			this.menuSingleCommand = cmd;
+			this.menuSingleLeftCommand = cmd;
 		} else {
-			this.menuSingleCommand = null;
+			this.menuSingleLeftCommand = null;
 		}
 		this.menuCommands.add( cmd );
 		if (isShown()) {
@@ -656,8 +674,11 @@ implements CommandListener
 	 */
 	public void removeCommand(Command cmd) {
 		this.menuCommands.remove( cmd );
-		if (this.menuSingleCommand == cmd ) {
-			this.menuSingleCommand = null;
+		if (this.menuSingleLeftCommand == cmd ) {
+			this.menuSingleLeftCommand = null;
+		}
+		if (this.menuSingleRightCommand == cmd) {
+			this.menuSingleRightCommand = null;
 		}
 		if (isShown()) {
 			repaint();
