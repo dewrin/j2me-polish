@@ -21,7 +21,7 @@
 
 <!-- task definitions -->
 
-<taskdef name="polish" classname="de.enough.polish.ant.PolishTask" classpath="bin/classes:import/jdom.jar"/>
+<taskdef name="polish" classname="de.enough.polish.ant.PolishTask" classpath="bin/classes:import/jdom.jar:import/proguard.jar"/>
 
 
 <!-- build targets, each target can be called via "ant [name]", e.g. "ant clean" -->
@@ -49,7 +49,7 @@
     	nodeprecated="false" 
     	packagenames="de.enough.*" 
     	sourcepath="source/src" 
-    	classpath="bin/classes:import/ant.jar" 
+    	classpath="bin/classes:import/ant.jar:import/junit.jar" 
     	doctitle="the polish build framework"/>
 </target>
     
@@ -115,12 +115,14 @@
 			groups="definitions/groups.xml"
 			workDir="build"
 			destDir="dist"
+			apiDir="import"
+			resDir="resources"
 			midp1Path="/home/enough/dev/WTK2.1/wtklib/emptyapi.zip"
 			midp2Path="/home/enough/dev/WTK2.1/wtklib/emptyapi.zip"
 			preverify="${polish.preverify}"
+			obfuscate="true"
+			obfuscator="ProGuard"
 			>
-			<!-- 			midp2Path="/home/enough/dev/WTK2.1/lib/midpapi20.jar"
-			 -->
 			<!-- midlets definition -->
 			<midlets>
 				<midlet class="de.enough.polish.example.ExampleMidlet" />
@@ -153,11 +155,16 @@
 	</polish>
 </target>
 
+
 <target name="dist" depends="init">
 	<jar destfile="dist/enough-polish.jar"
 	     basedir="bin/classes"
 	     >
 	</jar>
+</target>
+
+<target name="copyToTest" depends="dist">
+	<copy file="dist/enough-polish.jar" todir="../enough-polish-dict/import/" />
 </target>
 
 <target name="clean" depends="init">

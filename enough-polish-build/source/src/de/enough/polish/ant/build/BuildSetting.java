@@ -29,8 +29,12 @@ public class BuildSetting {
 	
 	private DebugSetting debugSetting;
 	private MidletSetting midletSetting; 
+	private ObfuscatorSetting obfuscatorSetting;
 	private String version;
 	private File workDir;
+	private File apiDir;
+	private File destDir;
+	private File resDir;
 	private String symbols;
 	private String imageLoadStrategy;
 	private FullScreenSetting fullScreenSetting;
@@ -43,20 +47,24 @@ public class BuildSetting {
 	private String midp1Path;
 	private String midp2Path;
 	private String preverify;
-	private File destDir;
-	private File resDir;
 	
 	/**
 	 * Creates a new build setting.
 	 */
 	public BuildSetting() {
+		this.obfuscatorSetting = new ObfuscatorSetting();
 		this.workDir = new File("./build");
 		this.destDir = new File("./dist");
+		this.apiDir = new File("./import");
 		this.resDir = new File ("./resources");
 		this.devices = new File("./devices.xml");
 		this.vendors = new File("./vendors.xml");
 		this.groups = new File("./groups.xml");
 		this.imageLoadStrategy = IMG_LOAD_FOREGROUND;
+	}
+	
+	public void addConfiguredObfuscator( ObfuscatorSetting setting ) {
+		this.obfuscatorSetting = setting;
 	}
 	
 	public void addConfiguredMidlets( MidletSetting setting ) {
@@ -286,6 +294,28 @@ public class BuildSetting {
 	}
 
 	/**
+	 * @return Returns the the directory which contains device specific libraries.
+	 */
+	public File getApiDir() {
+		if (!this.apiDir.exists()) {
+			throw new BuildException("Did not find the api directory in the default path [" + this.apiDir.getAbsolutePath() + "]. Please specify either the [apiDir]-attribute of the <build> element or copy all device-specific jars to this path.");
+		}
+		return this.apiDir;
+	}
+	
+	/**
+	 * Sets the directory which contains device specific libraries
+	 * 
+	 * @param apiDir The directory which contains device specific libraries. Defaults to "./import"
+	 */
+	public void setApiDir(File apiDir) {
+		if (!apiDir.exists()) {
+			throw new BuildException("The [apiDir]-attribute of the <build> element points to a non existing directory: [" + apiDir.getAbsolutePath() + "].");
+		}
+		this.apiDir = apiDir;
+	}
+	
+	/**
 	 * @return Returns the groups.
 	 */
 	public File getGroups() {
@@ -418,5 +448,39 @@ public class BuildSetting {
 			midletInfos[i] = midlets[i].getMidletInfo();
 		}
 		return midletInfos;
+	}
+
+	/**
+	 * @return The obfuscator which should be used
+	 */
+	public ObfuscatorSetting getObfuscatorSetting() {
+		return this.obfuscatorSetting;
+	}
+	
+	/**
+	 * Sets the name of the obfuscator.
+	 * 
+	 * @param obfuscator The name of the obfuscator, e.g. "ProGuard" or "RetroGuard"
+	 */
+	public void setObfuscator( String obfuscator ) {
+		this.obfuscatorSetting.setName( obfuscator );
+	}
+	
+	/**
+	 * Determines whether the resulting jars should be obfuscated at all.
+	 * 
+	 * @return True when the jars should be obfuscated.
+	 */
+	public boolean doObfuscate() {
+		return this.obfuscatorSetting.isEnabled();
+	}
+	
+	/**
+	 * Determines whether the resulting jars should be obfuscated at all.
+	 * 
+	 * @param obfuscate True when the jars should be obfuscated.
+	 */
+	public void setObfuscate( boolean obfuscate ) {
+		this.obfuscatorSetting.setEnable( obfuscate );
 	}
 }

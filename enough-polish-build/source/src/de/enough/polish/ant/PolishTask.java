@@ -11,6 +11,7 @@ import de.enough.polish.ant.build.*;
 import de.enough.polish.ant.info.InfoSetting;
 import de.enough.polish.ant.requirements.Requirements;
 import de.enough.polish.exceptions.InvalidComponentException;
+import de.enough.polish.obfuscate.Obfuscator;
 import de.enough.polish.preprocess.PreprocessException;
 import de.enough.polish.preprocess.Preprocessor;
 import de.enough.polish.util.*;
@@ -55,15 +56,16 @@ public class PolishTask extends ConditionalTask {
 	private Path midp1BootClassPath;
 	private Path midp2BootClassPath;
 	private HashMap apiPaths;
-	private String apiDir;
-	private char quote;
+	private File apiDir;
+	private Obfuscator obfuscator;
+	private String[] preserveClasses;
 	
 	/**
 	 * Creates a new empty task 
 	 */
 	public PolishTask() {
 		// initialisation is done with the setter-methods.
-		this.quote = File.pathSeparatorChar == '/' ? '\'' : '"';
+		//this.quote = File.pathSeparatorChar == '/' ? '\'' : '"';
 	}
 	
 	public void addConfiguredInfo( InfoSetting setting ) {
@@ -102,13 +104,17 @@ public class PolishTask extends ConditionalTask {
 		selectDevices();
 		int devCount = this.devices.length;
 		System.out.println("Processing [" + devCount + "] devices...");
+		boolean obfuscate = this.buildSetting.doObfuscate();
 		for ( int i=0; i<devCount; i++) {
 			Device device = this.devices[i];
 			preprocess( device );
 			compile( device );
-			obfuscate( device );
+			jar( device );
+			if (obfuscate) {
+				obfuscate( device );
+			}
 			preverify( device );
-			jarAndJad( device );
+			jad( device );
 		}
 		test();
 		deploy();
@@ -219,7 +225,18 @@ public class PolishTask extends ConditionalTask {
 		
 		// init path for device APIs:
 		this.apiPaths = new HashMap();
-		this.apiDir = "./import";
+		this.apiDir = this.buildSetting.getApiDir();
+		
+		// init obfuscator:
+		ObfuscatorSetting obfuscatorSetting = this.buildSetting.getObfuscatorSetting();
+		if (obfuscatorSetting.isEnabled()) {
+			String[] keepClasses = obfuscatorSetting.getPreserveClassNames();
+			String[] midletClasses = this.buildSetting.getMidletClassNames();
+			this.preserveClasses = new String[ keepClasses.length + midletClasses.length ];
+			System.arraycopy( keepClasses, 0, this.preserveClasses, 0,  keepClasses.length );
+			System.arraycopy( midletClasses, 0, this.preserveClasses, keepClasses.length, midletClasses.length  );
+			this.obfuscator = Obfuscator.getInstance( obfuscatorSetting.getName(), obfuscatorSetting.getClassName() );
+		}
 	}
 
 	/**
@@ -329,9 +346,9 @@ public class PolishTask extends ConditionalTask {
 				} else {
 					path = (String) properties.get( "polish.api." + api );
 					if (path == null) {
-						path = this.apiDir + File.separatorChar + api + ".jar" 
+						path = this.apiDir.getAbsolutePath() + File.separatorChar + api + ".jar" 
 							 + File.pathSeparatorChar 
-							 + this.apiDir + File.separatorChar + api + ".zip";
+							 + this.apiDir.getAbsolutePath() + File.separatorChar + api + ".zip";
 					}  
 					classPathBuffer.append( File.pathSeparatorChar )
 							 .append( path );
@@ -359,14 +376,149 @@ public class PolishTask extends ConditionalTask {
 		
 	}
 
+
+
+	/**
+	 * Adds quotes around a path when it contains whitespace.
+	 *
+	 * @param path The path
+	 * @return The path with quotes when it contains whitespace or without quotes
+     * 		   when it does not contain whitespace.
+	private String addQuotes(String path) {
+		if (true) {
+			return path;
+		}
+		if (path.indexOf(' ') != -1) {
+			return this.quote + path + this.quote;
+		} else {
+			return path;
+		}
+	}
+	 */
+
+	/**
+	 * Jars the code.
+	 * 
+	 * @param device The device for which the code should be jared.
+	 */
+	private void jar( Device device ) {
+		System.out.println("creating jar for device [" + device.getIdentifier() + "]." );
+		File classesDir = new File( device.getClassesDir() );
+		//copy resources:
+		File resourceDir = this.buildSetting.getResDir();
+		String resourcePath = resourceDir.getAbsolutePath() + File.separatorChar; 
+		
+		FileFilter cssFilter =  new CssFileFilter();
+		try {
+			// 1. copy general resources:
+			File[] files = resourceDir.listFiles( cssFilter );
+			FileUtil.copy( files, classesDir );
+			// 2. copy vendor resources:
+			resourceDir = new File( resourcePath + device.getVendor() );
+			if (resourceDir.exists()) {
+				files = resourceDir.listFiles( cssFilter );
+				FileUtil.copy( files, classesDir );
+			}
+			// 3.: copy group resources:
+			String[] groups = device.getGroups();
+			for (int i = 0; i < groups.length; i++) {
+				String group = groups[i];
+				resourceDir = new File( resourcePath + group );
+				if (resourceDir.exists()) {
+					files = resourceDir.listFiles( cssFilter );
+					FileUtil.copy( files, classesDir );
+				}
+			}
+			// 4.: copy device resources:
+			resourceDir = new File( resourcePath + device.getVendor() 
+								+ File.separatorChar + device.getName() );
+			if (resourceDir.exists()) {
+				files = resourceDir.listFiles( cssFilter );
+				FileUtil.copy( files, classesDir );
+			}
+		} catch (IOException e) {
+			throw new BuildException("Unable to copy resources from [" + resourceDir + "]: " + e.getMessage(), e );
+		}
+		
+		Jar jarTask = new Jar();
+		jarTask.setProject( this.project );
+		jarTask.setTaskName( getTaskName() + "-jar-" + device.getIdentifier() );
+		jarTask.setBasedir( classesDir );
+		// retrieve the name of the jar-file:
+		HashMap infoProperties = new HashMap();
+		infoProperties.put( "polish.identifier", device.getIdentifier() );
+		infoProperties.put( "polish.name", device.getName() );
+		infoProperties.put( "polish.vendor", device.getVendor() );
+		infoProperties.put( "polish.version", this.infoSetting.getVersion() );
+		String jarName = this.infoSetting.getJarName();
+		jarName = PropertyUtil.writeProperties(jarName, infoProperties);
+		infoProperties.put( "polish.jarName", jarName );
+		File jarFile = new File( this.buildSetting.getDestDir().getAbsolutePath() + File.separatorChar + jarName );
+		if (!jarFile.getParentFile().exists()) {
+			jarFile.getParentFile().mkdirs();
+		}
+		device.setJarFile( jarFile );
+		jarTask.setDestFile( jarFile );
+		//create manifest:
+		try {
+			Manifest manifest = new Manifest();
+			Manifest.Attribute polishVersion = new Manifest.Attribute("Polish-Version", VERSION );
+			manifest.addConfiguredAttribute( polishVersion  );
+			String midp = InfoSetting.MIDP1;
+			if (device.isMidp2()) {
+				midp = InfoSetting.MIDP2;
+			}
+			Manifest.Attribute meProfile = new Manifest.Attribute( InfoSetting.MICRO_EDITION_PROFILE, midp );
+			manifest.addConfiguredAttribute(meProfile);
+			
+			// add info attributes:
+			Variable[] attributes = this.infoSetting.getManifestAttributes();
+			for (int i = 0; i < attributes.length; i++) {
+				Variable var = attributes[i];
+				String value = PropertyUtil.writeProperties(var.getValue(), infoProperties);
+				Manifest.Attribute attribute = new Manifest.Attribute(var.getName(), value );
+				manifest.addConfiguredAttribute( attribute  );
+			}
+			// add build properties - midlet infos:
+			String[] midletInfos = this.buildSetting.getMidletInfos();
+			for (int i = 0; i < midletInfos.length; i++) {
+				String info = midletInfos[i];
+				Manifest.Attribute attribute = new Manifest.Attribute(InfoSetting.NMIDLET + (i+1), info );
+				manifest.addConfiguredAttribute( attribute  );
+			}
+			jarTask.addConfiguredManifest( manifest );
+		} catch (ManifestException e) {
+			e.printStackTrace();
+			throw new BuildException("Unable to create manifest: " + e.getMessage(), e );
+		}
+		jarTask.execute();
+		
+	}
+
 	/**
 	 * Obfuscates the compiled source code.
 	 *  
 	 * @param device The device for which the obfuscation should be done.
 	 */
 	private void obfuscate( Device device ) {
-		// TODO enough implement obfuscate
-		
+		/**
+		 * <obfuscator enable="yes" name="ProGuard" or class="de.enough,,," >
+		 * 		<preserve>de.enough.example.DynaClass</preserve>
+		 * </obfuscator>
+		 */
+		System.out.println("obfuscating for device [" + device.getIdentifier() + "].");
+		Path bootPath;
+		if (device.isMidp1()) {
+			bootPath = this.midp1BootClassPath;
+		} else {
+			bootPath = this.midp2BootClassPath;
+		}
+		File tmpJar = new File( this.buildSetting.getWorkDir().getAbsolutePath() 
+						+ File.separatorChar + "tmp.jar");
+		//File originalJar = new File( device.getJarFile().getAbsolutePath() );
+		device.getJarFile().renameTo( tmpJar );
+		//device.setJarFile( originalJar );
+		this.obfuscator.obfuscate(device, tmpJar, this.preserveClasses, bootPath );
 	}
 
 	/**
@@ -431,72 +583,11 @@ public class PolishTask extends ConditionalTask {
 	}
 	
 	/**
-	 * Adds quotes around a path when it contains whitespace.
-	 *
-	 * @param path The path
-	 * @return The path with quotes when it contains whitespace or without quotes
-     * 		   when it does not contain whitespace.
-	private String addQuotes(String path) {
-		if (true) {
-			return path;
-		}
-		if (path.indexOf(' ') != -1) {
-			return this.quote + path + this.quote;
-		} else {
-			return path;
-		}
-	}
-	 */
-
-	/**
-	 * Jars the code.
+	 * Creates the JAD file for the given device.
 	 * 
-	 * @param device The device for which the code should be jared.
+	 * @param device The device for which the JAD file should be created.
 	 */
-	private void jarAndJad( Device device ) {
-		System.out.println("creating jar for device [" + device.getIdentifier() + "]." );
-		File classesDir = new File( device.getClassesDir() );
-		//copy resources:
-		File resourceDir = this.buildSetting.getResDir();
-		String resourcePath = resourceDir.getAbsolutePath() + File.separatorChar; 
-		
-		FileFilter cssFilter =  new CssFileFilter();
-		try {
-			// 1. copy general resources:
-			File[] files = resourceDir.listFiles( cssFilter );
-			FileUtil.copy( files, classesDir );
-			// 2. copy vendor resources:
-			resourceDir = new File( resourcePath + device.getVendor() );
-			if (resourceDir.exists()) {
-				files = resourceDir.listFiles( cssFilter );
-				FileUtil.copy( files, classesDir );
-			}
-			// 3.: copy group resources:
-			String[] groups = device.getGroups();
-			for (int i = 0; i < groups.length; i++) {
-				String group = groups[i];
-				resourceDir = new File( resourcePath + group );
-				if (resourceDir.exists()) {
-					files = resourceDir.listFiles( cssFilter );
-					FileUtil.copy( files, classesDir );
-				}
-			}
-			// 4.: copy device resources:
-			resourceDir = new File( resourcePath + device.getVendor() 
-								+ File.separatorChar + device.getName() );
-			if (resourceDir.exists()) {
-				files = resourceDir.listFiles( cssFilter );
-				FileUtil.copy( files, classesDir );
-			}
-		} catch (IOException e) {
-			throw new BuildException("Unable to copy resources from [" + resourceDir + "]: " + e.getMessage(), e );
-		}
-		
-		Jar jarTask = new Jar();
-		jarTask.setProject( this.project );
-		jarTask.setTaskName( getTaskName() + "-jar-" + device.getIdentifier() );
-		jarTask.setBasedir( classesDir );
-		// retrieve the name of the jar-file:
+	private void jad(Device device) {
 		HashMap infoProperties = new HashMap();
 		infoProperties.put( "polish.identifier", device.getIdentifier() );
 		infoProperties.put( "polish.name", device.getName() );
@@ -505,45 +596,6 @@ public class PolishTask extends ConditionalTask {
 		String jarName = this.infoSetting.getJarName();
 		jarName = PropertyUtil.writeProperties(jarName, infoProperties);
 		infoProperties.put( "polish.jarName", jarName );
-		File jarFile = new File( this.buildSetting.getDestDir().getAbsolutePath() + File.separatorChar + jarName );
-		if (!jarFile.getParentFile().exists()) {
-			jarFile.getParentFile().mkdirs();
-		}
-		jarTask.setDestFile( jarFile );
-		//create manifest:
-		try {
-			Manifest manifest = new Manifest();
-			Manifest.Attribute polishVersion = new Manifest.Attribute("Polish-Version", VERSION );
-			manifest.addConfiguredAttribute( polishVersion  );
-			String midp = InfoSetting.MIDP1;
-			if (device.isMidp2()) {
-				midp = InfoSetting.MIDP2;
-			}
-			Manifest.Attribute meProfile = new Manifest.Attribute( InfoSetting.MICRO_EDITION_PROFILE, midp );
-			manifest.addConfiguredAttribute(meProfile);
-			
-			// add info attributes:
-			Variable[] attributes = this.infoSetting.getManifestAttributes();
-			for (int i = 0; i < attributes.length; i++) {
-				Variable var = attributes[i];
-				String value = PropertyUtil.writeProperties(var.getValue(), infoProperties);
-				Manifest.Attribute attribute = new Manifest.Attribute(var.getName(), value );
-				manifest.addConfiguredAttribute( attribute  );
-			}
-			// add build properties - midlet infos:
-			String[] midletInfos = this.buildSetting.getMidletInfos();
-			for (int i = 0; i < midletInfos.length; i++) {
-				String info = midletInfos[i];
-				Manifest.Attribute attribute = new Manifest.Attribute(InfoSetting.NMIDLET + (i+1), info );
-				manifest.addConfiguredAttribute( attribute  );
-			}
-			jarTask.addConfiguredManifest( manifest );
-		} catch (ManifestException e) {
-			e.printStackTrace();
-			throw new BuildException("Unable to create manifest: " + e.getMessage(), e );
-		}
-		jarTask.execute();
-		
 		
 		// now create the JAD file:
 		System.out.println("Now creating JAD file for device [" + device.getIdentifier() + "].");
@@ -560,7 +612,8 @@ public class PolishTask extends ConditionalTask {
 			jad.addAttribute( InfoSetting.NMIDLET + (i+1), info );
 		}
 		// add size of jar:
-		long size = jarFile.length();
+		//TODO check if File.length changes after the file has been changed.
+		long size = device.getJarFile().length();
 		jad.addAttribute(  InfoSetting.MIDLET_JAR_SIZE, "" + size );
 		
 		String jadName = PropertyUtil.writeProperties( jarName.substring(0, jarName.lastIndexOf('.') ) + ".jad", infoProperties );
@@ -571,8 +624,7 @@ public class PolishTask extends ConditionalTask {
 			throw new BuildException("Unable to create JAD file [" + jadFile.getAbsolutePath() +"] for device [" + device.getIdentifier() + "]: " + e.getMessage() );
 		}
 	}
-
-
+	
 	/**
 	 * 
 	 */
