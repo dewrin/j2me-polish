@@ -87,6 +87,7 @@ public class PreprocessorTest extends TestCase {
 		variables.put( "not.there", "/home/XX/YY/ZZ/src");
 		variables.put( "fullscreen.class", "de.enough.polish.nokia.FullMenuCanvas");
 		variables.put( "polish.message", "Hello world!");
+		variables.put( "polish.DateFormat", "de");
 		
 		this.preprocessor = new Preprocessor( project, currentDir, variables, symbols, false, true, null );
 		
@@ -475,6 +476,98 @@ public class PreprocessorTest extends TestCase {
 				
 	}
 	
+	public void testElIf() throws BuildException {
+		String[] sourceLines = new String[] {
+				"	//#if polish.DateFormat == us ",
+				"	String hello =  \"us is defined\";",
+				"	//#elif polish.DateFormat == de ",
+				"	//# String hello =  \"de is used\";",
+				"	//#else",
+				"	//# String hello =  \"iso is used\";",
+				"	//#endif",
+				"	System.out.println( hello );"
+		};
+		StringList lines = new StringList( sourceLines );
+		int result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.CHANGED, result );
+		/*
+		 String[] processedLines = lines.getArray();
+		 for (int i = 0; i < processedLines.length; i++) {
+		 System.out.println( processedLines[i] );
+		 }
+		 System.out.println("=========================");
+		 */
+		sourceLines = new String[] {
+				"	//#if true ",
+				"		String hello =  \"true is defined\";",
+				"	//#elif false",
+				"		//# String hello =  \"false is defined\";",
+				"	//#elif true",
+				"		//# String hello =  \"true is defined-again\";",
+				"	//#else",
+				"		//# String hello =  \"should not be seen\";",
+				"	//#endif",
+				"	System.out.println( hello );"
+		};
+		lines = new StringList( sourceLines );
+		result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.NOT_CHANGED, result );
+		/*
+		 String[] processedLines = lines.getArray();
+		 for (int i = 0; i < processedLines.length; i++) {
+		 System.out.println( processedLines[i] );
+		 }
+		 System.out.println("=========================");
+		 */
+
+		sourceLines = new String[] {
+				"	//#if false ",
+				"		String hello =  \"true is defined\";",
+				"	//#elif false",
+				"		//# String hello =  \"false is defined\";",
+				"	//#elif true",
+				"		//# String hello =  \"true is defined-again\";",
+				"		//#ifdef false",
+				"			//# //false IS DEFINED",
+				"		//#elifdef false",
+				"			//# //false false SHOULD NOT BE DEFINED",
+				"		//#else",
+				"			//# //BINGO...",
+				"		//#endif",				
+				"	//#else",
+				"		//# String hello =  \"should not be seen\";",
+				"	//#endif",
+				"	System.out.println( hello );"
+		};
+		lines = new StringList( sourceLines );
+		result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.CHANGED, result );
+
+		sourceLines = new String[] {
+				"	//#if false ",
+				"		String hello =  \"true is defined\";",
+				"	//#elif false",
+				"		//# String hello =  \"false is defined\";",
+				"	//#elif false",
+				"		//# String hello =  \"true is defined-again\";",
+				"	//#else",
+				"		//# String hello =  \"should not be seen\";",
+				"		//#ifdef false",
+				"			//# //false IS DEFINED",
+				"		//#elifdef false",
+				"			//# //false false SHOULD NOT BE DEFINED",
+				"		//#else",
+				"			//# //BINGO...",
+				"		//#endif",				
+				"	//#endif",
+				"	System.out.println( hello );"
+		};
+		lines = new StringList( sourceLines );
+		result = this.preprocessor.preprocess( "MyClass.java", lines );
+		assertEquals( Preprocessor.CHANGED, result );
+	}
+	
+	
 	public void testDefine() throws BuildException {
 		String[] sourceLines = new String[] {
 				"	//#ifdef test1 ",
@@ -647,6 +740,8 @@ public class PreprocessorTest extends TestCase {
 		StyleSheet styleSheet = this.preprocessor.getStyleSheet();
 		assertFalse( styleSheet.isUsed("weird"));
 		
+		// this should not work, since no new operator or method call is
+		// done in the next line:
 		sourceLines = new String[] {
 				"	//#ifdef XXtest1 ",
 				"	String hello =  \"XXtest1 is defined\";",
@@ -657,10 +752,12 @@ public class PreprocessorTest extends TestCase {
 				"	System.out.println( hello );"
 		};
 		lines = new StringList( sourceLines );
-		result = this.preprocessor.preprocess( "MyClass.java", lines );
-		assertEquals( Preprocessor.CHANGED, result );
-		styleSheet = this.preprocessor.getStyleSheet();
-		assertTrue( styleSheet.isUsed("weird"));
+		try {
+			result = this.preprocessor.preprocess( "MyClass.java", lines );
+			fail("#style directive should fail when no method call or new operator follows the directive.");
+		} catch (BuildException e) {
+			//expected behaviour
+		}
 		
 		sourceLines = new String[] {
 				"	//#ifdef XXtest1 ",

@@ -496,6 +496,7 @@ public class Preprocessor {
 		int currentIfDirectiveCount = this.ifDirectiveCount;
 		boolean endifFound = false;
 		boolean elseFound = false;
+		boolean conditionHasBeenFullfilled = conditionFulfilled;
 		int commandStartLine = lines.getCurrentIndex();
 		boolean processed = false;
 		while (lines.next()) {
@@ -504,6 +505,7 @@ public class Preprocessor {
 			int result = NOT_CHANGED; 
 			if (conditionFulfilled) {
 				result = processSingleLine( className, lines, line, trimmedLine );
+				conditionHasBeenFullfilled = true;
 			}
 			if (result == CHANGED ) {
 				processed = true;
@@ -515,30 +517,55 @@ public class Preprocessor {
 			} else if ( trimmedLine.startsWith("//#if ") ) {
 				// we are currently in a branch which is not true (conditionFulfilled == false)
 				this.ifDirectiveCount++;
-			} else if (trimmedLine.startsWith("//#else") && (this.ifDirectiveCount == currentIfDirectiveCount)) {
-				conditionFulfilled = !conditionFulfilled;
+			} else if (trimmedLine.startsWith("//#else") 
+					&& (this.ifDirectiveCount == currentIfDirectiveCount)) {
+				if (conditionFulfilled || conditionHasBeenFullfilled) {
+					conditionFulfilled = false;					
+				} else {
+					conditionFulfilled = true;
+				}
 				elseFound = true;
-			} else if ( trimmedLine.startsWith("//#elifdef") && (this.ifDirectiveCount == currentIfDirectiveCount)) {
+			} else if ( trimmedLine.startsWith("//#elifdef") 
+					&&  (this.ifDirectiveCount == currentIfDirectiveCount)) {
 				if (elseFound) {
 					throw new BuildException( className + " line " + (lines.getCurrentIndex() +1) 
 							+ ": found directive #elifdef after #else branch.");
 				}
-				String symbol = line.substring( 10 ).trim();
-				conditionFulfilled = (this.symbols.get( symbol ) != null);
-			} else if (trimmedLine.startsWith("//#elifndef") && (this.ifDirectiveCount == currentIfDirectiveCount)) {
+				if (conditionHasBeenFullfilled) {
+					conditionFulfilled = false;
+				} else {
+					String symbol = trimmedLine.substring( 10 ).trim();
+					conditionFulfilled = (this.symbols.get( symbol ) != null);
+				}
+			} else if (trimmedLine.startsWith("//#elifndef")
+					&& (this.ifDirectiveCount == currentIfDirectiveCount)) {
 				if (elseFound) {
 					throw new BuildException( className + " line " + (lines.getCurrentIndex() +1) 
 							+ ": found directive #elifndef after #else branch.");
 				}
-				String symbol = line.substring( 11 ).trim();
-				conditionFulfilled = (this.symbols.get( symbol ) == null);
-			} else if (trimmedLine.startsWith("//#elif") && (this.ifDirectiveCount == currentIfDirectiveCount)) {
+				if (conditionHasBeenFullfilled) {
+					conditionFulfilled = false;
+				} else {
+					String symbol = trimmedLine.substring( 11 ).trim();
+					conditionFulfilled = (this.symbols.get( symbol ) == null);
+				}
+			} else if (trimmedLine.startsWith("//#elif") 
+					&& (this.ifDirectiveCount == currentIfDirectiveCount)) {
 				if (elseFound) {
 					throw new BuildException( className + " line " + (lines.getCurrentIndex() +1) 
-							+ ": found directive #elifndef after #else branch.");
+							+ ": found directive #elif after #else branch.");
 				}
-				String argument = line.substring( 8 ).trim();
-				conditionFulfilled = checkIfCondition( argument, className, lines );
+				/*
+				System.out.println("line: [" + line + "]");
+				System.out.println("condition has been fullfilled: " + conditionHasBeenFullfilled);
+				System.out.println("condition is fullfilled: " + conditionFulfilled );
+				*/
+				if (conditionHasBeenFullfilled) {
+					conditionFulfilled = false;
+				} else {
+					String argument = trimmedLine.substring( 8 ).trim();
+					conditionFulfilled = checkIfCondition( argument, className, lines );
+				}
 			} else if (trimmedLine.startsWith("//#endif")) {
 				if (this.ifDirectiveCount == currentIfDirectiveCount ) {
 					endifFound = true;
