@@ -182,16 +182,16 @@ implements ImageConsumer
 			if (afterUrl != null) {
 				try {
 					//#ifdef tmp.imageConsumer
-						this.beforeUrl = beforeUrl;
+						this.afterUrl = afterUrl;
 					//#endif
-					this.before = StyleSheet.getImage(beforeUrl, this, true);
+					this.after = StyleSheet.getImage(afterUrl, this, true);
 				} catch (Exception e) {
 					//#debug error
-					Debug.debug("unable to load before-image [" + beforeUrl + "]. ", e );
+					Debug.debug("unable to load after-image [" + afterUrl + "]. ", e );
 				}
-				if (this.before != null) {
-					this.beforeWidth = this.after.getWidth();
-					this.beforeHeight = this.after.getHeight();
+				if (this.after != null) {
+					this.afterWidth = this.after.getWidth();
+					this.afterHeight = this.after.getHeight();
 				}
 			}
 		//#endif

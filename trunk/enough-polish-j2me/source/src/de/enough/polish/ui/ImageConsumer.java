@@ -28,4 +28,6 @@ public interface ImageConsumer {
 	 * @param image the image which was loaded in the background thread.
 	 */
 	public void setImage( String name, Image image );
+	
+
 }

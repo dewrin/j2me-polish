@@ -45,14 +45,24 @@ public class Container extends Item {
 	 * @param focusFirstElement true when the first focussable element should be focussed automatically.
 	 */
 	public Container( boolean focusFirstElement ) {
-		super();
+		this( focusFirstElement, null );
+	}
+	
+	/**
+	 * Creates a new empty container.
+	 * 
+	 * @param focusFirstElement true when the first focussable element should be focussed automatically.
+	 * @param style the style for this container
+	 */
+	public Container(boolean focusFirstElement, Style style) {
+		super( style );
 		this.itemsList = new ArrayList();
 		this.focusFirstElement = focusFirstElement;
 		if (this.focussedStyle == null) {
 			this.focussedStyle = StyleSheet.focussedStyle;
 		}
 	}
-	
+
 	public void add( Item item ) {
 		this.isInitialised = false;
 		//#ifdef polish.useDynamicStyles
@@ -154,6 +164,7 @@ public class Container extends Item {
 		this.focussedIndex = index;
 		this.focussedItem = item;
 		item.setStyle( this.focussedStyle );
+		this.isInitialised = false;
 	}
 
 	/* (non-Javadoc)
@@ -164,38 +175,28 @@ public class Container extends Item {
 		int myContentWidth = 0;
 		int myContentHeight = 0;
 		//TODO rob: firstLineWidth ist nicht korrekt fuer die items!
+		// (border, margin und padding einrechnen)
 		for (int i = 0; i < myItems.length; i++) {
 			Item item = myItems[i];
 			int width = item.getItemWidth( firstLineWidth, lineWidth );
-			if (width > myContentWidth) {
-				myContentWidth = width; 
-			}
-			myContentHeight += item.getItemHeight( firstLineWidth, lineWidth );
+			int height = item.getItemHeight( firstLineWidth, lineWidth );
 			// now the item should have a style:
 			if (this.focusFirstElement && (item.appearanceMode != Item.PLAIN)) {
 				focus( i, item );
+				height = item.getItemHeight( firstLineWidth, lineWidth );
+				width = item.getItemWidth( firstLineWidth, lineWidth );
 				this.focusFirstElement = false;
 			}
+			if (width > myContentWidth) {
+				myContentWidth = width; 
+			}
+			myContentHeight += height;
 		}
 		this.contentHeight = myContentHeight;
 		this.contentWidth = myContentWidth;
 		this.items = myItems;
 	}
 
-	//#ifdef polish.useDynamicStyles
-	/*
-	 * Initialises the appropriate style for this container.
-	protected void initStyle() {
-		super.initStyle();
-		Item[] myItems = (Item[]) this.itemsList.toArray( new Item[ this.itemsList.size() ]);
-		System.out.println("container: getting styles for [" + myItems.length + "] items.");
-		for (int i = 0; i < myItems.length; i++) {
-			Item item = myItems[i];
-			item.initStyle();
-		}
-	}
-	 */
-	//#endif	
 	
 	/* (non-Javadoc)
 	 * @see de.enough.polish.ui.Item#paintItem(int, int, javax.microedition.lcdui.Graphics)
@@ -304,7 +305,7 @@ public class Container extends Item {
 			this.border = null;
 			this.borderWidth = 0;
 		}
-		String focussed = style.getProperty("focussed");
+		String focussed = style.getProperty("focussed-style");
 		if (focussed != null) {
 			Style focStyle = StyleSheet.getStyle( focussed );
 			if (focStyle != null) {

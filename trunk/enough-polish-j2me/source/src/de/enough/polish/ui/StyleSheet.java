@@ -56,7 +56,8 @@ public final class StyleSheet {
 	 * @param name the name of the Image
 	 * @param parent the object which needs the image, when the image should be loaded
 	 * 		   		in the background, the parent need to implement
-	 * 				the ImageConsumer interface.
+	 * 				the ImageConsumer interface when it wants to be notified when
+	 * 				the picture has been loaded.
 	 * @param cache true when the image should be cached for later retrieval.
 	 *              This costs RAM obviously, so you should decide carefully if
 	 *              large images should be cached.
@@ -86,35 +87,53 @@ public final class StyleSheet {
 			imagesByName.put( name, image );
 		}
 		//# return image;
-		//#else
-		// when images should be loaded in the background, tell the background-thread to do so now:
 		
+		//#else
+		// when images should be loaded in the background, 
+		// tell the background-thread to do so now:		
 		if ( ! (parent instanceof ImageConsumer)) {
 			//#debug error
 			System.out.println("StyleSheet.getImage(..) needs an ImageConsumer when images are loaded in the background!");
 			return null;
 		}
-		if (cache) {
-			if ( (scheduledImagesByName != null) && (scheduledImagesByName.get(name) != null) ) {
+		if ( (scheduledImagesByName != null) ) {
+			ImageQueue queue = (ImageQueue) scheduledImagesByName.get(name);
+			if (queue != null) {
 				// this image is already scheduled to load:
+				queue.addConsumer((ImageConsumer) parent);
 				return null;
 			}
-			if (scheduledImagesByName == null ) {
-				scheduledImagesByName = new Hashtable();
-				scheduledImagesByName.put( name, TRUE );
-			}
-			if (imagesByName == null ) {
-				imagesByName = new Hashtable();
-			}
+		}
+		if (scheduledImagesByName == null ) {
+			scheduledImagesByName = new Hashtable();
+		}
+		scheduledImagesByName.put( name, new ImageQueue( (ImageConsumer) parent, cache ) );
+		if (imagesByName == null ) {
+			imagesByName = new Hashtable();
 		}
 		if (timer == null) {
 			timer = new Timer();
 		}
-		ImageTask task = new ImageTask( name, (ImageConsumer) parent, imagesByName, cache );
+		ImageTask task = new ImageTask( name );
 		timer.schedule( task, 10 );
 		return null;
 		//#endif
 	}
+	
+	//#ifdef polish.images.backgroundLoad
+	public static void notifyImageConsumers( String name, Image image ) {
+		ImageQueue queue = (ImageQueue) scheduledImagesByName.remove(name);
+		if (queue != null) {
+			if (queue.cache) {
+				imagesByName.put( name, image );
+			}
+			queue.notifyConsumers(name, image);
+			if (currentScreen != null) {
+				currentScreen.repaint();
+			}
+		}
+	}
+	//#endif
 	
 	/**
 	 * Gets the style with the specified name.
