@@ -1,9 +1,28 @@
 //#condition polish.usePolishGui
 /*
  * Created on 01-Mar-2004 at 09:45:32.
- * This source code is published under the GNU General Public Licence and
- * the enough-software-licence for commercial use.
- * Please refer to accompanying LICENSE.txt or visit www.enough.de for details.
+ *
+ * Copyright (c) 2004 Robert Virkus / enough software
+ *
+ * This file is part of J2ME Polish.
+ *
+ * J2ME Polish is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * J2ME Polish is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ * Commercial licenses are also available, please
+ * refer to the accompanying LICENSE.txt or visit
+ * www.enough.de/j2mepolish for details.
  */
 package de.enough.polish.ui;
 
@@ -280,7 +299,7 @@ public class Container extends Item {
 	protected void initContent(int firstLineWidth, int lineWidth) {
 		Item[] myItems = (Item[]) this.itemsList.toArray( new Item[ this.itemsList.size() ]);
 		this.items = myItems;
-		//TODO rob: firstLineWidth ist nicht korrekt fuer die items!
+		//TODO rob: firstLineWidth/lineWidth ist nicht korrekt fuer die items!
 		// (border, margin und padding einrechnen)
 		if (this.columnsSetting == NO_COLUMNS) {
 			int myContentWidth = 0;
@@ -385,6 +404,9 @@ public class Container extends Item {
 	 * @see de.enough.polish.ui.Item#paintItem(int, int, javax.microedition.lcdui.Graphics)
 	 */
 	protected void paintContent(int x, int y, int leftBorder, int rightBorder, Graphics g) {
+		if (this.yOffset != 0) {
+			System.out.println("container.yOffset = " + this.yOffset );
+		}
 		// paints all items,
 		// the layout will be done according to this containers'
 		// layout or according to the items layout, when specified.
@@ -393,7 +415,8 @@ public class Container extends Item {
 		if (this.columnsSetting == NO_COLUMNS) {
 			for (int i = 0; i < this.items.length; i++) {
 				Item item = this.items[i];
-				//TODO layout items
+				// currently the NEWLINE_AFTER and NEWLINE_BEFORE layouts will be ignored,
+				// since after every item a line break will be done.
 				item.paint(x, y, leftBorder, rightBorder, g);
 				y += item.itemHeight + this.paddingVertical;
 			}
@@ -452,7 +475,7 @@ public class Container extends Item {
 				// scroll downwards:
 				this.yOffset -= 10;
 				processed = true;
-				System.out.println("yBottomPos: " + this.yBottomPos + "  yBottom: " + this.yBottom );
+				//System.out.println("yBottomPos: " + this.yBottomPos + "  yBottom: " + this.yBottom );
 			}
 		} else if ( gameAction == Canvas.LEFT || gameAction == Canvas.UP ) {
 			if (gameAction == Canvas.UP && this.columnsSetting != NO_COLUMNS) {
