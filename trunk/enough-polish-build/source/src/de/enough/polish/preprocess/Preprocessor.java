@@ -950,5 +950,15 @@ public class Preprocessor {
 		return this.styleSheet;
 	}
 
+	/**
+	 * Determines whether the given symbol is defined.
+	 * 
+	 * @param symbol the symbol 
+	 * @return true when the symbol is defined
+	 */
+	public boolean hasSymbol(String symbol) {
+		return (this.symbols.get( symbol) != null);
+	}
+
 
 }
