@@ -8,6 +8,7 @@
 package de.enough.polish.ui;
 
 import de.enough.polish.util.ArrayList;
+import de.enough.polish.util.TextUtil;
 
 import javax.microedition.lcdui.Canvas;
 import javax.microedition.lcdui.Graphics;
@@ -17,7 +18,17 @@ import javax.microedition.lcdui.Graphics;
  * <p>Main purpose is to manage all items of a Form or similiar canvasses.</p>
  * <p>Containers support following CSS attributes:
  * <ul>
- * 		<li><b>focused</b>: The name of the focused style, e.g. "style( funnyFocussed );"
+ * 		<li><b>focused</b>: The name of the focused style, e.g. "style( funnyFocused );"
+ * 				</li>
+ * 		<li><b>columns</b>: The number of columns. If defined a table will be drawn.</li>
+ * 		<li><b>columns-width</b>: The width of the columns. "equals" for an equal width
+ * 				of each column, "normal" for a column width which depends on
+ * 			    the items. One can also specify the used widths directly with
+ * 				a comma separated list of integers, e.g.
+ * 				<pre>
+ * 					columns: 2;
+ * 					columns-width: 15,5;
+ * 				</pre>
  * 				</li>
  * 		<li><b></b>: </li>
  * </ul>
@@ -31,6 +42,11 @@ import javax.microedition.lcdui.Graphics;
  */
 public class Container extends Item {
 	
+	private static final int NO_COLUMNS = 0;
+	private static final int EQUAL_WIDTH_COLUMNS = 1;
+	private static final int NORMAL_WIDTH_COLUMNS = 2;
+	private static final int STATIC_WIDTH_COLUMNS = 3;
+	
 	protected ArrayList itemsList;
 	protected Item[] items;
 	protected boolean focusFirstElement;
@@ -38,6 +54,11 @@ public class Container extends Item {
 	private Style itemStyle;
 	private Item focusedItem;
 	private int focusedIndex = -1;
+	private int columnsSetting = NO_COLUMNS;
+	private int numberOfColumns;
+	private int[] columnsWidths;
+	private int[] rowsHeights;
+	private int numberOfRows;
 	
 	/**
 	 * Creates a new empty container.
@@ -61,6 +82,7 @@ public class Container extends Item {
 		if (this.focusedStyle == null) {
 			this.focusedStyle = StyleSheet.focusedStyle;
 		}
+		this.layout |= Item.LAYOUT_NEWLINE_BEFORE;
 	}
 
 	public void add( Item item ) {
@@ -172,29 +194,105 @@ public class Container extends Item {
 	 */
 	protected void initContent(int firstLineWidth, int lineWidth) {
 		Item[] myItems = (Item[]) this.itemsList.toArray( new Item[ this.itemsList.size() ]);
-		int myContentWidth = 0;
-		int myContentHeight = 0;
+		this.items = myItems;
 		//TODO rob: firstLineWidth ist nicht korrekt fuer die items!
 		// (border, margin und padding einrechnen)
-		for (int i = 0; i < myItems.length; i++) {
+		if (this.columnsSetting == NO_COLUMNS) {
+			int myContentWidth = 0;
+			int myContentHeight = 0;
+			for (int i = 0; i < myItems.length; i++) {
+				Item item = myItems[i];
+				int width = item.getItemWidth( firstLineWidth, lineWidth );
+				int height = item.getItemHeight( firstLineWidth, lineWidth );
+				// now the item should have a style, so it can be safely focused
+				// without loosing the style information:
+				if (this.focusFirstElement && (item.appearanceMode != Item.PLAIN)) {
+					focus( i, item );
+					height = item.getItemHeight( firstLineWidth, lineWidth );
+					width = item.getItemWidth( firstLineWidth, lineWidth );
+					this.focusFirstElement = false;
+				}
+				if (width > myContentWidth) {
+					myContentWidth = width; 
+				}
+				myContentHeight += height + this.paddingVertical;
+			}
+			this.contentHeight = myContentHeight;
+			this.contentWidth = myContentWidth;
+			return;
+		} 
+		// columns are used
+		if (this.columnsSetting != STATIC_WIDTH_COLUMNS) {
+			int availableColumnWidth = (lineWidth 
+							- ((this.numberOfColumns -1) + this.paddingHorizontal))
+							/ this.numberOfColumns;
+			//System.out.println("available column width: " + availableColumnWidth );
+			this.columnsWidths = new int[ this.numberOfColumns ];
+			for (int i = 0; i < this.numberOfColumns; i++) {
+				this.columnsWidths[i] = availableColumnWidth;
+			}
+		}
+		this.numberOfRows = (myItems.length / this.numberOfColumns) + 1;
+		this.rowsHeights = new int[ this.numberOfRows ];
+		int maxRowHeight = 0;
+		int columnIndex = 0;
+		int rowIndex = 0;
+		int[] maxColumnWidths = new int[ this.numberOfColumns ];
+		boolean trackColumnWidths = (this.columnsSetting == NORMAL_WIDTH_COLUMNS);
+		int maxWidth = 0;
+		int myContentHeight = 0;
+		//System.out.println("starting item init.");
+		for (int i=0; i< myItems.length; i++) {
 			Item item = myItems[i];
-			int width = item.getItemWidth( firstLineWidth, lineWidth );
-			int height = item.getItemHeight( firstLineWidth, lineWidth );
-			// now the item should have a style:
+			int availableWidth = this.columnsWidths[columnIndex];
+			int width = item.getItemWidth( availableWidth, availableWidth );
+			int height = item.getItemHeight( availableWidth, availableWidth );
+			
+			// now the item should have a style, so it can be safely focused
+			// without loosing the style information:
 			if (this.focusFirstElement && (item.appearanceMode != Item.PLAIN)) {
 				focus( i, item );
-				height = item.getItemHeight( firstLineWidth, lineWidth );
-				width = item.getItemWidth( firstLineWidth, lineWidth );
+				height = item.getItemHeight( availableWidth, availableWidth );
+				width = item.getItemWidth( availableWidth, availableWidth );
 				this.focusFirstElement = false;
 			}
-			if (width > myContentWidth) {
-				myContentWidth = width; 
+			
+			if (height > maxRowHeight) {
+				maxRowHeight = height;
 			}
-			myContentHeight += height;
+			if (trackColumnWidths && width > maxColumnWidths[columnIndex ]) {
+				maxColumnWidths[ columnIndex ] = width;
+			}
+			if (width > maxWidth ) {
+				maxWidth = width;
+			}
+			columnIndex++;
+			if (columnIndex == this.numberOfColumns) {
+				//System.out.println("starting new row: rowIndex=" + rowIndex + "  numberOfRows: " + numberOfRows);
+				columnIndex = 0;
+				this.rowsHeights[rowIndex] = maxRowHeight;
+				myContentHeight += maxRowHeight + this.paddingVertical;
+				maxRowHeight = 0;
+				rowIndex++;
+			}
+		} // for each item
+		// now save the worked out dimensions:
+		if (this.columnsSetting == NORMAL_WIDTH_COLUMNS) {
+			this.columnsWidths = maxColumnWidths;
+		} else if (this.columnsSetting == EQUAL_WIDTH_COLUMNS) {
+			if (!this.isLayoutExpand) {
+				for (int i = 0; i < this.columnsWidths.length; i++) {
+					this.columnsWidths[i] = maxWidth;
+				}
+			}
+		} // otherwise the column widths are defined statically.
+		// set content height & width:
+		int myContentWidth = 0;
+		for (int i = 0; i < this.columnsWidths.length; i++) {
+			myContentWidth += this.columnsWidths[i] + this.paddingHorizontal;
 		}
-		this.contentHeight = myContentHeight;
 		this.contentWidth = myContentWidth;
-		this.items = myItems;
+		this.contentHeight = myContentHeight;
 	}
 
 	
@@ -205,11 +303,30 @@ public class Container extends Item {
 		// paints all items,
 		// the layout will be done according to this containers'
 		// layout or according to the items layout, when specified.
-		for (int i = 0; i < this.items.length; i++) {
-			Item item = this.items[i];
-			//TODO layout items
-			item.paint(x, y, leftBorder, rightBorder, g);
-			y += item.itemHeight;
+		if (this.columnsSetting == NO_COLUMNS) {
+			for (int i = 0; i < this.items.length; i++) {
+				Item item = this.items[i];
+				//TODO layout items
+				item.paint(x, y, leftBorder, rightBorder, g);
+				y += item.itemHeight + this.paddingVertical;
+			}
+		} else {
+			x = leftBorder;
+			int columnIndex = 0;
+			int rowIndex = 0;
+			for (int i = 0; i < this.items.length; i++) {
+				Item item = this.items[i];
+				int columnWidth = this.columnsWidths[ columnIndex ];
+				item.paint(x, y, x, x + columnWidth, g);
+				x += columnWidth + this.paddingHorizontal;
+				columnIndex++;
+				if (columnIndex == this.numberOfColumns) {
+					columnIndex = 0;
+					y += this.rowsHeights[ rowIndex ] + this.paddingVertical;
+					x = leftBorder;
+					rowIndex++;
+				}
+			}
 		}
 	}
 
@@ -233,9 +350,21 @@ public class Container extends Item {
 			
 		}
 		if ( gameAction == Canvas.RIGHT || gameAction == Canvas.DOWN ) {
-			return shiftFocus( true );
+			if (gameAction == Canvas.DOWN && this.columnsSetting != NO_COLUMNS) {
+				int currentRow = this.focusedIndex / this.numberOfColumns;
+				if (currentRow < this.numberOfRows - 1) {
+					return shiftFocus( true, this.numberOfColumns - 1 );
+				}
+			}
+			return shiftFocus( true, 0 );
 		} else if ( gameAction == Canvas.LEFT || gameAction == Canvas.UP ) {
-			return shiftFocus( false );
+			if (gameAction == Canvas.UP && this.columnsSetting != NO_COLUMNS) {
+				int currentRow = this.focusedIndex / this.numberOfColumns;
+				if (currentRow > 0) {
+					return shiftFocus( false,  -(this.numberOfColumns -1 ));
+				}
+			}
+			return shiftFocus( false, 0 );
 		} else {
 			return false;
 		}
@@ -244,15 +373,22 @@ public class Container extends Item {
 	/**
 	 * Shifts the focus to the next or the previous item.
 	 * 
-	 * @param focusNext true when the next item should be focused, false when
+	 * @param forwardFocus true when the next item should be focused, false when
 	 * 		  the previous item should be focused.
+	 * @param steps how many steps forward or backward the search for the next focusable item should be started
 	 * @return true when the focus could be moved to either the next or the previous item.
 	 */
-	private boolean shiftFocus(boolean focusNext ) {
-		int i = this.focusedIndex;
+	private boolean shiftFocus(boolean forwardFocus, int steps ) {
+		int i = this.focusedIndex + steps;
+		if (i > this.items.length) {
+			i = this.items.length - 2;
+		}
+		if (i < 0) {
+			i = 1;
+		}
 		Item item = null;
 		while (true) {
-			if (focusNext) {
+			if (forwardFocus) {
 				i++;
 				if (i >= this.items.length) {
 					break;
@@ -311,6 +447,37 @@ public class Container extends Item {
 			if (focStyle != null) {
 				this.focusedStyle = focStyle;
 			}
+		}
+		this.columnsSetting = NO_COLUMNS;
+		String columns = style.getProperty("columns");
+		if (columns != null) {
+			this.numberOfColumns = Integer.parseInt( columns );
+			String width = style.getProperty("columns-width");
+			this.columnsSetting = NORMAL_WIDTH_COLUMNS;
+			if (width != null) {
+				if ("equal".equals(width)) {
+					this.columnsSetting = EQUAL_WIDTH_COLUMNS;
+				} else if ("normal".equals(width)) {
+					//this.columnsSetting = NORMAL_WIDTH_COLUMNS;
+				} else {
+					// these are pixel settings.
+					String[] widths = TextUtil.split( width, ',');
+					if (widths.length != this.numberOfColumns) {
+						// this is an invalid setting!
+						this.columnsSetting = NORMAL_WIDTH_COLUMNS;
+						//#debug warn
+						System.out.println("Invalid [columns-width] setting: [" + width + "], the number of widths needs to be the same as with [columns] specified.");
+					} else {
+						this.columnsSetting = STATIC_WIDTH_COLUMNS;
+						this.columnsWidths = new int[ this.numberOfColumns ];
+						for (int i = 0; i < widths.length; i++) {
+							this.columnsWidths[i] = Integer.parseInt( widths[i] );
+						}
+						this.columnsSetting = STATIC_WIDTH_COLUMNS;
+					}					
+				}
+			}
+			//TODO rob allow definition of the "fill-policy"
 		}
 	}
 

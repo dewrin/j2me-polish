@@ -136,7 +136,7 @@ public final class TextUtil {
 		while (true) {
 			int index = (firstLineWidth * 100) / widthPerChar;
 			int i = index + startIndex;
-			if (i > valueChars.length) {
+			if (i >= valueChars.length) {
 				// reached the end of the given string:
 				list.add( new String( valueChars, startIndex, valueChars.length - startIndex ) );
 				break;
