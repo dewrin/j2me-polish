@@ -56,7 +56,8 @@ public class ChoiceGroup extends Container implements Choice
 	private int choiceType;
 	private boolean isImplicit;
 	private Command selectCommand;
-	private int popupColor = 0xFFFFFF;
+	private int popupColor = 0;
+	private int popupBackgroundColor = 0xFFFFFF;
 	private IconItem popupItem;
 	private boolean isPopupClosed;
 	
@@ -244,10 +245,10 @@ public class ChoiceGroup extends Container implements Choice
 		} else if (choiceType == Choice.POPUP) {
 			this.isPopup = true;
 			this.isPopupClosed = true;
-			this.popupItem = new IconItem( null, createPopupImage(), this.style );
+			this.popupItem = new IconItem( null, null, this.style );
 			this.popupItem.setImageAlign( Graphics.RIGHT );
 			this.popupItem.setAppearanceMode( BUTTON );
-			//this.popupItem.parent = this;
+			this.popupItem.parent = this;
 		} else if (choiceType == Choice.IMPLICIT && allowImplicit ) {
 			this.isImplicit = true;
 			this.focusFirstElement = true;
@@ -274,13 +275,17 @@ public class ChoiceGroup extends Container implements Choice
 	 */
 	protected Image createPopupImage() {
 		if (popupImage == null) {
-			popupImage = Image.createImage( 11, 11 );
+			popupImage = Image.createImage( 9, 12 );
 			Graphics g = popupImage.getGraphics();
-			g.setColor( 0 );
-			g.fillRect(0, 0, 12, 12 );
+			g.setColor( this.popupBackgroundColor );
+			g.fillRect(0, 0, 10, 13 );
 			g.setColor( this.popupColor );
-			g.drawLine(0, 0, 6, 9 );
-			g.drawLine( 10, 0, 6, 9 );	
+			g.drawLine(0, 0, 9, 0 );
+			g.drawLine( 3, 3, 3, 9 );
+			g.drawLine( 4, 3, 4, 10 );
+			g.drawLine( 5, 3, 5, 9 );
+			g.drawLine( 2, 8, 6, 8 );	
+			g.drawLine( 1, 7, 7, 7 );	
 		}
 		return popupImage;
 	}
@@ -481,8 +486,11 @@ public class ChoiceGroup extends Container implements Choice
 	{
 		if (this.isMultiple || this.itemsList.size() == 0) {
 			return -1;
+		} else if (this.isImplicit) {
+			return this.focusedIndex;
+		} else {
+			return this.selectedIndex;
 		}
-		return this.selectedIndex;
 	}
 
 	/**
@@ -567,6 +575,7 @@ public class ChoiceGroup extends Container implements Choice
 			ChoiceItem newSelected = (ChoiceItem) this.itemsList.get( elementNum );
 			newSelected.select( true );
 			this.selectedIndex = elementNum;
+			focus( elementNum, newSelected );
 			if (this.isPopup) {
 				this.popupItem.setText( newSelected.getText() );
 			} else if (this.isImplicit) {
@@ -745,18 +754,23 @@ public class ChoiceGroup extends Container implements Choice
 	 */
 	protected void initContent(int firstLineWidth, int lineWidth) {
 		super.initContent(firstLineWidth, lineWidth);
-		if (this.isPopup && this.isPopupClosed) {
-			if (this.popupItem.getText() == null && this.itemsList.size() > 0) {
-				ChoiceItem selectedItem = (ChoiceItem) this.itemsList.get( 0 );
-				this.popupItem.setText( selectedItem.getText() );
+		if (this.isPopup) {
+			if (this.popupItem.image == null) {
+				this.popupItem.setImage( createPopupImage() );
 			}
-			if (!this.popupItem.isInitialised) {
-				int noneContentWidth = this.marginLeft + this.borderWidth + this.paddingLeft
-							+ this.marginRight + this.borderWidth + this.paddingRight;
-				this.popupItem.init(firstLineWidth + noneContentWidth, lineWidth + noneContentWidth);
+			if (this.isPopupClosed) {
+				if (this.popupItem.getText() == null && this.itemsList.size() > 0) {
+					ChoiceItem selectedItem = (ChoiceItem) this.itemsList.get( 0 );
+					this.popupItem.setText( selectedItem.getText() );
+				}
+				if (!this.popupItem.isInitialised) {
+					int noneContentWidth = this.marginLeft + this.borderWidth + this.paddingLeft
+								+ this.marginRight + this.borderWidth + this.paddingRight;
+					this.popupItem.init(firstLineWidth + noneContentWidth, lineWidth + noneContentWidth);
+				}
+				this.contentWidth = this.popupItem.contentWidth;			
+				this.contentHeight = this.popupItem.contentHeight;
 			}
-			this.contentWidth = this.popupItem.contentWidth;			
-			this.contentHeight = this.popupItem.contentHeight;
 		}
 	}
 
@@ -858,10 +872,18 @@ public class ChoiceGroup extends Container implements Choice
 	 */
 	public void setStyle(Style style, boolean ignoreBackground) {
 		super.setStyle(style, ignoreBackground);
-		if (this.isPopup && this.popupItem.image == ChoiceGroup.popupImage) {
+		if (this.isPopup && this.popupItem.image == null ) {
 			String url = style.getProperty("popup-image");
 			if (url != null ) {
 				this.popupItem.setImage( url );
+			}
+			String colorStr = style.getProperty("popup-color");
+			if (colorStr != null) {
+				this.popupColor = Integer.parseInt( colorStr );
+			}
+			colorStr = style.getProperty("popup-background-color");
+			if (colorStr != null) {
+				this.popupBackgroundColor = Integer.parseInt( colorStr );
 			}
 		}
 	}

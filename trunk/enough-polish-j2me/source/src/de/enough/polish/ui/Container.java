@@ -265,7 +265,7 @@ public class Container extends Item {
 	 * @param index the position
 	 * @param item the item which should be focused
 	 */
-	private void focus( int index, Item item ) {
+	protected void focus( int index, Item item ) {
 		// first defocus the last focused item:
 		if (this.focusedItem != null) {
 			this.focusedItem.defocus(this.itemStyle);
