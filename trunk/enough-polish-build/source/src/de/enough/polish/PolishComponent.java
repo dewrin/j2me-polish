@@ -15,7 +15,7 @@ import org.jdom.Element;
 import java.util.*;
 
 /**
- * <p>Provides common functionalities for Project, Vendor, DeviceGroup and Device.</p>
+ * <p>Provides common functionalities for PolishProject, Vendor, DeviceGroup and Device.</p>
  *
  * <p>copyright enough software 2004</p>
  * <pre>

@@ -47,7 +47,7 @@ public class PolishTask extends ConditionalTask {
 	private Requirements deviceRequirements;
 	
 	/** the project settings */ 
-	private Project polishProject;
+	private PolishProject polishProject;
 	/** the manager of all devices */
 	private DeviceManager deviceManager;
 	/** the actual devices which are supported by this project */
@@ -78,7 +78,9 @@ public class PolishTask extends ConditionalTask {
 	}
 	
 	public void addConfiguredDeviceRequirements( Requirements requirements ) {
-		this.deviceRequirements = requirements;
+		if (requirements.isActive(this.project)) {
+			this.deviceRequirements = requirements;
+		}
 	}
 	
 	/**
@@ -152,7 +154,7 @@ public class PolishTask extends ConditionalTask {
 			}
 		}
 		// create project settings:
-		this.polishProject = new Project( this.buildSetting.usesPolishGui(), isDebugEnabled, debugManager );
+		this.polishProject = new PolishProject( this.buildSetting.usesPolishGui(), isDebugEnabled, debugManager );
 		this.polishProject.addFeature(this.buildSetting.getImageLoadStrategy());
 		if (debugManager != null && this.buildSetting.getDebugSetting().isVisual()) {
 			this.polishProject.addFeature("debug.visual");

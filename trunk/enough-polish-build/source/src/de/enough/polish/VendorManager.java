@@ -42,7 +42,7 @@ public class VendorManager {
 	 * @throws IOException when devices.xml could not be read
 	 * @throws InvalidComponentException when a vendor definition has errors
 	 */
-	public VendorManager( Project project, File vendorsFile ) 
+	public VendorManager( PolishProject project, File vendorsFile ) 
 	throws JDOMException, IOException, InvalidComponentException 
 	{
 		this.vendors = new HashMap();
@@ -58,7 +58,7 @@ public class VendorManager {
 	 * @throws IOException when devices.xml could not be read
 	 * @throws InvalidComponentException when a vendor definition has errors
 	 */
-	private void loadVendors(Project project, File vendorsFile) 
+	private void loadVendors(PolishProject project, File vendorsFile) 
 	throws JDOMException, IOException, InvalidComponentException 
 	{
 		SAXBuilder builder = new SAXBuilder( false );

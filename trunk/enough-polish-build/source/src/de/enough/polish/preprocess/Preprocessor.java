@@ -6,7 +6,7 @@
  */
 package de.enough.polish.preprocess;
 
-import de.enough.polish.Project;
+import de.enough.polish.PolishProject;
 import de.enough.polish.util.*;
 
 import java.io.*;
@@ -82,7 +82,7 @@ public class Preprocessor {
 	 * @param newExt the new extension for preprocessed files
 	 */
 	public Preprocessor(
-			Project project,
+			PolishProject project,
 			File destinationDir,
 			HashMap variables,
 			HashMap symbols,
