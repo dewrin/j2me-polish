@@ -21,6 +21,10 @@
 	Switches are used to indicate specific properties. They are often mutually exclusive with others.
 	</p>
 	<ul>
+		<li><b>polish.midp1</b>: this switch is enabled when the current device is an MIDP1-device.</li>
+		<li><b>polish.midp2</b>: this switch is enabled when the current device is an MIDP2-device.</li>
+		<li><b>polish.supportPolishGui</b>: is set when the current device is capable of using the
+			        extended GUI of the polish framework.</li>
 		<li><b>polish.images.backgroundLoad</b>: this switch is set when images of the widgets, 
 				backgrounds and canvasses should be loaded in a background thread. This can speed
 				up the responsiveness of an application dramatically, but it also means that
@@ -38,13 +42,43 @@
 		<li><b>debug</b>: when this switch is set, debug information and errors will be 
 				printed on System.out and System.err.
 				</li>
+		<li><b>polish.debug.visual</b>: when this feature is enabled, all debugging info will be 
+				transfered to a canvas.</li>
+		<li><b>polish.supportsPolishGui</b>: defines whether the polish-GUI is supported by the
+				current device.</li>
+		<li><b>polish.api.[api-name]</b>: defines whether the given api is supported by the current
+				device. You can check for the support of the multi media api with this
+				statement: <br/><code>//#ifdef polish.api.mmapi</code><br/>Note: all api-names
+				will be written in lowercase, regardless how they were written in the devices.xml.
+				This is not the when you check for JavaPackage - then the api will have
+				the same case as in the devices.xml file.</li>
+		<li><b>polish.[capabilty-name]:defined</b>: for each defined capability a symbol with
+			an apended ":defined" is defined. You can check if the capability "TextSelectionColor" has
+			been defined with 
+			<br/><code>//#ifdef polish.TextSelectionColor:defined</code> </li>
+		<li><b>polish.[capabilty-name].[capability-value]</b>: you can check for any 
+		    specific capability-value with this switch. For example you could check
+		    if the current device supports the https-protocol with 
+		    <br/><code>//#ifdef polish.JavaProtocol.https</code> </li>
+		<li><b></b>: </li>
 		<li><b></b>: </li>
 	</ul>
 	<h2>Variables</h2>
 	<p>
-	Variables are used to hold specific values.
+	Variables hold specific values.
 	</p>
 	<ul>
+		<li><b>polish.source</b>: always points to the current source directory of a preprocessed file.
+				This can be usefull for #include directives.
+				</li>
+		<li><b>polish.name</b>: The name of the current device.</li>
+		<li><b>polish.vendor</b>: The name of the vendor of the current device.</li>
+		<li><b>polish.identifier</b>: The name of the current device in the format 
+				[vendor]/[model], e.g. "Nokia/3650".</li>
+		<li><b>polish.JavaPlatform</b>: the platform of the current device, e.g. "MIDP/1.1"</li>
+		<li><b></b>: </li>
+		<li><b></b>: </li>
+		<li><b></b>: </li>
 		<li><b></b>: </li>
 		<li><b></b>: </li>
 	</ul>
