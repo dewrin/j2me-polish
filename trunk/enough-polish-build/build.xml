@@ -155,7 +155,7 @@
 				/>
 			-->
 			<!-- debug settings -->
-			<debug enable="true" visual="true" verbose="false" level="error">
+			<debug enable="true" useGui="true" verbose="false" level="error">
 				<filter pattern="com.company.package.*" level="info" />
 				<filter pattern="com.company.package.MyClass" level="debug" />
 			</debug>

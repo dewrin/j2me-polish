@@ -98,13 +98,12 @@ public class Device extends PolishComponent {
 		String groupsDefinition = definition.getChildTextTrim( "groups");
 		if (groupsDefinition != null) {
 			String[] tempGroupNames = TextUtil.splitAndTrim(groupsDefinition, ',');			
-			for (int i = 0; i < this.groupNames.length; i++) {
+			for (int i = 0; i < tempGroupNames.length; i++) {
 				String groupName = tempGroupNames[i];
 				DeviceGroup group = groupManager.getGroup( groupName );
 				if (group == null) {
 					throw new InvalidComponentException("The device [" + this.identifier + "] contains the undefined group [" + groupName + "] - please check either [devices.xml] or [groups.xml].");
 				}
-				this.groups[i] = group;
 				addComponent(group);
 				groupsList.add( group );
 				groupNamesList.add( groupName );
