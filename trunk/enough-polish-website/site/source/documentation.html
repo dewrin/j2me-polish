@@ -1,0 +1,67 @@
+<%define inDocumentationSection %>
+<%set title = J2ME Polish: Documentation %>
+<%include start.txt %>
+
+	<div id="content">
+	<h1 id="top">Documentation</h1>
+	<h2>Index</h2>
+	<%ifdef onlyDocumentation %>
+		<p>Have a look at the <a href="<%= basedir %>atoz.html">index</a> 
+		of J2ME Polish for an overview
+		of the documentation contents.</p>
+	<%else %>
+		<h3>General</h3>
+		<%externalindex documentation.html docs/install.html docs/optimization.html %>
+		<h3>build.xml</h3>
+		<%externalindex docs/build.html docs/build-taskdef.html docs/build-info.html docs/build-deviceRequirements.html docs/build-build.html docs/build-example.html %>
+		<h3>CSS</h3>
+		<%externalindex docs/css.html docs/css-groups.html docs/css-styles.html docs/css-extending.html docs/css-syntax.html docs/css-common.html docs/css-specific.html %>
+		<h3>Preprocessing</h3>
+		<%externalindex docs/preprocessing.html %>
+		<h3>Utilities</h3>
+		<%externalindex docs/utilities.html %>
+	<%endif %>
+	
+	<%ifndef excludeDownload %>
+		<h2>Download</h2>
+		<p>
+			You can download the (not yet) 
+			<a href="<%= basedir %>downloads/Complete_Guide_to_J2ME_Polish.pdf">&quot;Complete Guide to J2ME Polish&quot;</a>.
+			This guide is also available in <a href="<%= basedir %>downloads/Complete_Guide_to_J2ME_Polish_letter.pdf">letter format</a>.
+		</p>
+	<%endif %>
+	
+	<h2>Installation</h2>
+	<p>Installation is easy. 
+	<%ifdef excludeDownload %>
+		Start the installer by either double-clicking it
+		or calling &quot;java -jar j2mepolish-<%= PolishVersion %>.jar&quot;.
+	<%else %>
+		Just <a href="download.html">download</a> the
+		latest distribution and start the installation by either double-clicking it
+		or calling &quot;java -jar j2mepolish-<%= PolishVersion %>.jar&quot;.
+	<%endif %>
+	This is described in more detail in the <a href="<%= basedir %>docs/install.html">installation documentation</a>.
+	</p>
+	<h2>build.xml / J2ME Polish Task</h2>
+	<p>The build.xml file controls the build process. 
+	The possible attributes and the definition of the Ant task
+	can be found at the <a href="<%= basedir %>docs/build.html">build documentation</a>.
+	</p>
+	<h2>CSS Design for J2ME</h2>
+	<p>You can design your application using CSS textfiles. This technique
+	   is explained in detail at the <a href="<%= basedir %>docs/css.html">CSS documentation</a>.
+	</p>
+	<h2>Preprocessing</h2> 
+	<p>
+	You can optimize your application to different devices very easily 
+	without loosing the portability of your application. This is explained
+	in the <a href="<%= basedir %>docs/preprocessing.html">preprocessing documentation</a>.
+	</p>
+	<h2>Utilities</h2>
+	<p>
+	J2ME Polish includes some often needed classes like the ArrayList or
+	the Debug class. They are explained in the 
+	<a href="<%= basedir %>docs/utilities.html">utilities documentation</a>.
+	</p>
+<%include end.txt %>

@@ -1,0 +1,52 @@
+<%define inDocumentationSection %>
+<%define inDocumentationSection.utilities %>
+<%set title = J2ME Polish: Documentation %>
+<%set basedir = ../ %>
+<%include start.txt %>
+
+	<div id="content">
+	<h1 id="top">Utilities</h1>
+<p>
+J2ME Polish contains several often needed utilties:
+</p>
+<%index %>
+
+<h2 id="logging">Logging Framework and the Debug Class</h2>
+<p>
+    Use the J2ME Polish logging framework with logging levels,
+detailed information and have a look at the log even on the
+device. And best of all: when it is not needed, the logging will
+use no memory and no processing power at all!
+</p>
+<p>
+The logging framework of J2ME Polish consists of the #debug and 
+#mdebug preprocessing directives and the Debug-class.
+</p>
+<p>Find more information about it at following documentations:</p>
+<ul>
+ <li><a href="../javadoc/de/enough/polish/util/Debug.html" target="_blank">JavaDoc-documentation of the Debug class</a></li>
+ <li><a href="build-build.html#debug">&lt;debug&gt;-element in the build.xml</a></li>
+ <li><a href="preprocessing.html#debug">The #debug and #mdebug preprocessing directives</a></li>
+</ul>
+
+
+<h2 id="ArrayList">ArrayList</h2>
+<p>
+J2ME Polish includes an ArrayList class, which is compatible to the J2SE class.
+Find more information at the <a href="../javadoc/de/enough/polish/util/ArrayList.html" target="_blank">JavaDoc documentation</a>.
+</p>
+
+<h2 id="TextUtil">TextUtil</h2>
+<p>
+The TextUtil class contains several helper methods for text manipulation, e.g.
+a wrapping-algorithm and a split-tool. Have a look at the
+<a href="../javadoc/de/enough/polish/util/TextUtil.html" target="_blank">JavaDoc documentation</a>.
+</p>
+
+<h2 id="javadoc">JavaDoc</h2>
+<p>
+Please refer to the <a href="../javadoc/index.html" target="_blank">JavaDoc documentation</a>
+of these classes for further information.
+</p> 
+
+<%include end.txt %>

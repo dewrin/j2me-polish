@@ -1,0 +1,87 @@
+#####################################
+## Keywords for www.j2mepolish.org ##
+#####################################
+
+#####################################
+## Preprocessing                   ##
+#####################################
+
+preprocessing
+debug, logging::debug
+Variable
+#debug, #mdebug, #enddebug
+#if, #else, #elif, #endif
+#ifdef, #ifndef, #elifdef, #elifndef
+#condition
+#style
+#define, #undefine
+#=
+#include
+
+
+#####################################
+## Utitilies                       ##
+#####################################
+
+ArrayList
+TextUtil
+
+
+#####################################
+## build.xml                       ##
+#####################################
+
+<debug>::<debug
+<variable>::<variable
+<taskdef>::taskdef
+<info>::<info
+<build>::<build
+<j2mepolish>::<j2mepolish
+<deviceRequirement>::<deviceRequirement
+<midlet>::<midlet
+<obfuscator>::<obfuscator
+<filter>::<filter
+wtk.home
+build.xml
+Ant
+
+
+#####################################
+## CSS                             ##
+#####################################
+
+Design, resources
+CSS, background, border, Style, font, label
+layout, color, margin, padding, after, before
+type
+round-rect, simple, pulsating, image, shadow
+polish.css
+
+
+#####################################
+## Java                            ##
+#####################################
+
+MIDlet
+Form, List, TextBox, Screen
+Item, Gauge, StringItem, ImageItem, IconItem, ChoiceGroup
+TextField, DateField
+Ticker
+
+
+#####################################
+## Device Database                 ##
+#####################################
+
+JavaPlatform, ScreenSize, CanvasSize
+API, Nokia-UI-API::nokia-ui, JavaPackage,
+SoundFormat, VideoFormat
+BitsPerPixel, color-depth::BitsPerPixel
+JavaProtocol
+
+
+#####################################
+## Misc. Keywords                  ##
+#####################################
+
+Design, Installation, Update

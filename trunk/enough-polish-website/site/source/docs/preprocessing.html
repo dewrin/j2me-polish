@@ -1,0 +1,527 @@
+<%define inDocumentationSection %>
+<%define inDocumentationSection.preprocessing %>
+<%set title = J2ME Polish: Documentation %>
+<%set basedir = ../ %>
+<%include start.txt %>
+
+	<div id="content">
+	<h1 id="top">Preprocessing</h1>
+	<%index %>
+<p>
+Preprocessing changes the source code before it is compiled. With this mechanism any 
+device optimization can be done easily. An example is the inclusion of the J2ME&nbsp;Polish GUI, 
+which can be included without any intervention of the developer.
+Most preprocessing is triggered by directives, which use either symbols or variables. 
+A symbol is like a boolean value - either it is defined or the symbol is not defined. 
+A variable, however, always contains a value, which can be used or compared during the 
+preprocessing.<br/>
+Symbols and variables are defined in several files:
+</p>
+<ul>
+ <li>build.xml: with the &quot;symbols&quot;-attribute of the &lt;build&gt;-element and with the &lt;variables&gt;-element</li>
+ <li>vendors.xml, groups.xml, devices.xml: symbols are defined by the &lt;features&gt;-element, whereas variables are defined by the capabilities. Most capabilities also define symbols.</li>
+</ul>
+<p>
+Preprocessing directives always start with a <code>&quot;//#&quot;</code> and often have one or more 
+arguments. All directives must not span several rows. 
+J2ME&nbsp;Polish supports all directives of the antenna preprocessor (antenna.sourceforge.net), 
+by the way. So if you migrate from antenna, you can keep your preprocessing directives.   
+</p>
+
+<h2 id="ifdef">Checking a Single Symbol with #ifdef, #ifndef, #else, #elifdef, #elifndef and #endif</h2>
+<p>
+Single symbols can be checked easily with the #ifdef directive:
+<pre>
+//#ifdef polish.images.directLoad
+	Image image = Image.createImage( name );
+	//# return image;
+//#else
+	scheduleImage( name );
+	return null;
+//#endif
+</pre>
+</p><p>
+When the symbol &quot;polish.images.directLoad&quot; is defined, the code will be transformed 
+to the following:
+<pre>
+//#ifdef polish.images.directLoad
+	Image image = Image.createImage( name );
+	return image;
+//#else
+	//# scheduleImage( name );
+	//# return null;
+//#endif
+</pre>
+</p><p>
+If, however, the symbol &quot;polish.images.directLoad&quot; is not defined, the transformation 
+will be:
+<pre>
+//#ifdef polish.images.directLoad
+	//# Image image = Image.createImage( name );
+	//# return image;
+//#else
+	scheduleImage( name );
+	return null;
+//#endif
+</pre>
+</p><p>
+Each #ifdef and #ifndef directive needs to be closed by the #endif directive.
+If a variable is defined, it can be checked via <code>//#ifdef [variable]:defined</code>:
+<pre>
+//#ifdef polish.ScreenSize:defined
+</pre>
+</p>
+<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Directive&nbsp;&nbsp;</th><th>Meaning&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>//#ifdef [symbol]</td>
+	 <td>if [symbol] is defined</td>
+	 <td>The symbol named [symbol] needs to be defined, when the next section should be compiled.</td>
+	</tr>
+	<tr><td>//#ifndef [symbol]</td>
+	 <td>if [symbol] is not defined</td>
+	 <td>The symbol named [symbol] must not be defined, when the next section should be compiled.</td>
+	</tr>
+	<tr><td>//#else</td>
+	 <td>else</td>
+	 <td>When the previous section was false, the following section will be compiled (and the other way round).</td>
+	</tr>
+	<tr><td>//#elifdef [symbol]</td>
+	 <td>else if [symbol] is defined</td>
+	 <td>The symbol named [symbol] needs to be defined and the previous section needs to be false, when the next section should be compiled.</td>
+	</tr>
+	<tr><td>//#elifndef [symbol]</td>
+	 <td>else if [symbol] is not defined</td>
+	 <td>The symbol named [symbol] must not be defined and the previous section needs to be false, when the next section should be compiled.</td>
+	</tr>
+	<tr><td>//#endif</td>
+	 <td>end of the if-block</td>
+	 <td>End of every ifdef and ifndef block.</td>
+	</tr>
+</table>
+<p>
+The #ifdef directives can be nested, of course. Other preprocessing directives can be 
+included into the sub-sections as well:
+<pre>
+//#ifdef mySymbol
+	//#ifndef myOtherSymbol
+		//#debug
+		System.out.println("only mySymbol is defined.");
+		doSomething();
+	//#else
+		//#debug
+		System.out.println("mySymbol and myOtherSymbol are defined.");
+		doSomethingElse();
+	//#endif
+//#endif
+</pre><p>
+The #ifdef directive and its related directives are faster to process than the more complex 
+#if directives.
+</p>
+<h2 id="if">Check Several Symbols and Variables with #if, #else, #elif und #endif</h2>
+<p>
+With each #ifdef directive only a single symbol can be checked. With the #if and #elif 
+directives, however, complex terms containing several symbols and variables can be evaluated:
+<pre>
+//#if useEnhancedInput && (polish.pointerSupported || polish.mouseSupported)
+	doSomething();
+//#endif
+</pre><p>
+#if directives can also be nested and contain other preprocessing directives like the #ifdef directives.
+#if and #ifdef directives can also be mixed:
+<pre>
+//#if !basicInput && (polish.pointerSupported || polish.mouseSupported)
+	doSomething();
+	//#if polish.BitsPerPixel >= 8
+		doSomethingColorful();
+	//#else
+		doSomethingDull();
+	//#endif
+//#elifdef doWildStuff
+	doWildStuff();
+//#endif
+</pre>
+<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Directive&nbsp;&nbsp;</th><th>Meaning&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>//#if [term]</td>
+	 <td>if [term] is true</td>
+	 <td>The specified term must be true, when the next section should be compiled.</td>
+	</tr>
+	<tr><td>//#else</td>
+	 <td>else</td>
+	 <td>When the previous section was false, the following section will be compiled (and the other way round).</td>
+	</tr>
+	<tr><td>//#elif [term]</td>
+	 <td>else if [term] is true</td>
+	 <td>The specified term needs to be true and the previous section needs to be false, when the next section should be compiled.</td>
+	</tr>
+	<tr><td>//#endif</td>
+	 <td>end of the if-block</td>
+	 <td>End of every if block.</td>
+	</tr>
+</table>
+<p>
+In the terms the boolean operators &&, ||, ^ and ! can be used. Complex terms can be seperated using normal parenthesisses &quot;(&quot; and &quot;)&quot;. The term arguments for boolean operators are symbols, which are true when they are defined and false otherwise. 
+</p><p>
+Variables can be checked with the comparator ==, &gt;, &lt;, &lt;= and &gt;=.  Arguments for the comparators are variables or constants.
+</p><p>
+A term can include comparators and boolean operators, when the sections are seperated by parenthesisses. 
+</p>
+<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Boolean Operator&nbsp;&nbsp;</th><th>Meaning&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>&&</td>
+	 <td>and</td>
+	 <td>Both arguments/symbols need to be defined:<br/>
+true && true = true<br/>
+true && false = false && true = false && false = false</td>
+	</tr>
+	<tr><td>||</td>
+	 <td>or</td>
+	 <td>At least one argument/symbol must be defined:<br/>
+true || true = true || false = false || true = true<br/>
+false || false = false</td>
+	</tr>
+	<tr><td>^</td>
+	 <td>xor</td>
+	 <td>Only and at least one argument/symbol must be defined:<br/>
+true ^ false = false ^ true = true<br/>
+true ^ true = false ^ false = false</td>
+	</tr>
+	<tr><td>!</td>
+	 <td>not</td>
+	 <td>The argument/symbol must not be defined:<br/>
+! false = true<br/>
+! true = false</td>
+	</tr>
+</table>
+<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Comparator&nbsp;&nbsp;</th><th>Meaning&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>==</td>
+	 <td>equals</td>
+	 <td>The left and the right argument must be equal, integers and strings can be compared:<br/>
+8 == 8 = true<br/>
+Nokia == Nokia = true<br/>
+<pre>
+//#if polish.BitsPerPixel == 8
+//#if polish.vendor == Nokia
+</pre></td>
+	</tr>
+	<tr><td>&gt;</td>
+	 <td>greater</td>
+	 <td>The left argument must be greater than the right one. Only integers can be compared:<br/>
+8 &gt; 8 = false<br/>
+16 &gt; 8 = true <br/>
+<pre>
+//#if polish.BitsPerPixel &gt; 8
+</pre>
+</td>
+	</tr>
+	<tr><td>&lt;</td>
+	 <td>smaller</td>
+	 <td>The left argument must be smaller than the right one. Only integers can be compared:<br/>
+8 &lt; 8 = false<br/>
+8 &lt; 16 = true <br/>
+<pre>
+//#if polish.BitsPerPixel &lt; 8
+</pre></td>
+	</tr>
+	
+	</tr>
+	<tr><td>&gt;=</td>
+	 <td>greater or equals</td>
+	 <td>The left argument must be greater than or equals the right one. Only integers can be compared:<br/>
+8 &gt;= 8 = true<br/>
+16 &gt;= 8 = true <br/>
+<pre>
+//#if polish.BitsPerPixel &gt;= 8
+</pre>
+</td>
+	</tr>
+	<tr><td>&lt;=</td>
+	 <td>smaller or equals</td>
+	 <td>The left argument must be smaller than or equals the right one. Only integers can be compared:<br/>
+8 &lt;= 8 = true<br/>
+8 &lt;= 16 = true <br/>
+<pre>
+//#if polish.BitsPerPixel &lt;= 8
+</pre></td>
+	</tr>
+</table>
+
+<h2 id="hiding">Hiding Code</h2>
+<p>
+Code sections can be temporarily commented out, to avoid problems in the IDE. A typical problem are several return statements:
+<pre>
+//#ifdef polish.images.directLoad
+	Image image = Image.createImage( name );
+	//# return image;
+//#else
+	scheduleImage( name );
+	return null;
+//#endif
+</pre></p><p>
+In this example the first return statement is hidden with a &quot;//# &quot; directive. When the first #ifdef directive is true, the corresponding code will be made visible again. The space after the # sign is important for the correct handling of such comments.
+</p>
+
+<h2 id="debug">Debugging with #debug, #mdebug and #enddebug</h2>
+<p>
+To include debugging information in a J2ME application is not without problems. The main problem is that any debugging slows down an application unnecessarily. Another problem is that nobody wants the debugging information in an application which should be deployed &quot;in the wild&quot;. With J2ME&nbsp;Polish debugging statements can be included into the applications without having the above disadvantages. 
+The #debug directive is used to include a single line of debugging information:
+<pre>
+//#debug
+System.out.println("debugging is enabled for this class.");
+</pre></p><p>
+You can define what debugging level is used by adding the debugging-level to  the #debug directive. When no level is specified the &quot;debug&quot; level is assumed.
+<pre>
+//#debug info
+System.out.println("the info debugging level is enabled for this class.");
+</pre></p><p>
+The #mdebug (multi-line debug) directive can be used to use multiple lines of debugging information. It must be finished with the #enddebug directive:
+<pre>
+//#mdebug error
+e.printStackTrace();
+System.out.println("unable to load something: " + e.getMessage() );
+//#enddebug
+</pre></p>
+<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Directive&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>//#debug [level]</td>
+	 <td>The next line is only compiled when the debugging setting for the class in which the debugging information is enabled for the specified level. When no level is specified, the &quot;debug&quot; level is assumed.</td>
+	</tr>
+	<tr><td>//#mdebug [level]</td>
+	 <td>The next lines up to the #enddebug directive will be compiled only when the debugging setting for the class in which the debugging information is enabled for the specified level. When no level is specified, the &quot;debug&quot; level is assumed.</td>
+	</tr>
+	<tr><td>//#enddebug</td>
+	 <td>Marks the end of the #mdebug section.</td>
+</table>
+
+<h3>Debug Levels</h3>
+<p>
+Following debug levels are predefined:
+&quot;debug&quot;, &quot;info&quot;, &quot;warn&quot;, &quot;error&quot; and &quot;fatal&quot;. The specific level for a class can be defined with the <debug> element of the J2ME&nbsp;Polish-task:
+<pre>
+&lt;debug enable=&quot;true&quot; useGui=&quot;true&quot; verbose=&quot;false&quot; level=&quot;error&quot;&gt;
+	&lt;filter pattern=&quot;com.company.package.*&quot; level=&quot;info&quot; /&gt;
+	&lt;filter pattern=&quot;com.company.package.MyClass&quot; level=&quot;debug&quot; /&gt;
+&lt;/debug&gt;
+</pre></p><p>
+Please see the section <a href="build-build.html#debug">&lt;debug&gt;</a> for further information. The levels are weighted, meaning that the debug level is lower than the info level, which is in turn lower than the error level and so forth:
+<pre>
+debug &lt; info &lt; warn &lt; error &lt; fatal &lt; user-defined
+</pre></p><p>
+Thus when the info level is activated for a class, all debugging information with the level &quot;warn&quot;, &quot;error&quot;, &quot;fatal&quot; and with a user-defined level will also be compiled. 
+User specific debugging levels can be useful for accomplishing specific tasks. For example a level &quot;benchmark&quot; could be defined to allow the measurement of the performance:
+<pre>
+//#debug benchmark
+long startTime = System.currentTimeMilis();
+callComplexMethod();
+//#debug benchmark
+System.out.println("complex method took [" + (System.currentTimeMilis() - startTime) + "] ms.");
+</pre></p>
+
+<h3>The Debug Utility Class</h3>
+<p>
+The utility class <code>de.enough.polish.util.Debug</code> can be used for debugging. It is especially useful for the GUI debugging mode, which can be enabled in the build.xml by setting the &quot;useGui&quot; attribute of the <debug>-element to true:
+<pre>
+&lt;debug enable=&quot;true&quot; useGui=&quot;true&quot; verbose=&quot;false&quot; level=&quot;error&quot;&gt;
+	&lt;filter pattern=&quot;com.company.package.*&quot; level=&quot;info&quot; /&gt;
+	&lt;filter pattern=&quot;com.company.package.MyClass&quot; level=&quot;debug&quot; /&gt;
+
+</pre></p><p>
+Its debug-methods are used to either print out the debug messages to the standard output, or to store the messages in a form, which can be shown on a real device. This is especially useful for tracking errors on a real handset:
+<pre>
+import de.enough.polish.util.Debug;
+[...]
+try {
+	callComplexMethod();
+	//#debug info
+	Debug.debug( "complex method succeeded." );
+} catch (MyException e) {
+	//#debug error
+	Debug.debug( "complex method failed: " + e.getMessage(), e );
+}
+</pre></p><p>
+Both debug-methods are used in the example. The second method debug(String, Throwable) also prints out the stack trace of the exception, when the GUI debugging mode is not enabled.
+You can make the debug information available in your MIDlet class with the following code:
+<pre>
+import de.enough.polish.util.Debug;
+public class MyMIDlet extends MIDlet {
+//#ifdef polish.useDebugGui
+	private Command logCmd = new Command( "show log", Command.SCREEN, 10 );
+//#endif
+private Screen mainScreen;
+[...]
+public MyMIDlet() {
+	[...]
+	//#ifdef polish.useDebugGui
+		this.mainScreen.addCommand( this.logCmd );
+	//#endif
+}
+public void commandAction(Command cmd, Displayable screen ) {
+	[...]
+	//#ifdef polish.useDebugGui
+	if (cmd == logCmd) {
+		this.display.setCurrent( Debug.getLogForm( true, this ) );
+	} else if (cmd == Debug.RETURN_COMMAND) {
+		this.display.setCurrent( this.mainScreen );
+	}
+	//#endif
+}
+</pre></p><p>
+In the above example the MIDlet &quot;MyMIDlet&quot; adds a command to its main screen when the GUI debugging mode is enabled. When this is the case, the preprocessing symbol &quot;polish.useDebugGui&quot; will be defined. The user can then select the &quot;show log&quot; command to see the form with all logging messages. When the user selects the &quot;return&quot; command from the log-screen, he will return to the main screen.
+Please make sure, that you have added the &quot;import/enough-j2mepolish-util.jar&quot; to the classpath of your project, when using the Debug-class. 
+</p>
+
+<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Debug Method/Debug Field&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>Debug.debug( String message )</td>
+	 <td>When the GUI debugging mode is activated, the given message-string will be added to the list of messages. Otherwise the message will be printed to the standard output via System.out.println(String).</td>
+	</tr>
+	<tr><td>Debug.debug( String message, Throwable exception)</td>
+	 <td>When the GUI debugging mode is activated, the given message-string will be added to the list of messages. Otherwise the message and the stacktrace of the exception will be printed to the standard output.</td>
+	</tr>
+	<tr><td>Debug.getLogForm( boolean reverse, CommandListener listener )</td>
+	 <td>Retrieves the Form which contains all log messages. When reverse is true, the last log message will be on the top of the form. This method is only available, when the GUI debugging mode is enabled.</td>
+	</tr>
+	<tr><td>Debug.RETURN_COMMAND</td>
+	 <td>The command which is always added the the logging form. This field is only available, when the GUI debugging mode is enabled.</td>
+	</tr>
+</table>
+
+<h2 id="variables">Using Variables with #=</h2>
+<p>
+You can add the contents of variables with the #= directive:
+<pre>
+//#= private String url = &quot;${ start-url }&quot;;
+</pre></p><p>
+When the variable is not defined, the above example would throw an exception during the preprocessing step of the build process. You can use the &quot;[variable]:defined&quot; symbol, which is set for every known variable:
+<pre>
+//#ifdef start-url:defined
+	//#= private String url = &quot;${ start-url }&quot;;
+//#else
+	private String url = "http://192.168.101.101";
+//#endif
+</pre></p><p>
+This is especially useful for setting configuration values, which can change easily, like Web-URLs and so on.
+The name of the variable needs to be surrounded by a ${}, just like referring to Ant-properties in the build.xml.
+Variables can be defined in the &lt;variables&gt;-element in the build.xml. Other variables are defined in the devices.xml, vendors.xml and groups.xml by the capabilities of the devices, vendors and groups.
+</p>
+
+<h2 id="styles">Setting CSS Styles with #style</h2>
+<p>
+CSS styles are used for the design of the application. The styles are defined in the file polish.css in the resources folder of the project. The developer can control which styles are used for specific Items by using the #style directive:
+<pre>
+//#style cool, frosty, default
+StringItem url = new StringItem( null, "http://192.168.101.101" );
+</pre></p><p>
+In the above example one of the styles &quot;cool&quot;, &quot;frosty&quot; or &quot;default&quot; is used for the new item. The style &quot;frosty&quot; is only used when the style &quot;cool&quot; is not defined. The style &quot;default&quot; is only used, when neither the style &quot;cool&quot; nor the style &quot;frosty&quot; is defined. The style &quot;default&quot; is special, since it is always defined, even when the designer does not define it explicitly. The #style directive needs at least one style name as argument. The styles mentioned here can be defined in the &quot;resources/polish.css&quot; file. In that file the style-names need to start with a dot. In the above example you can define the styles &quot;.cool&quot;, &quot;.frosty&quot; or &quot;default&quot;. The &quot;default&quot; style is a predefined style and its name must not, therefore, start with a dot.
+Styles are only used, when the J2ME&nbsp;Polish GUI is used. This can be triggered with the &quot;usePolishGui&quot; attribute of the <build>-element in the build.xml. 
+Using #style directive improves the performance of the application, since dynamic styles need some processing time. Dynamic styles design items by their position in screens, see section <a href="css-styles.html">&quot;Dynamic Styles&quot;</a>.
+Styles can be set for all items-constructors and for many methods:
+</p>
+<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Insertion Point&nbsp;&nbsp;</th><th>Example&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>Item constructors</td>
+	 <td>
+//#style cool, frosty, default<br/>
+StringItem url = new StringItem( null, "http://192.168.101.101" );<br/>
+//#style cool<br/>
+ImageItem img = new ImageItem( null, iconImage, ImageItem.LAYOUT_DEFAULT, null );
+</td>
+	 <td>The #style directive can be placed before any item constructor.</td>
+	</tr>
+	<tr><td>Item.
+setAppearanceMode()</td>
+	 <td>
+//#style openLink<br/>
+url.setAppearanceMode( Item.HYPERLINK );
+</td>
+	 <td>The #style directive can be placed before calling the setAppearanceMode-method of an Item. Please note, that this method is only available in J2ME&nbsp;Polish.</td>
+	</tr>
+	<tr><td>List.append()</td>
+	 <td>
+//#style choice<br/>
+list.append( "Start", null  );
+</td>
+	 <td>The #style directive can be placed before adding a list element.</td>
+	</tr>
+	<tr><td>List.insert()</td>
+	 <td>
+//#style choice<br/>
+list.insert( 2, "Start", null  );
+</td>
+	 <td>The #style directive can be placed before inserting a list element.</td>
+	</tr>
+	<tr><td>List.set()</td>
+	 <td>
+//#style choice<br/>
+list.set( 2, "Start", null  );
+</td>
+	 <td>The #style directive can be placed before setting a list element.</td>
+	</tr>
+	<tr><td>ChoiceGroup.append()</td>
+	 <td>
+//#style choice<br/>
+group.append( "Choice 1", null  );
+</td>
+	 <td>The #style directive can be placed before adding an element to a ChoiceGroup.</td>
+	</tr>
+	<tr><td>ChoiceGroup.insert()</td>
+	 <td>
+//#style choice<br/>
+group.insert( 2, "Choice 3", null  );
+</td>
+	 <td>The #style directive can be placed before inserting an element to a ChoiceGroup.</td>
+	</tr>
+	<tr><td>ChoiceGroup.set()</td>
+	 <td>
+//#style choice<br/>
+group.set( 2, "Choice 3", null  );
+</td>
+	 <td>The #style directive can be placed before setting an element of a ChoiceGroup.</td>
+	</tr>
+</table>
+<h2 id="condition">Exclude or Include Complete Files with #condition</h2>
+<p>
+The #condition directive can be used to prevent the usage of complete files, when a condition is not met:
+<pre>
+//#condition polish.usePolishGui
+</pre></p><p>
+When in the above example the J2ME&nbsp;Polish GUI is not used (and thus the symbol polish.usePolishGui is not defined), the file will not be included into the application bundle for the current device. Conditions can use the same operators and comparators like the #if directive. 
+</p>
+
+<h2 id="define">Defining Temporary Symbols with #define and #undefine</h2>
+<p>
+You can temporarily define and undefine symbols as well. This can be used to evaluate a complex if-term only once and then referring a simple symbol instead of using the complex term again:
+<pre>
+//#if !basicInput && (polish.pointerSupported || polish.mouseSupported)
+	//#define tmp.complexInput
+//#endif
+</pre></p><p>
+You can later just check the temporary defined symbol:
+<pre>
+//#ifdef tmp.complexInput
+	doSomethingComplex();
+//#endif
+</pre></p>
+<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Directive&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>//#define [symbol]</td>
+	 <td>Defines the specified symbol. You can never define the symbol &quot;false&quot;.</td>
+	</tr>
+	<tr><td>//#undefine [symbol]</td>
+	 <td>Removes the specified symbol from the pool of defined symbols. You can never undefine the symbol &quot;true&quot;.</td>
+	</tr>
+</table>
+<p>
+Please note that you should rely on a defined or undefined symbol only in the same source-file where you defined or undefined that symbol.  It is advised that you start the names of defined symbols with &quot;tmp.&quot;, so that you always know that this is a temporary symbol.
+</p>
+
+<h2 id="include">Inserting Code Fragments with #include</h2>
+<p>
+You can insert complete code fragments with the #include directive:
+<pre>
+//#include ${polish.source}/includes/myinclude.java
+</pre></p><p>
+Within the file-name you can use all defined variables. A useful variable is especially &quot;polish.source&quot;, which points the base directory of the file, which is currently preprocessed. I you use only relative names, please bear in mind, that the base directory is the root of your project (or to be more precise: the directory which contains the build.xml file).
+</p>
+<%include end.txt %>

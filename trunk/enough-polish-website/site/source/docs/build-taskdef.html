@@ -1,0 +1,29 @@
+<%define inDocumentationSection %>
+<%define inDocumentationSection.build %>
+<%set title = J2ME Polish: Documentation %>
+<%set basedir = ../ %>
+<%include start.txt %>
+	
+	<div id="content">
+	<h1 id="top">Definition of the J2ME Polish Task</h1>
+	<p>
+	The J2ME Polish Task needs to be defined in the build.xml before it can be used:
+	<pre>
+&lt;taskdef 
+	name=&quot;j2mepolish&quot; 
+	classname=&quot;de.enough.polish.ant.PolishTask&quot; 
+	classpath=&quot;import/enough-j2mepolish-build.jar:import/
+		jdom.jar:import/proguard.jar:import/retroguard.jar&quot;/&gt;
+	</pre>
+	</p>
+	<p>
+	You should also define the Ant-property &quot;wtk.home&quot; which 
+	points to the directory containing the wireless toolkit:
+	<pre>
+&lt;property 
+	name=&quot;wtk.home&quot; 
+	value=&quot;C:\WTK2.1&quot; /&gt;
+	</pre>
+	
+	</p>
+<%include end.txt %>

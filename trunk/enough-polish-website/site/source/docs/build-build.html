@@ -1,0 +1,311 @@
+<%define inDocumentationSection %>
+<%define inDocumentationSection.build %>
+<%set title = J2ME Polish: Documentation %>
+<%set basedir = ../ %>
+<%include start.txt %>
+
+	<div id="content">
+	<h1 id="top">The Build Section</h1>
+	<%index %>
+	<p>
+With the build-section the actual build process is controlled: 
+<pre>
+&lt;build
+     symbols=&quot;ExampleSymbol, AnotherExample&quot;
+     imageLoadStrategy=&quot;background&quot;
+     fullscreen=&quot;menu&quot;
+     usePolishGui=&quot;true&quot;
+     preverify=&quot;/home/enough/dev/WTK2.1/bin/preverify&quot;
+     resDir=&quot;resources2&quot;
+     &gt;
+     &lt;!-- midlets definition --&gt;
+     &lt;midlet class=&quot;de.enough.polish.example.MenuMidlet&quot; name=&quot;Example&quot; /&gt;
+     &lt;!-- project-wide variables - used for preprocessing  --&gt;
+     &lt;variables&gt;
+       &lt;variable name=&quot;update-url&quot; value=&quot;http://www.enough.de/update&quot; /&gt;
+     &lt;/variables&gt;
+     &lt;!-- obfuscator settings --&gt;
+     &lt;obfuscator unless=&quot;test&quot; 
+                    enable=&quot;true&quot; 
+                    name=&quot;ProGuard&quot; /&gt;
+     &lt;!-- debug settings --&gt;
+     &lt;debug if=&quot;test&quot; 
+               enable=&quot;true&quot; 
+               useGui=&quot;true&quot; 
+               verbose=&quot;true&quot; 
+               level=&quot;error&quot;&gt;
+        &lt;filter pattern=&quot;de.enough.polish.example.*&quot; level=&quot;debug&quot; /&gt;
+        &lt;filter pattern=&quot;de.enough.polish.ui.*&quot; level=&quot;warn&quot; /&gt;
+     &lt;/debug&gt;
+&lt;/build&gt;</pre></p>
+	<h2 id="attributes">Supported Attributes</h2>
+	<p>Following attributes are supported by the build section:
+	</p>
+	<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>build-Attribute&nbsp;&nbsp;</th><th>Required&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>preverify</td>
+ 	 <td>Yes</td>
+	 <td>The path to the preverify executable of the Wireless Toolkit. The program is usually within the &quot;bin&quot; folder of the Wireless Toolkit.</td>
+	</tr>
+	<tr><td>sourceDir</td>
+ 	 <td>No</td>
+	 <td>The path to the source directory. The default path is either &quot;source/src&quot;, &quot;source&quot; or &quot;src&quot;. You can define several paths by separating them with a colon ':' or a semicolon ';': 
+[path1]:[path2]</td>
+	</tr>
+	<tr><td>polishDir</td>
+ 	 <td>No</td>
+	 <td>The directory containing the sources of J2ME Polish. Defaults to the enough-j2mepolish-build.jar.</td>
+	</tr>
+	<tr><td>symbols</td>
+ 	 <td>No</td>
+	 <td>Project specific symbols, e.g. &quot;showSplash&quot; which can be checked with &quot;//#ifdef showSplash&quot; in the source code. Several symbols need to be separated by comma.</td>
+	</tr>
+	<tr><td>usePolishGui</td>
+ 	 <td>No</td>
+	 <td>Defines whether the J2ME Polish GUI should be used at all. Possible values are &quot;true&quot; or &quot;false&quot;. Even if the GUI should be used, it will be used only for devices which have the necessary capabilities (e.g. a color depth of at least 8 bits). Default value is &quot;true&quot;.</td>
+	</tr>
+	<tr><td>fullscreen</td>
+ 	 <td>No</td>
+	 <td>Defines whether the complete screen should be used for devices which support a full screen mode. Currently these include only devices which support the Nokia-UI API. Possible values are either &quot;no&quot;, &quot;yes&quot; and &quot;menu&quot;. With &quot;yes&quot; the complete screen is used but no commands are supported. With &quot;menu&quot; commands can be used as well. Default setting is &quot;no&quot;.</td>
+	</tr>
+	<tr><td>imageLoadStrategy</td>
+ 	 <td>No</td>
+	 <td>The strategy for loading pictures. Possible values are either &quot;foreground&quot; or &quot;background&quot;. The &quot;foreground&quot; strategy loads images directly when they are requested. The &quot;background&quot; strategy loads the images in a background-thread. With the background strategy the felt performance of an application can be increased, but not all pictures might be shown right away when the user enters a screen. The definition of the imageLoadStrategy makes only sense when the J2ME&nbsp;Polish GUI is used (usePolishGui=&quot;true&quot;). Default strategy is &quot;foreground&quot;. When the &quot;foreground&quot; strategy is used, the preprocessing symbol &quot;polish.images.directLoad&quot; will be defined. When using the &quot;background&quot; strategy, the symbol &quot;polish.images.backgroundLoad&quot; is defined.</td>
+	</tr>
+	<tr><td>devices</td>
+ 	 <td>No</td>
+	 <td>Path to the devices.xml-file. Defaults to devices.xml in the current folder or in enough-j2mepolish-build.jar.</td>
+	</tr>
+	<tr><td>groups</td>
+ 	 <td>No</td>
+	 <td>Path to the groups.xml-file. Defaults to groups.xml in the current folder or in enough-j2mepolish-build.jar.</td>
+	</tr>
+	<tr><td>vendors</td>
+ 	 <td>No</td>
+	 <td>Path to the vendors.xml-file. Defaults to vendors.xml in the current folder or in enough-j2mepolish-build.jar.</td>
+	</tr>
+	<tr><td>apis</td>
+ 	 <td>No</td>
+	 <td>Path to the apis.xml-file. Defaults to apis.xml in the current folder or in enough-j2mepolish-build.jar.</td>
+	</tr>
+	<tr><td>midp1Path</td>
+ 	 <td>No</td>
+	 <td>Path to the MIDP/1.0 API. Defaults to &quot;import/midp1.jar&quot;.</td>
+	</tr>
+	<tr><td>midp2Path</td>
+ 	 <td>No</td>
+	 <td>Path to the MIDP/2.0 API. Defaults to &quot;import/midp2.jar&quot;</td>
+	</tr>
+	<tr><td>workDir</td>
+ 	 <td>No</td>
+	 <td>The temporary build folder. Defaults to &quot;build&quot;.</td>
+	</tr>
+	<tr><td>destDir</td>
+ 	 <td>No</td>
+	 <td>The folder into which the &quot;ready-to-deploy&quot; application bundles should be stored. Defaults to &quot;dist&quot;.</td>
+	</tr>
+	<tr><td>apiDir</td>
+ 	 <td>No</td>
+	 <td>The folder in which the APIs are stored, defaults to &quot;import&quot;.</td>
+	</tr>
+	<tr><td>resDir</td>
+ 	 <td>No</td>
+	 <td>The folder which contains all design definitions and other resources like images, movies etc. By setting a different folder, completely different designs can be demonstrated. Default folder is &quot;resources&quot;.</td>
+	</tr>
+	<tr><td>obfuscate</td>
+ 	 <td>No</td>
+	 <td>Either &quot;true&quot; or &quot;false&quot;. Defines whether the applications should be obfuscated. Defaults to &quot;false&quot;.  Alternatively the nested element &quot;obfuscator&quot; can be used (see below).</td>
+	</tr>
+	<tr><td>obfuscator</td>
+ 	 <td>No</td>
+	 <td>The name of the obfuscator. Defaults to <a href="http://proguard.sourceforge.net" target="_blank">&quot;ProGuard&quot;</a>. 
+	 Alternatively the nested element &quot;obfuscator&quot; can be used (see below).</td>
+	</tr>
+	</table>
+	<h2 id="nested">Nested Elements</h2>
+	<p>The build section supports several nested elements: &lt;midlet&gt;, &lt;midlets&gt;, 
+	&lt;obfuscator&gt;, &lt;variables&gt; and &lt;debug&gt;.
+	</p>
+	<h3 id="midlet">&lt;midlet&gt; and &lt;midlets&gt;</h3>
+	<p>The &lt;midlet&gt;-element defines the actual MIDlet class:
+<br/><code>&lt;midlet class=&quot;de.enough.polish.example.ExampleMidlet&quot; /&gt;</code>
+	<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>midlet-Attribute&nbsp;&nbsp;</th><th>Required&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>class</td>
+ 	 <td>Yes</td>
+	 <td>The complete package and class-name of the MIDlet.</td>
+	</tr>
+	<tr><td>name</td>
+ 	 <td>No</td>
+	 <td>The name of the MIDlet. Default is the class-name without the package: The MIDlet 
+	 &quot;com.company.SomeMidlet&quot; is named &quot;SomeMidlet&quot; by default.</td>
+	</tr>
+	<tr><td>icon</td>
+ 	 <td>No</td>
+	 <td>The icon of this MIDlet. When none is defined, the icon defined in the &lt;info&gt;-section will be used.</td>
+	</tr>
+	<tr><td>number</td>
+ 	 <td>No</td>
+	 <td>The number of this MIDlet. This is interesting only for MIDlet-suites in which several MIDlets are contained.</td>
+	</tr>
+	</table>
+	<p>
+	The optional &lt;midlets&gt;-element is used as a container for several &lt;midlet&gt;-elements:
+<pre>
+&lt;midlets&gt;
+	&lt;midlet class=&quot;de.enough.polish.example.ExampleMidlet&quot; /&gt;
+	&lt;midlet name=&quot;J2ME Polish Demo&quot; number=&quot;2&quot; icon=&quot;no2.png&quot;
+		  class=&quot;de.enough.polish.example.GuiDemoMidlet&quot; /&gt;
+&lt;/midlets&gt;
+</pre></p>
+	<h3 id="obfuscator">&lt;obfuscator&gt;</h3>
+	<p>
+	The optional &lt;obfuscator&gt;-element controls the obfuscating of the application bundle, which decreases the jar-size and makes it difficult to reverse engineer the application.
+	<pre>
+&lt;obfuscator unless=&quot;test&quot; enable=&quot;true&quot; name=&quot;ProGuard&quot; /&gt;
+</pre>
+</p>	
+	<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>obfuscator-Attribute&nbsp;&nbsp;</th><th>Required&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>enable</td>
+ 	 <td>No</td>
+	 <td>Either &quot;true&quot; or &quot;false&quot;. Defaults to &quot;false&quot;. Obfuscating will only be activated when enable=&quot;true&quot;.</td>
+	</tr>
+	<tr><td>if</td>
+ 	 <td>No</td>
+	 <td>The name of the Ant-property which needs to be &quot;true&quot; or &quot;yes&quot; to use this &lt;obfuscator&gt;.</td>
+	</tr>
+	<tr><td>unless</td>
+ 	 <td>No</td>
+	 <td>The name of the Ant-property which needs to be &quot;false&quot; or &quot;no&quot; to use this &lt;obfuscator&gt;.</td>
+	</tr>
+	<tr><td>name</td>
+ 	 <td>No</td>
+	 <td>The name of the obfuscator which should be used. Defaults to <a href="http://proguard.sourceforge.net" target="_blank">&quot;ProGuard&quot;</a>. 
+	 Please consider the license agreement of the obfuscator. The ProGuard obfuscator is licensed under the GNU General Public License (GPL). 
+	 The <a href="http://www.retrologic.com" target="_blank">RetroGuard</a> obfuscator is licensed under the GNU Lesser General Public License (LGPL).</td>
+	</tr>
+	<tr><td>class</td>
+ 	 <td>No</td>
+	 <td>The class which controls the obfuscator. Each class which extends <code>de.enough.polish.obfuscate.Obfuscator</code> can be used. With this mechanism third party obfuscators can be integrated easily.</td>
+	</tr>
+	</table>
+<p>
+	The &lt;obfuscator&gt; supports the subelement &lt;keep&gt;, which is used to define classes which are loaded dynamically (e.g. with Class.forName(...) ) and should not be obfuscated:
+<pre>
+&lt;obfuscator unless=&quot;test&quot; enable=&quot;true&quot; name=&quot;ProGuard&quot; &gt;
+	&lt;keep class=&quot;com.company.dynamic.SomeDynamicClass&quot; /&gt;
+	&lt;keep class=&quot;com.company.dynamic.AnotherDynamicClass&quot; /&gt;
+&lt;/obfuscator&gt;
+</pre>
+	</p>
+	<p>The used MIDlet classes do not need to be set with the &lt;keep&gt; element, since they are saved from obfuscation automatically.</p>
+	
+	<h3 id="variables">&lt;variables&gt;</h3>
+	<p>
+	The optional &lt;variables&gt;-element contains several variable definitions, which can be used for the preprocessing. This mechanism can be used for example to define configuration values:
+<pre>
+&lt;variables includeAntProperties=&quot;true&quot;&gt;
+	&lt;variable name=&quot;update-url&quot; value=&quot;http://www.enough.de/update&quot; /&gt;
+&lt;/variables&gt;
+</pre>
+</p>	
+	<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>variables-Attribute&nbsp;&nbsp;</th><th>Required&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>includeAntProperties</td>
+ 	 <td>No</td>
+	 <td>Either &quot;true&quot; or &quot;false&quot;. When &quot;true&quot; all Ant-properties will be included and can be used in the preprocessing. Defaults to &quot;false&quot;.</td>
+	</tr>
+	</table>
+	<p>
+	The &lt;variables&gt;-element contains an arbitrary number of &lt;variable&gt;-elements, which define the actual variables. Each variable has the attributes name and value:
+	<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>variable-Attribute&nbsp;&nbsp;</th><th>Required&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>name</td>
+ 	 <td>Yes</td>
+	 <td>The name of the variable.</td>
+	</tr>
+	<tr><td>value</td>
+ 	 <td>Yes</td>
+	 <td>The value of the variable.</td>
+	</tr>
+	</table>
+	<p>
+	Variables which have been defined in this way can be included into the source code with the &quot;//#=&quot; preprocessing directive:
+<pre>
+//#ifdef update-url:defined
+	//#= String url = &quot;${ update-url }&quot;;
+//#else
+	String url = &quot;http://www.default.com/update&quot;;
+//#endif
+</pre>
+	</p>
+
+	<h3 id="debug">&lt;debug&gt;</h3>
+	<p>
+	The optional &lt;debug&gt;-element controls the inclusion of debugging messages for specific classes or packages. The debugging messages will be activated or deactivated in the source code, so the performance will not be decreased, when the debugging is deactivated. 
+<pre>
+&lt;debug enable=&quot;true&quot; useGui=&quot;true&quot; verbose=&quot;false&quot; level=&quot;error&quot;/&gt;
+	&lt;filter pattern=&quot;com.company.package.*&quot; level=&quot;info&quot; //&gt;
+	&lt;filter pattern=&quot;com.company.package.MyClass&quot; level=&quot;debug&quot; //&gt;
+&lt;/debug/&gt;
+</pre></p><p>
+In the source code any debug messages must be accompanied by a //#debug-directive:
+<pre>
+//#debug
+System.out.println(&quot;initialization done.&quot;);
+or
+//#debug warn
+System.out.println(&quot;could not load something...&quot;);
+</pre></p>
+<p>You will find more information about the debugging
+possibilities on the <a href="preprocessing.html#debug">preprocessing page</a>.
+</p>	
+	<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>debug-Attribute&nbsp;&nbsp;</th><th>Required&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>enable</td>
+ 	 <td>No</td>
+	 <td>Either &quot;true&quot; or &quot;false&quot;. Debugging messages will only be included, when &quot;true&quot; is given. </td>
+	</tr>
+	<tr><td>level</td>
+ 	 <td>No</td>
+	 <td>The general debug level which is needed for debug messages. Possible values are &quot;debug&quot;, &quot;info&quot;, &quot;warn&quot;, &quot;error&quot;, &quot;fatal&quot; or a user-defined level. Default level is &quot;debug&quot;, so all debugging messages will be included.</td>
+	</tr>
+	<tr><td>verbose</td>
+ 	 <td>No</td>
+	 <td>Either &quot;true&quot; or &quot;false&quot;. When &quot;true&quot; the time, class-name and line-number will be included in each debugging message. Defaults to &quot;false&quot;.
+	 When the verbose mode is enabled, the preprocessing symbol &quot;polish.debugVerbose&quot; will be defined.
+	 <br/>
+	In the verbose mode exceptions thrown by J2ME&nbsp;Polish will contain useful information. Also the key-handling and animation-handling will be monitored and error messages will be given out. 
+	 </td>
+	</tr>
+	<tr><td>useGui</td>
+ 	 <td>No</td>
+	 <td>Either &quot;true&quot; or &quot;false&quot;. When &quot;true&quot; all debugging messages, which are passed to the tool de.enough.polish.util.Debug will be made available in a form. This can be used to show debugging messages on a real device. Defaults to &quot;false&quot;. When the visual mode is activated, the preprocessing symbol &quot;polish.useDebugGui&quot; will be defined.</td>
+	</tr>
+	<tr><td>if</td>
+ 	 <td>No</td>
+	 <td>The name of the Ant-property which needs to be &quot;true&quot; or &quot;yes&quot; to use this &lt;debug&gt;.</td>
+	</tr>
+	<tr><td>unless</td>
+ 	 <td>No</td>
+	 <td>The name of the Ant-property which needs to be &quot;false&quot; or &quot;no&quot; to use this &lt;debug&gt;.</td>
+	</tr>
+	</table>
+	<p>
+	For a finer control of the debugging process, the &lt;debug&gt; element allows the sub-element 
+	&lt;filter&gt;, which defines the debug-level for specific classes or packages.
+	</p>
+	<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>filter-Attribute&nbsp;&nbsp;</th><th>Required&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>pattern</td>
+ 	 <td>Yes</td>
+	 <td>The name of the class or of the package. When the pattern ends with a star, all classes of that package will be included, e.g. &quot;com.company.mypackage.*&quot;</td>
+	</tr>
+	<tr><td>level</td>
+ 	 <td>Yes</td>
+	 <td>The debugging level for all classes with the specified pattern. Possible values are &quot;debug&quot;, &quot;info&quot;, &quot;warn&quot;, &quot;error&quot;, &quot;fatal&quot; or a user-defined level.</td>
+	</tr>
+	</table>
+	</body>
+<%include end.txt %>

@@ -1,0 +1,25 @@
+<%define inIndexSection %>
+<%set title = J2ME Polish: Index %>
+<%include start.txt %>
+
+	<div id="content">
+	<h1 id="top">Index of www.j2mepolish.org</h1>
+	<%index %>
+	<h2 id="documentation">Documentation</h2>
+	<h3 id="general">General</h3>
+	<%externalindex documentation.html docs/install.html docs/optimization.html %>
+	<h3 id="build">build.xml</h3>
+	<%externalindex docs/build.html docs/build-taskdef.html docs/build-info.html docs/build-deviceRequirements.html docs/build-build.html docs/build-example.html %>
+	<h3 id="css">CSS</h3>
+	<%externalindex docs/css.html docs/css-groups.html docs/css-styles.html docs/css-extending.html docs/css-syntax.html docs/css-common.html docs/css-specific.html %>
+	<h3 id="preprocessing">Preprocessing</h3>
+	<%externalindex docs/preprocessing.html %>
+	<h3 id="utilities">Utilities</h3>
+	<%externalindex docs/utilities.html %>
+	<h2 id="website">Website</h2>
+	<%externalindex index.html download.html faq.html screenshots.html licenses.html roadmap.html contact.html  %>
+	<h2 id="keywords">A to Z Index</h2>
+	<%define sortindex %>	
+	<%keywords docs/utilities.html docs/preprocessing.html docs/css.html docs/css-groups.html docs/css-styles.html docs/css-extending.html docs/css-syntax.html docs/css-common.html docs/css-specific.html docs/build.html docs/build-taskdef.html docs/build-info.html docs/build-deviceRequirements.html docs/build-build.html docs/build-example.html documentation.html docs/install.html docs/optimization.html index.html download.html faq.html screenshots.html licenses.html roadmap.html contact.html news.html %>
+	<%undefine sortindex %>	
+<%include end.txt %>
