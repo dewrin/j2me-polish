@@ -244,6 +244,14 @@ public class Preprocessor {
 		this.variables.putAll(additionalVars);
 	}
 	
+	/**
+	 * Retrieves the evaluator for boolean expressions
+	 * 
+	 * @return the boolean evaluator with the symbols and variables of the current device
+	 */
+	public BooleanEvaluator getBooleanEvaluator(){
+		return this.booleanEvaluator;
+	}
 	
 	/**
 	 * Preprocesses the given file and saves it to the destination directory.
