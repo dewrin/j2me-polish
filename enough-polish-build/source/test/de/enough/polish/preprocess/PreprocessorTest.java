@@ -88,7 +88,7 @@ public class PreprocessorTest extends TestCase {
 		variables.put( "fullscreen.class", "de.enough.polish.nokia.FullMenuCanvas");
 		variables.put( "polish.message", "Hello world!");
 		
-		this.preprocessor = new Preprocessor( project, currentDir, variables, symbols, false, false, true, null );
+		this.preprocessor = new Preprocessor( project, currentDir, variables, symbols, false, true, null );
 		
 		//prepare styles:
 		StyleSheet sheet = new StyleSheet();

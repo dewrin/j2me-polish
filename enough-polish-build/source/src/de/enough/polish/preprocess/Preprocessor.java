@@ -79,7 +79,6 @@ public class Preprocessor {
 	private HashMap variables;
 	/** holds all defined symbols */
 	HashMap symbols;
-	private boolean verbose;
 	private boolean backup;
 	private boolean indent;
 	boolean enableDebug;
@@ -99,7 +98,6 @@ public class Preprocessor {
 	 * @param destinationDir the destination directory for the preprocessed files
 	 * @param variables the defined variables
 	 * @param symbols the defined symbols
-	 * @param verbose true when lots of information should be printed 
 	 * @param backup true when the found source files should be backuped
 	 * @param indent true when comments should be intended
 	 * @param newExt the new extension for preprocessed files
@@ -109,7 +107,6 @@ public class Preprocessor {
 			File destinationDir,
 			HashMap variables,
 			HashMap symbols,
-			boolean verbose,
 			boolean backup,
 			boolean indent,
 			String newExt) 
@@ -125,7 +122,6 @@ public class Preprocessor {
 			symbols = new HashMap();
 		}
 		this.symbols = symbols;
-		this.verbose = verbose;
 		this.backup = backup;
 		this.indent = indent;
 		this.newExtension = newExt;
@@ -864,6 +860,7 @@ public class Preprocessor {
 		if (this.debugManager.isDebugEnabled( className, argument )) {
 			boolean verboseDebug = this.debugManager.isVerbose();
 			if (verboseDebug) {
+				System.out.println("is verbose debug!");
 				insertVerboseDebugInfo( lines, className );
 			}
 			return (verboseDebug | uncommentLine( line, lines ));

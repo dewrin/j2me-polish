@@ -69,7 +69,7 @@ public class InfoSetting {
 	public static final String CLDC1 = "CLDC-1.0";
 	public static final String MIDP1 = "MIDP-1.0";
 	public static final String MIDP2 = "MIDP-2.0";
-	private  static final String GPL_LICENCE = "GPL";
+	private  static final String GPL_LICENSE = "GPL";
 	
 	private String name;
 	private String version;
@@ -88,7 +88,7 @@ public class InfoSetting {
 	private ArrayList jadAttributes;
 	private String vendorName;
 	private String jarName;
-	private String licence;
+	private String license;
 	
 	/**
 	 * Creates a new InfoSetting
@@ -405,27 +405,29 @@ public class InfoSetting {
 	}
 	
 	/**
-	 * @return Returns the licence.
+	 * @return Returns the license.
 	 */
-	public String getLicence() {
-		return this.licence;
+	public String getlicense() {
+		return this.license;
 	}
 	
 	/**
-	 * @param licence The licence of the created applications, either "GPL" or the licence-number for commercial use.
+	 * Sets the license of the license key for this project.
+	 * 
+	 * @param license The license of the created applications, either "GPL" or the license-key for commercial use.
 	 */
-	public void setLicence(String licence) {
-		if ("GPL".equalsIgnoreCase(licence)) {
-			this.licence = GPL_LICENCE;
+	public void setLicense(String license) {
+		if ("GPL".equalsIgnoreCase(license)) {
+			this.license = GPL_LICENSE;
 		} else {
-			if (licence.length() != 7) {
-				throw new BuildException("Invalid licence: [" + licence +"]. Please use either the GPL licence or optain a commercial licence from enough software at www.enough.de/j2mepolish.");
+			if (license.length() != 7) {
+				throw new BuildException("Invalid license: [" + license +"]. Please use either the GPL license or obtain a commercial license from enough software at www.j2mepolish.org");
 			}
 			try {
-				Long.parseLong(licence, 0x10);
-				this.licence = licence;
+				Long.parseLong(license, 0x10);
+				this.license = license;
 			} catch (Exception e) {
-				throw new BuildException("Invalid licence: [" + licence +"]. Please use either the GPL licence or optain a commercial licence from enough software at www.enough.de/j2mepolish.");
+				throw new BuildException("Invalid license: [" + license +"]. Please use either the GPL license or obtain a commercial license from enough software at www.j2mepolish.org.");
 			}
 		}
 	}

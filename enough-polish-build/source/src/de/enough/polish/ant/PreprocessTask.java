@@ -311,4 +311,34 @@ public class PreprocessTask extends ConditionalTask {
 		// # ! polish.midp1
 	}
 
+	/**
+	 * @return Returns the backup.
+	 */
+	public boolean isBackup() {
+		return this.backup;
+	}
+	/**
+	 * @return Returns the newExt.
+	 */
+	public String getNewExt() {
+		return this.newExt;
+	}
+	/**
+	 * @return Returns the test.
+	 */
+	public boolean isTest() {
+		return this.test;
+	}
+	/**
+	 * @return Returns the verbose.
+	 */
+	public boolean isVerbose() {
+		return this.verbose;
+	}
+	/**
+	 * @return Returns the indent.
+	 */
+	public boolean isIndent() {
+		return this.indent;
+	}
 }

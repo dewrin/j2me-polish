@@ -94,8 +94,8 @@ public class PolishTask extends ConditionalTask {
 		if (setting.getName() == null ) {
 			throw new BuildException("The nested element <info> requires the attribute [name] which defines the name of this project.");
 		}
-		if (setting.getLicence() == null) {
-			throw new BuildException("The nested element <info> requires the attribute [licence] with either \"GPL\" for open source software or the commercial licence, which can be obtained at www.enough.de/j2mepolish.");
+		if (setting.getlicense() == null) {
+			throw new BuildException("The nested element <info> requires the attribute [license] with either \"GPL\" for open source software or the commercial license, which can be obtained at www.enough.de/j2mepolish.");
 		}
 		this.infoSetting = setting;
 	}
@@ -189,7 +189,7 @@ public class PolishTask extends ConditionalTask {
 		}
 		// create project settings:
 		this.polishProject = new PolishProject( this.buildSetting.usesPolishGui(), isDebugEnabled, debugManager );
-		this.polishProject.addCapability("licence", this.infoSetting.getLicence() );
+		this.polishProject.addCapability("license", this.infoSetting.getlicense() );
 		// add some specified features:
 		this.polishProject.addFeature(this.buildSetting.getImageLoadStrategy());
 		if (debugManager != null && this.buildSetting.getDebugSetting().useGui()) {
@@ -240,7 +240,7 @@ public class PolishTask extends ConditionalTask {
 		} catch (InvalidComponentException e) {
 			throw new BuildException("unable to create device manager: " + e.getMessage(), e );
 		}
-		this.preprocessor = new Preprocessor( this.polishProject, null, null, null, false, false, true, null );
+		this.preprocessor = new Preprocessor( this.polishProject, null, null, null, false, true, null );
 		
 		//	initialise the preprocessing-source-directories:
 		DirectoryScanner dirScanner = new DirectoryScanner();
@@ -889,9 +889,9 @@ public class PolishTask extends ConditionalTask {
 		}
 		device.setJarFile( jarFile );
 		jarTask.setDestFile( jarFile );
-		String test = this.polishProject.getCapability("polish.licence");
-		if ( !this.infoSetting.getLicence().equals(test)) {
-			throw new BuildException("Encountered invalid licence.");
+		String test = this.polishProject.getCapability("polish.license");
+		if ( !this.infoSetting.getlicense().equals(test)) {
+			throw new BuildException("Encountered invalid license.");
 		}
 		//create manifest:
 		try {

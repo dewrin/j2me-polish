@@ -123,7 +123,6 @@ public final class FileUtil {
 	 * @param target The file to which the source-file should be copied to.
 	 * @throws FileNotFoundException when the source file was not found
 	 * @throws IOException when there is an error while copying the file.
-	 */
 	private static void copy(File source, File target) 
 	throws FileNotFoundException, IOException 
 	{
@@ -142,6 +141,7 @@ public final class FileUtil {
 			out.close();
 		}
 	}
+	 */
 
 	/**
 	 * Copies a file.

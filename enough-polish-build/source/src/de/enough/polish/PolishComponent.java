@@ -49,9 +49,9 @@ public class PolishComponent {
 	protected String identifier;
 	protected PolishComponent parent;
 	private HashMap features;
-	private ArrayList featuresList;
+	//private ArrayList featuresList;
 	private HashMap capabilities;
-	private ArrayList capabilitiesList;
+	//private ArrayList capabilitiesList;
 	private StyleSheet styleSheet;
 	
 	/**
@@ -69,9 +69,9 @@ public class PolishComponent {
 	public PolishComponent( PolishComponent parent ) {
 		this.parent = parent;
 		this.capabilities = new HashMap();
-		this.capabilitiesList = new ArrayList();
+		//this.capabilitiesList = new ArrayList();
 		this.features = new HashMap();
-		this.featuresList = new ArrayList();
+		//this.featuresList = new ArrayList();
 		if (parent != null) {
 			this.capabilities.putAll( parent.getCapabilities() );
 			this.features.putAll(  parent.getFeatures() );
