@@ -117,14 +117,11 @@ public abstract class Screen
 		private Font menuFont;
 		private int menuFontColor = 0;
 		private int menuBarHeight;
-		/*
 		//#ifdef polish.ScreenWidth:defined
 			//#= private int menuMaxWidth = (  ${ polish.ScreenWidth } * 2 ) / 3;
 		//#else
 			private int menuMaxWidth = ( getWidth() * 2 ) / 3;
 		//#endif
-		 */
-		private int menuMaxWidth = 120;
 		private int menuBarColor = 0xFFFFFF;
 		private int fullScreenHeight;
 	//#endif
@@ -151,7 +148,6 @@ public abstract class Screen
 	 */
 	public Screen( String title, Style style ) {
 		super();
-		try {
 		// get the screen dimensions:
 		// this is a bit complicated, since Nokia's FullCanvas fucks
 		// up when calling super.getHeight(), so we need to use hardcoded values...
@@ -185,12 +181,8 @@ public abstract class Screen
 		this.style = style;
 		this.cmdListener = new ForwardCommandListener();
 		//#ifndef tmp.menuFullScreen
-		super.setCommandListener(this.cmdListener);
+			super.setCommandListener(this.cmdListener);
 		//#endif
-		} catch (RuntimeException e) {
-			e.printStackTrace();
-			throw new RuntimeException("Error in Screen Constructor: " + e.toString() );
-		}
 	}
 		
 	/**
@@ -252,6 +244,7 @@ public abstract class Screen
 			
 		// set the title:
 		setTitle( this.titleText );
+
 		// start the animmation thread if necessary: 
 		if (StyleSheet.animationThread == null) {
 			StyleSheet.animationThread = new AnimationThread();
@@ -459,6 +452,7 @@ public abstract class Screen
 		this.container.paint( 0, y, 0, this.screenWidth, g );
 	}
 	
+	//#if tmp.fullScreen || polish.midp1
 	/**
 	 * Gets the title of the Screen. 
 	 * Returns null if there is no title.
@@ -473,9 +467,11 @@ public abstract class Screen
 			return this.title.getText();
 		}
 	}
+	//#endif
 
+	//#if tmp.fullScreen || polish.midp1
 	/**
-	 * Sets the title of the Screen. If null is given, removes the title. <p>
+	 * Sets the title of the Screen. If null is given, removes the title.
 	 * 
 	 * If the Screen is physically visible, the visible effect
 	 * should take place no later than immediately
@@ -513,6 +509,7 @@ public abstract class Screen
 			repaint();
 		}
 	}
+	//#endif
 
 	/**
 	 * Set a ticker for use with this Screen, replacing any previous ticker.
