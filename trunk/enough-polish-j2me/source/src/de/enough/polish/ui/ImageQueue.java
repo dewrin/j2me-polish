@@ -55,13 +55,14 @@ public class ImageQueue {
 			this.pos++;
 		}
 	}
+	
 	public void notifyConsumers( String name, Image image ) {
 		for (int i = 0; i < this.pos; i++) {
 			try {
 				this.consumers[i].setImage(name, image );
 			} catch (Exception e) {
 				//#debug error
-				Debug.debug( "Unable to notify ImageConsumer about image [" + name + "]: " + e.getMessage(), e );
+				Debug.debug( "Unable to notify ImageConsumer about image [" + name + "]" , e );
 			}
 		}
 	}

@@ -274,16 +274,24 @@ implements ImageConsumer
 	 */
 	public void setImage(String name, Image image) {
 		if (!this.drawBox) {
-			super.setImage(name, image);
+			super.setImage( name, image );
+		}
+		if (!this.drawBox) {
+			super.setImage( name, image );
 		} else if (name.equals(this.selectedImgName)) {
+			Debug.debug("setting selected image");
 			this.selected = image;
 		} else if (name.equals(this.plainImgName)) {
+			Debug.debug("setting plain image");
 			this.plain = image;
 		} else {
-			super.setImage(name, image);
+			setImage( image );
 		}
 		this.isInitialised = false;
+		/*
+		this.isInitialised = false;
 		repaint();
+		*/
 	}
 	//#endif
 

@@ -63,7 +63,7 @@ implements ImageConsumer
 {
 	
 	private static final int DEFAULT_ALIGN = Graphics.LEFT;
-	private Image image;
+	Image image;
 	private int imageAlign;
 	private int imageHeight;
 	private int imageWidth;
@@ -204,7 +204,7 @@ implements ImageConsumer
 					setImage( StyleSheet.getImage(imageName, this, false) );
 				} catch (IOException e) {
 					//#debug error
-					Debug.debug("unable to load image [" + imageName + "]: " + e.getMessage(), e);
+					Debug.debug("unable to load image [" + imageName + "]", e);
 				}
 			}
 		}
@@ -223,7 +223,7 @@ implements ImageConsumer
 			}
 		} catch (IOException e) {
 			//#debug error
-			Debug.debug("unable to load image [" + url + "]: " + e.toString(), e);
+			Debug.debug("unable to load image [" + url + "]", e);
 		}		
 	}
 
@@ -232,7 +232,8 @@ implements ImageConsumer
 	 * @see de.enough.polish.ui.ImageConsumer#setImage(java.lang.String, javax.microedition.lcdui.Image)
 	 */
 	public void setImage(String name, Image image) {
-		setImage( image );
+		this.isInitialised = false;
+		this.image = image;
 		repaint();
 	}
 	//#endif

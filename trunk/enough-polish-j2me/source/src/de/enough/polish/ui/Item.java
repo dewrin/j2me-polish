@@ -932,7 +932,7 @@ public abstract class Item extends Object
 	}
 	
 	/**
-	 * Requests that this item is re-initialised at the next repainting.
+	 * Requests that this item and all its parents are to be re-initialised at the next repainting.
 	 * 
 	 * All parents of this item are notified, too.
 	 */

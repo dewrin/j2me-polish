@@ -26,6 +26,7 @@
 package de.enough.polish.ui;
 
 import de.enough.polish.ui.tasks.ImageTask;
+import de.enough.polish.util.Debug;
 
 import javax.microedition.lcdui.*;
 
@@ -65,7 +66,7 @@ public final class StyleSheet {
 	public static Screen currentScreen;	
 	public static AnimationThread animationThread;
 	/** the gauge which is currently in CONTINUOUS_RUNNING mode */
-	//public static Gauge gauge;
+	public static Item gauge;
 
 	/**
 	 * Retrieves the image with the given name.
@@ -88,7 +89,7 @@ public final class StyleSheet {
 	 * @throws IOException when the image could not be loaded directly
 	 * @see ImageConsumer#setImage(String, Image)
 	 */
-	public static synchronized Image getImage( String url, Object parent, boolean cache )
+	public static Image getImage( String url, Object parent, boolean cache )
 	throws IOException 
 	{
 		// check if the image has been cached before:
@@ -99,47 +100,52 @@ public final class StyleSheet {
 			}
 		}
 		//#ifdef polish.images.directLoad
-		// when images should be loaded directly, try to do so now:
-		Image image = Image.createImage( url );
-		if (cache) {
+			// when images should be loaded directly, try to do so now:
+			Image image = Image.createImage( url );
+			if (cache) {
+				if (imagesByName == null ) {
+					imagesByName = new Hashtable();
+				}
+				imagesByName.put( url, image );
+			}
+			//# return image;
+		//#else
+			// when images should be loaded in the background, 
+			// tell the background-thread to do so now:		
+			if ( ! (parent instanceof ImageConsumer)) {
+				//#debug error
+				Debug.debug("StyleSheet.getImage(..) needs an ImageConsumer when images are loaded in the background!");
+				return null;
+			}
+			if (scheduledImagesByName == null ) {
+				scheduledImagesByName = new Hashtable();
+			}
+			ImageQueue queue = (ImageQueue) scheduledImagesByName.get(url);
+			if (queue != null) {
+				// this image is already scheduled to load:
+				queue.addConsumer((ImageConsumer) parent);
+				return null;
+			}
+			scheduledImagesByName.put( url, new ImageQueue( (ImageConsumer) parent, cache ) );
 			if (imagesByName == null ) {
 				imagesByName = new Hashtable();
 			}
-			imagesByName.put( url, image );
-		}
-		//# return image;
-		
-		//#else
-		// when images should be loaded in the background, 
-		// tell the background-thread to do so now:		
-		if ( ! (parent instanceof ImageConsumer)) {
-			//#debug error
-			System.out.println("StyleSheet.getImage(..) needs an ImageConsumer when images are loaded in the background!");
+			if (timer == null) {
+				timer = new Timer();
+			}
+			ImageTask task = new ImageTask( url );
+			timer.schedule( task, 10 );
 			return null;
-		}
-		if (scheduledImagesByName == null ) {
-			scheduledImagesByName = new Hashtable();
-		}
-		ImageQueue queue = (ImageQueue) scheduledImagesByName.get(url);
-		if (queue != null) {
-			// this image is already scheduled to load:
-			queue.addConsumer((ImageConsumer) parent);
-			return null;
-		}
-		scheduledImagesByName.put( url, new ImageQueue( (ImageConsumer) parent, cache ) );
-		if (imagesByName == null ) {
-			imagesByName = new Hashtable();
-		}
-		if (timer == null) {
-			timer = new Timer();
-		}
-		ImageTask task = new ImageTask( url );
-		timer.schedule( task, 10 );
-		return null;
 		//#endif
 	}
 	
 	//#ifdef polish.images.backgroundLoad
+	/**
+	 * Notifies the GUI items which requested images about the successful loading of thoses images.
+	 * 
+	 * @param name the URL of the image
+	 * @param image the image 
+	 */
 	public static void notifyImageConsumers( String name, Image image ) {
 		ImageQueue queue = (ImageQueue) scheduledImagesByName.remove(name);
 		if (queue != null) {
@@ -147,6 +153,9 @@ public final class StyleSheet {
 				imagesByName.put( name, image );
 			}
 			queue.notifyConsumers(name, image);
+			if (true) {
+				return;
+			}
 			if (currentScreen != null) {
 				currentScreen.repaint();
 			}
