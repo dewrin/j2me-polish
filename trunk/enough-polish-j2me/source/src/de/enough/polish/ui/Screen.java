@@ -82,9 +82,13 @@ public abstract class Screen
 //#else
 extends Canvas
 //#endif
+//#if polish.debugVerbose && polish.useDebugGui
+implements CommandListener
+//#endif
 {
 	
 	protected StringItem title;
+	protected String titleText;
 	protected int titleHeight;
 	protected Background background;
 	protected Border border;
@@ -105,14 +109,20 @@ extends Canvas
 	//#if polish.useMenuFullScreen && polish.classes.fullscreen:defined
 		//#define tmp.menuFullScreen
 		private Command menuSingleCommand;
-		//#style menu, default
-		private Container menuContainer = new Container( true );
-		private ArrayList menuCommands = new ArrayList( 6, 50 );
+		private Container menuContainer;
+		private ArrayList menuCommands;
 		private boolean menuOpened;
-		private Font menuFont = Font.getFont( Font.FACE_SYSTEM, Font.STYLE_BOLD, Font.SIZE_MEDIUM );
+		private Font menuFont;
 		private int menuFontColor = 0;
-		private int menuBarHeight = this.menuFont.getHeight() + 2;
-		private int menuMaxWidth = ( getWidth() * 2 ) / 3;
+		private int menuBarHeight;
+		/*
+		//#ifdef polish.ScreenWidth:defined
+			//#= private int menuMaxWidth = (  ${ polish.ScreenWidth } * 2 ) / 3;
+		//#else
+			private int menuMaxWidth = ( getWidth() * 2 ) / 3;
+		//#endif
+		 */
+		private int menuMaxWidth = 120;
 		private int menuBarColor = 0xFFFFFF;
 		private int fullScreenHeight;
 	//#endif
@@ -135,9 +145,10 @@ extends Canvas
 	 */
 	public Screen( String title, Style style ) {
 		super();
+		try {
 		// get the screen dimensions:
 		// this is a bit complicated, since Nokia's FullCanvas fucks
-		// up when calling super.getHeight()...
+		// up when calling super.getHeight(), so we need to use hardcoded values...
 		
 		//#ifdef tmp.menuFullScreen
 			//#ifdef polish.ScreenHeight:defined
@@ -147,23 +158,28 @@ extends Canvas
 			//#endif
 			this.screenHeight = this.fullScreenHeight - this.menuBarHeight;
 		//#else
-			//#ifdef polish.ScreenHeight:defined
-				//#= this.screenHeight = ${ polish.ScreenHeight };
+			//#ifdef polish.CanvasHeight:defined
+				//#= this.screenHeight = ${ polish.CanvasHeight };
 			//#else
-				this.screenHeight = super.getHeight();
+				this.screenHeight = getHeight();
 			//#endif
 		//#endif
+		
 		//#ifdef polish.ScreenWidth:defined
 			//#= this.screenWidth = ${ polish.ScreenWidth };
 		//#else
 			this.screenWidth = getWidth();
 		//#endif
-			
+						
 		// creating standard container:
 		this.container = new Container( true );
 		this.container.screen = this;
-		setTitle( title );
+		this.titleText = title;
 		this.style = style;
+		} catch (RuntimeException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Error in Screen Constructor: " + e.toString() );
+		}
 	}
 		
 	/**
@@ -173,17 +189,14 @@ extends Canvas
 		if (this.style != null) {
 			setStyle( this.style );
 		}
-		//StyleSheet.gauge = null;
-		if (StyleSheet.animationThread == null) {
-			StyleSheet.animationThread = new AnimationThread();
-			StyleSheet.animationThread.start();
-		}
+		StyleSheet.gauge = null;
 		// inform all root items that they belong to this screen:
 		if (this.container != null) {
 			this.container.screen = this;
 			//TODO rob check scrolling dimensions
-			// this.container.setVerticalDimensions( this.titleHeight, this.screenHeight );
-			this.container.setVerticalDimensions( 0, this.screenHeight );
+			// this.container.setVerticalDimensions( this.titleHeight, this.screenHeight );			
+			this.container.setVerticalDimensions( 0, this.screenHeight - this.titleHeight );
+			Debug.debug("using vertical dimensions: 0, " + (this.screenHeight - this.titleHeight));
 		}
 		Item[] items = getRootItems();
 		for (int i = 0; i < items.length; i++) {
@@ -191,15 +204,43 @@ extends Canvas
 			item.screen = this;
 		}
 		//#ifdef polish.useDynamicStyles
-		// check if this screen has got a style:
-		if (this.style == null) {
-			this.cssSelector = createCssSelector();
-			setStyle( StyleSheet.getStyle( this ) );
-		} else {
-			this.cssSelector = this.style.name;
-		}
+			// check if this screen has got a style:
+			if (this.style == null) {
+				this.cssSelector = createCssSelector();
+				setStyle( StyleSheet.getStyle( this ) );
+			} else {
+				this.cssSelector = this.style.name;
+			}
 		//#endif
+		//#ifdef tmp.menuFullScreen
+			 Style menuStyle = StyleSheet.getStyle("menu");
+			if (menuStyle != null) {
+				String colorStr = menuStyle.getProperty("menubar-color");
+				if (colorStr != null) {
+					this.menuBarColor = Integer.parseInt(colorStr);
+				}
+				this.menuFontColor = menuStyle.labelFontColor;
+				if (menuStyle.labelFont != null) {
+					this.menuFont = menuStyle.labelFont;
+				} else {
+					this.menuFont = Font.getFont( Font.FACE_SYSTEM, Font.STYLE_BOLD, Font.SIZE_MEDIUM );				
+				}			
+			} else {
+				this.menuFont = Font.getFont( Font.FACE_SYSTEM, Font.STYLE_BOLD, Font.SIZE_MEDIUM );
+			}
+			this.menuBarHeight = this.menuFont.getHeight() + 2;
+			this.screenHeight = this.fullScreenHeight - this.menuBarHeight;
+		//#endif
+			
+		// set the title:
+		setTitle( this.titleText );
+		// start the animmation thread if necessary: 
+		if (StyleSheet.animationThread == null) {
+			StyleSheet.animationThread = new AnimationThread();
+			StyleSheet.animationThread.start();
+		}
 		this.isInitialised = true;
+		// register this screen:
 		StyleSheet.currentScreen = this;
 	}
 
@@ -214,25 +255,13 @@ extends Canvas
 		this.border = style.border;
 		this.container.setStyle(style, true);
 		this.isLayoutVCenter = (( style.layout & Item.LAYOUT_VCENTER ) == Item.LAYOUT_VCENTER);
-		//#ifdef tmp.menuFullScreen
-		Style menuStyle = StyleSheet.getStyle("menu");
-		if (menuStyle != null) {
-			String colorStr = menuStyle.getProperty("menubar-color");
-			if (colorStr != null) {
-				this.menuBarColor = Integer.parseInt(colorStr);
-			}
-			this.menuFontColor = menuStyle.labelFontColor;
-			if (menuStyle.labelFont != null) {
-				this.menuFont = menuStyle.labelFont;
-				this.menuBarHeight = this.menuFont.getHeight() + 2;
-				this.screenHeight = this.fullScreenHeight - this.menuBarHeight;
-			}
-			
-		}
-		//#endif
 	}
 	
 	public boolean animate() {
+		//#ifdef polish.debugVerbose
+			try {
+		//#endif
+				
 		//TODO rob animate ticker, container, border
 		boolean animated = false;
 		if (this.background != null) {
@@ -252,6 +281,16 @@ extends Canvas
 		} else {
 			return false;
 		}
+		//#ifdef polish.debugVerbose
+			} catch (Exception e) {
+				Debug.debug("animate() threw an exception", e );
+				//#ifdef polish.useDebugGui
+					// set the current screen to the debug-screen:
+					StyleSheet.display.setCurrent( Debug.getLogForm(true, this) );
+				//#endif
+				return false;
+			}
+		//#endif
 	}
 	
 	/* (non-Javadoc)
@@ -265,17 +304,6 @@ extends Canvas
 			if (!this.isInitialised) {
 				init();
 			}
-			/*
-			g.setColor( 0xFF0000 );
-			g.fillRect( 0, 0, 176, 208 );
-			g.setFont( Font.getDefaultFont() );
-			g.setColor( 0 );
-			g.drawString("all fucked up", 10, 10, Graphics.TOP | Graphics.LEFT );
-			if (true) {
-				this.message = "returning from paint.";
-				return;
-			}
-			*/
 		// paint background:
 		if (this.background != null) {
 			//#ifdef tmp.menuFullScreen
@@ -301,6 +329,7 @@ extends Canvas
 		g.translate( 0, y );
 		// paint content:
 		paintScreen( g);
+		
 		g.translate( 0, -y );
 		// allow painting outside of the screen again:
 		//#ifdef tmp.menuFullScreen
@@ -420,13 +449,20 @@ extends Canvas
 		if (s != null) {
 			//#style title, default
 			this.title = new StringItem( null, s );
-			this.titleHeight = this.title.getItemHeight(this.screenWidth, this.screenWidth);
+			// the Nokia 6600 has an amazing bug - when trying to refer the
+			// field screenWidth, it returns 0 in setTitle(). Obviously this works
+			// in other phones and in the simulator, but not on the Nokia 6600.
+			// That's why hardcoded values are used here. 
+			// The name of the field does not matter by the way. This is 
+			// a very interesting behaviour and should be analysed
+			// at some point...
+			//#= this.titleHeight = this.title.getItemHeight(${polish.ScreenWidth}, ${polish.ScreenWidth});
 		} else {
 			this.title = null;
 			this.titleHeight = 0;
 		}
-		if (this.container != null && this.screenHeight > 0) {
-			this.container.setVerticalDimensions( 0,  this.screenHeight );
+		if (this.container != null) {
+			this.container.setVerticalDimensions( 0,  this.screenHeight - this.titleHeight );
 		}
 		if (isShown()) {
 			repaint();
@@ -469,7 +505,10 @@ extends Canvas
 	/* (non-Javadoc)
 	 * @see javax.microedition.lcdui.Canvas#keyPressed(int)
 	 */
-	protected void keyPressed(int keyCode) {
+	protected final void keyPressed(int keyCode) {
+		//#ifdef polish.debugVerbose
+			try {
+		//#endif
 		int gameAction = getGameAction(keyCode);
 		//#ifdef tmp.menuFullScreen
 			if (keyCode == FullCanvas.KEY_SOFTKEY1) {
@@ -508,7 +547,7 @@ extends Canvas
 			// It could use the StyleSheet.currentScreen variable
 			// for this purpose
 			//#debug
-			System.out.println("unable to handle key [" + keyCode + "].");
+			Debug.debug("unable to handle key [" + keyCode + "].");
 		}
 		if (processed) {
 			//#if polish.useFullScreen && polish.api.nokia-ui
@@ -517,6 +556,15 @@ extends Canvas
 				repaint();
 			//#endif
 		}
+		//#ifdef polish.debugVerbose
+			} catch (Exception e) {
+				Debug.debug("keyPressed() threw an exception", e );
+				//#ifdef polish.useDebugGui
+					// set the current screen to the debug-screen:
+					StyleSheet.display.setCurrent( Debug.getLogForm(true, this) );
+				//#endif
+			}
+		//#endif
 	}
 		
 	//#ifdef polish.useDynamicStyles	
@@ -580,6 +628,11 @@ extends Canvas
 	 * @see javax.microedition.lcdui.Displayable#addCommand(javax.microedition.lcdui.Command)
 	 */
 	public synchronized void addCommand(Command cmd) {
+		if (this.menuCommands == null) {
+			this.menuCommands = new ArrayList( 6, 50 );
+			//#style menu, default
+			 this.menuContainer = new Container( true );
+		}
 		//#style menuitem, menu, default
 		StringItem menuItem = new StringItem( null, cmd.getLabel(), Item.HYPERLINK );
 		this.menuContainer.add( menuItem );
@@ -653,4 +706,12 @@ extends Canvas
 		repaint();
 	}
 	//#endif
+	
+	
+	//#if polish.debugVerbose && polish.useDebugGui
+	public void commandAction( Command command, Displayable screen ) {
+		StyleSheet.display.setCurrent( this );
+	}
+	//#endif
+
 }

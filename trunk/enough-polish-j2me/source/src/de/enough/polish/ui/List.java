@@ -316,10 +316,17 @@ public class List extends Screen implements Choice
 	public List( String title, int listType, String[] stringElements, Image[] imageElements, Style style)
 	{
 		super( title, style );
-		if (listType != Choice.EXCLUSIVE && listType != Choice.MULTIPLE && listType != Choice.IMPLICIT ) {
-			throw new IllegalArgumentException("invalid list-type: " + listType );
-		}
+		//#ifndef polish.skipArgumentCheck
+			if (listType != Choice.EXCLUSIVE && listType != Choice.MULTIPLE && listType != Choice.IMPLICIT ) {
+				//#ifdef polish.debugVerbose
+					throw new IllegalArgumentException("invalid list-type: " + listType );
+				//#else
+					//# throw new IllegalArgumentException();
+				//#endif
+			}		
+		//#endif
 		this.listType = listType;
+		
 		this.choiceGroup = new ChoiceGroup( null, this.listType, stringElements, imageElements, style, true  );
 		this.container = this.choiceGroup;
 		//this.container.screen = this;
