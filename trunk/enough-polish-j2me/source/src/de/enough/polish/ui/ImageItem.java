@@ -7,6 +7,7 @@
  */
 package de.enough.polish.ui;
 
+import javax.microedition.lcdui.*;
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 
@@ -65,6 +66,8 @@ public class ImageItem extends Item
 	//following variables are implicitely defined by getter- or setter-methods:
 	private Image image;
 	private String altText;
+	private int textColor;
+	private Font font;
 
 	/**
 	 * Creates a new <code>ImageItem</code> with the given label, image, layout
@@ -280,9 +283,11 @@ public class ImageItem extends Item
 	 */
 	public void paintContent(int x, int y, int leftBorder, int rightBorder, Graphics g) {
 		if (this.image != null) {
-			g.drawImage(this.image, y, x, Graphics.TOP | Graphics.LEFT );
+			g.drawImage(this.image, x, y, Graphics.TOP | Graphics.LEFT );
 		} else if (this.altText != null) {
-			g.drawString(this.altText, y, x, Graphics.TOP | Graphics.LEFT );
+			g.setColor( this.textColor );
+			g.setFont( this.font );
+			g.drawString(this.altText, x, y, Graphics.TOP | Graphics.LEFT );
 		}
 	}
 
@@ -293,6 +298,15 @@ public class ImageItem extends Item
 		if (this.image != null) {
 			this.contentHeight = this.image.getHeight();
 			this.contentWidth = this.image.getWidth();
+		} else if (this.altText != null) {
+			if (this.font == null) {
+				this.font = Font.getDefaultFont();
+			}
+			this.contentHeight = this.font.getHeight();
+			this.contentWidth = this.font.stringWidth(this.altText);
+		} else {
+			this.contentHeight = 0;
+			this.contentWidth = 0;
 		}
 	}
 
@@ -304,4 +318,13 @@ public class ImageItem extends Item
 		return "img";
 	}
 	//#endif
+	
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#setStyle(de.enough.polish.ui.Style)
+	 */
+	public void setStyle(Style style) {
+		super.setStyle(style);
+		this.textColor = style.fontColor;
+		this.font = style.font;
+	}
 }

@@ -609,6 +609,10 @@ public abstract class Item extends Object
 	protected boolean isLayoutCenter;
 	protected boolean isLayoutExpand;
 	protected boolean isLayoutRight;
+	protected int xLeftPos;
+	protected int yTopPos;
+	protected int xRightPos;
+	protected int yBottomPos;
 	
 	//#ifdef polish.useBeforeStyle
 	private int beforeWidth;
@@ -1154,6 +1158,12 @@ public abstract class Item extends Object
 		if (!this.isInitialised) {
 			init( rightBorder - x, rightBorder - leftBorder );
 		}
+		// set coordinates of this item:
+		this.xLeftPos = x;
+		this.yTopPos = y;
+		this.xRightPos = x + this.itemWidth; //TODO rob: Item.xRightPos might differ when this item contains line breaks
+		this.yBottomPos = y + this.itemHeight;
+		
 		leftBorder += (this.marginLeft + this.borderWidth + this.paddingLeft);
 		//#ifdef polish.useBeforeStyle
 		leftBorder += this.beforeWidth;
