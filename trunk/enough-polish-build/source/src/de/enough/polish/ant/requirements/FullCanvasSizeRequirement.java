@@ -18,7 +18,7 @@ package de.enough.polish.ant.requirements;
  * @author Robert Virkus, robert@enough.de
  */
 public class FullCanvasSizeRequirement 
-extends ScreenSizeRequirement 
+extends SizeRequirement 
 {
 
 	/**

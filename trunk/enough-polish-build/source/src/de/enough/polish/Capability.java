@@ -4,7 +4,7 @@
  * the enough-software-licence for commercial use.
  * Please refer to accompanying LICENSE.txt or visit www.enough.de for details.
  */
-package de.enough.polish.ant.build;
+package de.enough.polish;
 
 /**
  * <p>Variable provides the definition of a name-value pair.</p>
@@ -16,15 +16,16 @@ package de.enough.polish.ant.build;
  * </pre>
  * @author Robert Virkus, robert@enough.de
  */
-public class Variable {
+public class Capability {
 	
 	private String name;
 	private String value;
+	private String type;
 
 	/**
 	 * Creates new uninitialised Variable
 	 */
-	public Variable() {
+	public Capability() {
 		// no values are set here
 	}
 
@@ -33,7 +34,7 @@ public class Variable {
 	 * @param name (String) the name of this variable
 	 * @param value (String) the value of this variable
 	 */
-	public Variable(String name, String value) {
+	public Capability(String name, String value) {
 		this.name = name;
 		this.value = value;
 	}
@@ -64,6 +65,20 @@ public class Variable {
 	 */
 	public void setValue(String value ) {
 		this.value = value;
+	}
+
+	/**
+	 * @return Returns the type of this variable.
+	 */
+	public String getType() {
+		return this.type;
+	}
+
+	/**
+	 * @param type The type to set.
+	 */
+	public void setType(String type) {
+		this.type = type;
 	}
 
 }

@@ -9,10 +9,14 @@ package de.enough.polish.ant;
 import de.enough.polish.*;
 import de.enough.polish.ant.build.BuildSetting;
 import de.enough.polish.ant.info.InfoSetting;
-import de.enough.polish.ant.requirements.DeviceRequirements;
+import de.enough.polish.ant.requirements.Requirements;
+import de.enough.polish.exceptions.InvalidDeviceException;
 import de.enough.polish.preprocess.Preprocessor;
 
 import org.apache.tools.ant.BuildException;
+import org.jdom.JDOMException;
+
+import java.io.IOException;
 
 /**
  * <p>Manages a J2ME project from the preprocessing to the packaging and obfuscation.</p>
@@ -28,7 +32,7 @@ public class PolishTask extends ConditionalTask {
 
 	private BuildSetting buildSetting;
 	private InfoSetting infoSetting;
-	private DeviceRequirements deviceRequirements;
+	private Requirements deviceRequirements;
 	
 	/** the project settings */ 
 	private Project polishProject;
@@ -52,7 +56,7 @@ public class PolishTask extends ConditionalTask {
 		this.infoSetting = setting;
 	}
 	
-	public void addConfiguredDeviceRequirements( DeviceRequirements requirements ) {
+	public void addConfiguredDeviceRequirements( Requirements requirements ) {
 		this.deviceRequirements = requirements;
 	}
 	
@@ -112,8 +116,16 @@ public class PolishTask extends ConditionalTask {
 		}
 		// create project settings:
 		this.polishProject = new Project( this.buildSetting.usesPolishGui(), isDebugEnabled, debugManager );
-		// create new device manager:
-		this.deviceManager = new DeviceManager( this.polishProject );
+		try {
+			// create new device manager:
+			this.deviceManager = new DeviceManager( this.polishProject );
+		} catch (JDOMException e) {
+			throw new BuildException("unable to create device manager: " + e.getMessage(), e );
+		} catch (IOException e) {
+			throw new BuildException("unable to create device manager: " + e.getMessage(), e );
+		} catch (InvalidDeviceException e) {
+			throw new BuildException("unable to create device manager: " + e.getMessage(), e );
+		}
 		this.preprocessor = new Preprocessor( this.polishProject, null, null, null, false, false, true, null );
 	}
 
@@ -135,7 +147,7 @@ public class PolishTask extends ConditionalTask {
 		// TODO enough implement preprocess
 		for ( int i=0; i<this.devices.length; i++) {
 			Device device = this.devices[i];
-			device.getProperty("Identifier");
+			device.getCapability("Identifier");
 		}
 	}
 

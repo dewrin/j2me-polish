@@ -6,6 +6,14 @@
  */
 package de.enough.polish;
 
+import de.enough.polish.exceptions.InvalidDeviceException;
+import de.enough.polish.util.TextUtil;
+
+import org.jdom.Element;
+
+import java.util.Iterator;
+import java.util.List;
+
 
 /**
  * <p>Represents a J2ME device.</p>
@@ -19,9 +27,24 @@ package de.enough.polish;
  */
 public class Device extends PolishComponent {
 	
-	boolean supportsPolish;
-	String identifier;
-
+	public static final String IDENTIFIER = "Identifier";
+	public static final String VENDOR = "Vendor";
+	public static final String NAME = "Name";
+	public static final String SCREEN_SIZE= "ScreenSize";
+	public static final String BITS_PER_PIXEL = "BitsPerPixel";
+	public static final String CANVAS_SIZE= "CanvasSize";
+	public static final String FULL_CANVAS_SIZE= "FullCanvasSize";
+	public static final String JAVA_PLATFORM = "JavaPlatform";
+	public static final String JAVA_PROTOCOL = "JavaProtocol";
+	public static final String JAVA_PACKAGE= "JavaPackage";
+	public static final String HEAP_SIZE = "HeapSize";
+	public static final String SUPPORTS_POLISH_GUI = "supportsPolishGui";
+	
+	private boolean supportsPolishGui;
+	private String name;
+	private String vendorName;
+	private String identifier;
+	
 
 	/**
 	 * Creates a new device.
@@ -33,26 +56,104 @@ public class Device extends PolishComponent {
 	}
 
 	/**
-	 * Determines whether this device supports the polish-framework.
+	 * Creates a new device.
 	 * 
-	 * @return true when this device supports polish.
+	 * @param definition the xml definition of this device.
+	 * @throws InvalidDeviceException when the given definition has errors
 	 */
-	public boolean supportsPolish() {
-		return this.supportsPolish;
+	public Device(Element  definition ) throws InvalidDeviceException {
+		super( "device", null );
+		this.identifier = definition.getChildText( "identifier");
+		if (this.identifier == null) {
+			throw new InvalidDeviceException("unable to initialise device. Every device needs to define either its [identifier] or its [name] and [vendor]. Check your [devices.xml].");
+		}
+		String[] chunks = TextUtil.split( this.identifier, '/');
+		if (chunks.length != 2) {
+			//TODO there could be several device definitions in one xml-block
+			throw new InvalidDeviceException("The device [" + this.identifier + "] has an invalid [identifier] - every identifier needs to consists of the vendor and the name, e.g. \"Nokia/6600\". Please check you [devices.xml].");
+		}
+		this.vendorName = chunks[0];
+		this.name = chunks[1];
+		addCapability( NAME, this.name );
+		addCapability( VENDOR, this.vendorName );
+		addCapability( IDENTIFIER, this.identifier );
+		
+		// read capabilities:
+		List capabilitiesList = definition.getChildren("capability");
+		for (Iterator iter = capabilitiesList.iterator(); iter.hasNext();) {
+			Element element = (Element) iter.next();
+			String capName = element.getAttributeValue( "name" );
+			if (capName == null) {
+				capName = element.getChildText("capability-name");
+			}
+			if (capName == null) {
+				throw new InvalidDeviceException("The device [" + this.identifier + "] has an invalid [capability] - every capability needs to define the attribute [name]. Please check you [devices.xml].");
+			}
+			String capValue = element.getAttributeValue( "value" );
+			if (capValue == null) {
+				capValue = element.getChildText("capability-value");
+			}
+			if (capName == null) {
+				throw new InvalidDeviceException("The device [" + this.identifier + "] has an invalid [capability] - every capability needs to define the attribute [value]. Please check you [devices.xml].");
+			}
+			// add the capability:
+			addCapability( capName, capValue );
+		} // end of reading all capabilties
+		
+		// TODO add groups, be careful with 
+		//    - api/JavaPackage definition
+		//    - JavaProtocol
+		// - they need to concatenated!
+		
+		// set specific features:
+		// set api-support:
+		String supportedApisStr = getCapability( JAVA_PACKAGE );
+		if (supportedApisStr != null) {
+			String[] supportedApis = TextUtil.splitAndTrim( supportedApisStr, ',' );
+			for (int i = 0; i < supportedApis.length; i++) {
+				String api = supportedApis[i].toLowerCase();
+				addFeature( "api." + api );
+			}
+		}
+		// set midp-version:
+		String midp = getCapability( JAVA_PLATFORM ).toUpperCase();
+		if (midp.startsWith("MIDP/1.")) {
+			addFeature( "midp1");
+		} else if (midp.startsWith("MIDP/2.")) {
+			addFeature( "midp2");
+		}
+		String supportsPolishGuiText = definition.getAttributeValue("supportsPolishGui");
+		if (supportsPolishGuiText != null) {
+			supportsPolishGuiText = supportsPolishGuiText.toLowerCase();
+			this.supportsPolishGui = "true".equals( supportsPolishGuiText ) 
+										   || "yes".equals( supportsPolishGuiText );
+		} else {
+			String bitsPerPixelDef = getCapability( BITS_PER_PIXEL );
+			this.supportsPolishGui = true;
+			if (bitsPerPixelDef != null) {
+				int bitsPerPixel = Integer.parseInt( bitsPerPixelDef );
+				this.supportsPolishGui = bitsPerPixel >= 4;
+			}
+		}
+		if (this.supportsPolishGui) {
+			addFeature( SUPPORTS_POLISH_GUI );
+		}
+	}
+	
+	/**
+	 * Determines whether this device supports the polish-gui-framework.
+	 * Usually this is the case when the device meets some capabilities like
+	 * the possible size of the heap.
+	 * Devices can also define this directly by setting the attriubte [supportsPolishGui]. 
+	 * 
+	 * @return true when this device supports the polish-gui.
+	 */
+	public boolean supportsPolishGui() {
+		return this.supportsPolishGui;
 	}
 
 	/**
-	 * Retrieves a specific property of this device.
-	 * 
-	 * @param name the name of the property. 
-	 * @return the value of the property or null when the given property is not defined.
-	 */
-	public String getProperty(String name) {
-		return (String) getVariables().get( name );
-	}
-
-	/**
-	 * @return the identifier of this device in the form [vendor]/[modell], e.g. Nokia/6600
+	 * @return the identifier of this device in the form [vendor]/[model], e.g. Nokia/6600
 	 */
 	public String getIdentifier() {
 		return this.identifier;

@@ -6,7 +6,6 @@
  */
 package de.enough.polish.ant.requirements;
 
-import de.enough.polish.Device;
 
 /**
  * <p>Selects a device by its screen-colors.</p>
@@ -18,10 +17,8 @@ import de.enough.polish.Device;
  * </pre>
  * @author Robert Virkus, robert@enough.de
  */
-public class BitsPerPixelRequirement extends Requirement {
+public class BitsPerPixelRequirement extends IntRequirement {
 	
-
-	private IntegerMatcher matcher;
 
 	/**
 	 * Creates a new bits per pixel-requirement.
@@ -30,14 +27,6 @@ public class BitsPerPixelRequirement extends Requirement {
 	 */
 	public BitsPerPixelRequirement(String value ) {
 		super(value, "BitsPerPixel");
-		this.matcher = new IntegerMatcher( value );
-	}
-
-	/* (non-Javadoc)
-	 * @see de.enough.polish.ant.requirements.Requirement#isMet(de.enough.polish.build.Device, java.lang.String)
-	 */
-	protected boolean isMet(Device device, String property) {
-		return this.matcher.matches( property );
 	}
 
 }

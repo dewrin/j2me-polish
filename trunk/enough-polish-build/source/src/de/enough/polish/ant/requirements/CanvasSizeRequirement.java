@@ -17,7 +17,7 @@ package de.enough.polish.ant.requirements;
  * </pre>
  * @author Robert Virkus, robert@enough.de
  */
-public class CanvasSizeRequirement extends ScreenSizeRequirement {
+public class CanvasSizeRequirement extends SizeRequirement {
 
 	/**
 	 * Creates a new requirement for the size of the canvas.
