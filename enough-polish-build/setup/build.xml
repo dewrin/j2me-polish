@@ -29,11 +29,11 @@
 	    <!-- general settings -->
 		<info
 			license="GPL"
-			name="SimpleMenu"
+			name="J2ME Polish"
 			version="1.3.4"
 			description="A test project"
 			vendorName="enough software"
-			infoUrl="http://www.enough.de/j2mepolish"
+			infoUrl="http://www.j2mepolish.org"
 			icon="dot.png"
 			jarName="${polish.vendor}-${polish.name}-example.jar" 
 			jarUrl="${polish.jarName}"
@@ -42,7 +42,7 @@
 			/>
 		<!-- selection of supported devices -->
 		<deviceRequirements if="test">
-			<requirement name="Identifier" value="Nokia/6600" />
+			<requirement name="Identifier" value="Nokia/N-Gage" />
 		</deviceRequirements>
 		<deviceRequirements unless="test">
 			<requirement name="JavaPackage" value="nokia-ui" />
