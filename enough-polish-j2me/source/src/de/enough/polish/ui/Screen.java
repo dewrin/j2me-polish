@@ -176,7 +176,8 @@ extends Canvas
 		// inform all root items that they belong to this screen:
 		if (this.container != null) {
 			this.container.screen = this;
-			this.container.setVerticalDimensions( 0,  this.screenHeight );
+			// this.container.setVerticalDimensions( this.titleHeight, this.screenHeight );
+			this.container.setVerticalDimensions( 0, this.screenHeight );
 		}
 		Item[] items = getRootItems();
 		for (int i = 0; i < items.length; i++) {

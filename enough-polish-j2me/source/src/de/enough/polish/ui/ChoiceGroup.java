@@ -247,6 +247,7 @@ public class ChoiceGroup extends Container implements Choice
 			this.popupItem = new IconItem( null, createPopupImage(), this.style );
 			this.popupItem.setImageAlign( Graphics.RIGHT );
 			this.popupItem.setAppearanceMode( BUTTON );
+			//this.popupItem.parent = this;
 		} else if (choiceType == Choice.IMPLICIT && allowImplicit ) {
 			this.isImplicit = true;
 			this.focusFirstElement = true;
@@ -857,7 +858,7 @@ public class ChoiceGroup extends Container implements Choice
 	 */
 	public void setStyle(Style style, boolean ignoreBackground) {
 		super.setStyle(style, ignoreBackground);
-		if (this.isPopup) {
+		if (this.isPopup && this.popupItem.image == ChoiceGroup.popupImage) {
 			String url = style.getProperty("popup-image");
 			if (url != null ) {
 				this.popupItem.setImage( url );
