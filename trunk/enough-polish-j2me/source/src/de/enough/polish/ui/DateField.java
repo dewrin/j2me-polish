@@ -24,10 +24,9 @@
  */
 package de.enough.polish.ui;
 
-import javax.microedition.lcdui.Graphics;
+import javax.microedition.lcdui.*;
 
-import java.util.Date;
-import java.util.TimeZone;
+import java.util.*;
 
 /**
  * A <code>DateField</code> is an editable component for presenting
@@ -62,7 +61,8 @@ import java.util.TimeZone;
  * @author Robert Virkus, robert@enough.de
  * @since MIDP 1.0
  */
-public class DateField extends Item
+public class DateField extends StringItem
+implements CommandListener
 {
 	/**
 	 * Input mode for date information (day, month, year). With this mode this
@@ -99,22 +99,66 @@ public class DateField extends Item
 	 */
 	public static final int DATE_TIME = 3;
 
-	//following variables are implicitely defined by getter- or setter-methods:
 	private Date date;
 	private int inputMode;
+	private int mode;
+	private TimeZone timeZone;
+	private boolean showCaret;
+	private int originalWidth;
+	private int originalHeight;
+	private long lastCaretSwitch;
+	private javax.microedition.lcdui.DateField midpDateField; 
+	private javax.microedition.lcdui.Form form;
+
+	private Calendar calendar;
 
 	/**
 	 * Creates a <code>DateField</code> object with the specified
 	 * label and mode. This call
 	 * is identical to <code>DateField(label, mode, null)</code>.
 	 * 
-	 * @param label - item label
-	 * @param mode - the input mode, one of DATE, TIME or DATE_TIME
-	 * @throws IllegalArgumentException - if the input mode's value is invalid
+	 * @param label item label
+	 * @param mode the input mode, one of DATE, TIME or DATE_TIME
+	 * @throws IllegalArgumentException if the input mode's value is invalid
 	 */
 	public DateField( String label, int mode)
 	{
-		//TODO implement DateField
+		this( label, mode, null, null );
+	}
+
+	/**
+	 * Creates a <code>DateField</code> object with the specified
+	 * label and mode. This call
+	 * is identical to <code>DateField(label, mode, null)</code>.
+	 * 
+	 * @param label item label
+	 * @param mode the input mode, one of DATE, TIME or DATE_TIME
+	 * @param style the CSS style for this item
+	 * @throws IllegalArgumentException if the input mode's value is invalid
+	 */
+	public DateField( String label, int mode, Style style)
+	{
+		this( label, mode, null, style );
+	}
+	
+	/**
+	 * Creates a date field in which calendar calculations are based
+	 * on specific
+	 * <code>TimeZone</code> object and the default calendaring system for the
+	 * current locale.
+	 * The value of the <code>DateField</code> is initially in the
+	 * &quot;uninitialized&quot; state.
+	 * If <code>timeZone</code> is <code>null</code>, the system's
+	 * default time zone is used.
+	 * 
+	 * @param label item label
+	 * @param mode the input mode, one of DATE, TIME or DATE_TIME
+	 * @param timeZone a specific time zone, or null for the default time zone
+	 * @throws IllegalArgumentException if the input mode's value is invalid
+	 */
+	public DateField( String label, int mode, TimeZone timeZone)
+	{
+		this( label, mode, timeZone, null );
 	}
 
 	/**
@@ -127,16 +171,24 @@ public class DateField extends Item
 	 * If <code>timeZone</code> is <code>null</code>, the system's
 	 * default time zone is used.
 	 * 
-	 * @param label - item label
-	 * @param mode - the input mode, one of DATE, TIME or DATE_TIME
-	 * @param timeZone - a specific time zone, or null for the default time zone
-	 * @throws IllegalArgumentException - if the input mode's value is invalid
+	 * @param label item label
+	 * @param mode the input mode, one of DATE, TIME or DATE_TIME
+	 * @param timeZone a specific time zone, or null for the default time zone
+	 * @param style the CSS style for this item
+	 * @throws IllegalArgumentException if the input mode's value is invalid
 	 */
-	public DateField( String label, int mode, TimeZone timeZone)
+	public DateField( String label, int mode, TimeZone timeZone, Style style)
 	{
-		//TODO implement DateField
+		super( label, null, INTERACTIVE, style );
+		this.mode = mode;
+		if (timeZone != null) {
+			this.timeZone = timeZone;
+		} else {
+			this.timeZone = TimeZone.getDefault();
+		}		
 	}
-
+	
+	
 	/**
 	 * Returns date value of this field. Returned value is
 	 * <code>null</code> if field
@@ -185,12 +237,66 @@ public class DateField extends Item
 	 * component of <code>Date</code> are used but
 	 * only to precision of minutes.
 	 * 
-	 * @param date - new value for this field
+	 * @param date new value for this field
 	 * @see #getDate()
 	 */
 	public void setDate( Date date)
 	{
 		this.date = date;
+		if (this.midpDateField != null) {
+			this.midpDateField.setDate( date );
+		}
+		// set date:
+		if (date == null ) {
+			if (this.mode == DATE) {
+				this.text = "YYYY-MM-DD";
+			} else if (this.mode == TIME) {
+				this.text = "hh:mm";
+			} else {
+				this.text = "YYYY-MM-DD hh:mm";				
+			}
+		} else {
+			if (this.calendar == null) {
+				this.calendar = Calendar.getInstance();
+				this.calendar.setTimeZone(this.timeZone);
+			}
+			this.calendar.setTime(date);
+			StringBuffer buffer = new StringBuffer();
+			if ((this.mode == DATE) || (this.mode == DATE_TIME)) {
+				int year = this.calendar.get(Calendar.YEAR);
+				buffer.append( year )
+				      .append("-");
+				int month = this.calendar.get( Calendar.MONTH );
+				if (month < 9) {
+					buffer.append('0');
+				}
+				buffer.append( ++month )
+			          .append("-");
+				int day = this.calendar.get( Calendar.DAY_OF_MONTH );
+				if (day < 10) {
+					buffer.append( '0' );
+				}
+				buffer.append( day );
+				if  (this.mode == DATE_TIME) {
+					buffer.append(' ');
+				}
+			}
+			if ((this.mode == TIME) || (this.mode == DATE_TIME)) {
+				int hour = this.calendar.get( Calendar.HOUR_OF_DAY );
+				if (hour < 10) {
+					buffer.append('0');
+				}
+				buffer.append( hour )
+				      .append(':');
+				int minute = this.calendar.get( Calendar.MINUTE );
+				if (minute < 10) {
+					buffer.append('0');
+				}
+				buffer.append( minute );
+			}
+			this.text = buffer.toString();
+		} // date != null
+		this.isInitialised = false;
 	}
 
 	/**
@@ -209,28 +315,74 @@ public class DateField extends Item
 	 * Set input mode for this date field. Valid input modes are
 	 * <code>DATE</code>, <code>TIME</code> and <code>DATE_TIME</code>.
 	 * 
-	 * @param mode - the input mode, must be one of DATE, TIME or DATE_TIME
-	 * @throws IllegalArgumentException - if an invalid value is specified
+	 * @param mode the input mode, must be one of DATE, TIME or DATE_TIME
+	 * @throws IllegalArgumentException if an invalid value is specified
 	 * @see #getInputMode()
 	 */
 	public void setInputMode(int mode)
 	{
 		this.inputMode = mode;
+		if (this.midpDateField != null) {
+			this.midpDateField.setInputMode(mode);
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see de.enough.polish.ui.Item#paint(int, int, javax.microedition.lcdui.Graphics)
 	 */
 	public void paintContent(int x, int y, int leftBorder, int rightBorder, Graphics g) {
-		//TODO rob implement paintItem
+		super.paintContent(x, y, leftBorder, rightBorder, g);
+		if (this.showCaret) {
+			if (this.text == null) {
+				// when the text is null the appropriate font and color
+				// might not have been set, so set them now:
+				g.setFont( this.font );
+				g.setColor( this.textColor );
+			}
+			if (this.isLayoutCenter) {
+				int centerX = leftBorder 
+					+ (rightBorder - leftBorder) / 2 
+					+ this.originalWidth / 2
+					+ 2;
+				if (this.originalHeight > 0) {
+					y += this.originalHeight - this.font.getHeight();
+				}
+				g.drawChar('|', centerX, y, Graphics.TOP | Graphics.LEFT );
+			} else {
+				x += this.originalWidth + 2;
+				if (this.originalHeight > 0) {
+					y += this.originalHeight - this.font.getHeight();
+				}
+				g.drawChar('|', x, y, Graphics.TOP | Graphics.LEFT );
+			}
+		}
 	}
+
 
 	/* (non-Javadoc)
 	 * @see de.enough.polish.ui.Item#initItem()
 	 */
 	protected void initContent(int firstLineWidth, int lineWidth) {
-		// TODO enough implement initItem
-		
+		if (this.date == null) {
+			if (this.mode == TIME) {
+				setDate( new Date(0) );
+			} else {
+				setDate( new Date() );
+			}
+		}
+		// init StringItem:
+		super.initContent(firstLineWidth, lineWidth);
+		this.originalWidth = this.contentWidth;
+		this.originalHeight = this.contentHeight;
+		if (this.contentWidth < this.minimumWidth) {
+			this.contentWidth = this.minimumWidth;
+		} 
+		if (this.contentHeight < this.minimumHeight) {
+			this.contentHeight = this.minimumHeight;
+		} else  if (this.contentHeight < this.font.getHeight()) {
+			this.contentHeight = this.font.getHeight();
+			this.originalHeight = this.contentHeight;
+		}
 	}
 
 	//#ifdef polish.useDynamicStyles
@@ -238,9 +390,88 @@ public class DateField extends Item
 	 * @see de.enough.polish.ui.Item#getCssSelector()
 	 */
 	protected String createCssSelector() {
-		// TODO enough implement getCssSelector
-		return null;
+		return "datefield";
 	}
 	//#endif
 
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#setStyle(de.enough.polish.ui.Style)
+	 */
+	public void setStyle(Style style) {
+		super.setStyle(style);
+		String widthStr = style.getProperty("datefield-width");
+		if (widthStr != null) {
+			this.minimumWidth = Integer.parseInt( widthStr );
+		}
+		String heightStr = style.getProperty("datefield-height");
+		if (heightStr != null) {
+			this.minimumHeight = Integer.parseInt( heightStr );
+		}
+		//TODO rob allow specification of DateFormat
+	}
+	
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#animate()
+	 */
+	public boolean animate() {
+		long currentTime = System.currentTimeMillis();
+		if ( currentTime - this.lastCaretSwitch > 500 ) {
+			this.lastCaretSwitch = currentTime;
+			this.showCaret = ! this.showCaret;
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#defocus(de.enough.polish.ui.Style)
+	 */
+	protected void defocus(Style originalStyle) {
+		super.defocus(originalStyle);
+		this.showCaret = false;
+	}
+	
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#handleKeyPressed(int, int)
+	 */
+	protected boolean handleKeyPressed(int keyCode, int gameAction) {
+		if ((gameAction == Canvas.UP && keyCode != Canvas.KEY_NUM2) 
+				|| (gameAction == Canvas.DOWN && keyCode != Canvas.KEY_NUM8)) {
+			return false;
+		}
+		showDateForm();
+		return true;
+	}
+	
+	/**
+	 * Shows the TextBox for entering texts.
+	 */
+	private void showDateForm() {
+		if (this.midpDateField == null) {
+			this.midpDateField = new javax.microedition.lcdui.DateField( this.label, this.mode, this.timeZone );
+			if (this.date == null) {
+				this.date = new Date();
+			}
+			this.midpDateField.setDate( this.date );
+			this.form = new javax.microedition.lcdui.Form( StyleSheet.currentScreen.getTitle() );
+			this.form.append( this.midpDateField );
+			this.form.addCommand(StyleSheet.OK_CMD);
+			this.form.addCommand(StyleSheet.CANCEL_CMD);
+			this.form.setCommandListener( this );
+		}
+		StyleSheet.display.setCurrent( this.form );
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.microedition.lcdui.CommandListener#commandAction(javax.microedition.lcdui.Command, javax.microedition.lcdui.Displayable)
+	 */
+	public void commandAction(Command cmd, Displayable box) {
+		if (cmd == StyleSheet.CANCEL_CMD) {
+			this.midpDateField.setDate( this.date );
+		} else {
+			setDate( this.midpDateField.getDate() );
+		}
+		StyleSheet.display.setCurrent( StyleSheet.currentScreen );
+	}
 }
