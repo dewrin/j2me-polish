@@ -93,6 +93,13 @@ public class PolishTask extends ConditionalTask {
 		return this.buildSetting;
 	}
 	
+	/**
+	 * Executes this task. 
+	 * For all selected devices the source code will be preprocessed,
+	 * compiled, obfuscated and jared.
+	 * 
+	 * @throws BuildException when the build failed.
+	 */
 	public void execute() throws BuildException {
 		if (!isActive()) {
 			return;
@@ -101,7 +108,9 @@ public class PolishTask extends ConditionalTask {
 		initProject();
 		selectDevices();
 		int devCount = this.devices.length;
-		System.out.println("Processing [" + devCount + "] devices...");
+		if (devCount > 1) {
+			System.out.println("Processing [" + devCount + "] devices...");
+		}
 		boolean obfuscate = this.buildSetting.doObfuscate();
 		for ( int i=0; i<devCount; i++) {
 			Device device = this.devices[i];
@@ -173,7 +182,7 @@ public class PolishTask extends ConditionalTask {
 		if (variables != null) {
 			for (int i = 0; i < variables.length; i++) {
 				Variable var = variables[i];
-				System.out.println("adding variable [" + var.getName() + "]." );
+				//System.out.println("adding variable [" + var.getName() + "]." );
 				this.polishProject.addDirectCapability( var );
 			}
 		}
@@ -351,7 +360,13 @@ public class PolishTask extends ConditionalTask {
 					{
 						// preprocess this file:
 						StringList sourceCode = new StringList( file.getContent() );
-						int result = this.preprocessor.preprocess( file.getFileName(), sourceCode );
+						// generate the class-name from the file-name:
+						String className = file.getFileName();
+						if (className.endsWith(".java")) {
+							className = className.substring(0, className.length() - 5 );
+							className = TextUtil.replace(className, '/', '.' );
+						}
+						int result = this.preprocessor.preprocess( className, sourceCode );
 						if (result != Preprocessor.SKIP_FILE) {
 							if (usePolishGui) {
 								// now replace the import statements:
@@ -360,6 +375,7 @@ public class PolishTask extends ConditionalTask {
 							if ( ( saveInAnyCase ) 
 							  || (result == Preprocessor.CHANGED) ) 
 							{
+								//System.out.println( "preprocessed [" + className + "]." );
 								file.saveToDir(targetDir, sourceCode.getArray(), false );
 							//} else {
 							//	System.out.println("not saving " + file.getFileName() );
@@ -761,6 +777,7 @@ public class PolishTask extends ConditionalTask {
 			if ( extPos != -1) {
 				extension = extension.substring( extPos + 1 ); 
 			}
+			//TODO enough also filter settings.xml
 			if ( ("css".equals( extension )) || ("CSS".equals(extension)) ) {
 				return false;
 			} else {

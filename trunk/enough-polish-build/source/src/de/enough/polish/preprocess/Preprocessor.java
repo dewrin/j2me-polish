@@ -833,8 +833,15 @@ public class Preprocessor {
 	 * @param className the name of the class
 	 */
 	private void insertVerboseDebugInfo( StringList lines, String className ) {
-		String debugVerbose = "de.enough.polish.util.Debug.debug(System.currentTimeMillis(), "
-				+ "\" - " + className + " line " + (lines.getCurrentIndex() + 1) + "\" );";
+		String debugVerbose = "(System.currentTimeMillis() + "
+			+ "\" - " + className 
+			+ " line " + (lines.getCurrentIndex() + 1 - lines.getNumberOfInsertedLines()) 
+			+ "\" );";
+		if (this.debugManager.isVisual()) {
+			debugVerbose = "de.enough.polish.util.Debug.debug" + debugVerbose;
+		} else {
+			debugVerbose = "System.out.println" + debugVerbose;
+		}
 		lines.insert( debugVerbose );
 		lines.next();
 	}
