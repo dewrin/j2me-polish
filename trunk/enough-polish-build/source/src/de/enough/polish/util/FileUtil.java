@@ -84,6 +84,7 @@ public final class FileUtil {
 	 * @param targetDir The directory to which the given files should be copied to.
 	 * @throws FileNotFoundException when the source file was not found
 	 * @throws IOException when there is an error while copying the file.
+	 * @throws NullPointerException when files or targetDir is null.
 	 */
 	public static void copy(File[] files, File targetDir) 
 	throws FileNotFoundException, IOException 
