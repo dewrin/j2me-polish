@@ -22,7 +22,16 @@ public class StringMatcher implements Matcher {
 	private boolean or;
 
 	/**
-	 * Creates a nwe string matcher.
+	 * Creates a new string matcher.
+	 * 
+	 * @param element the element which needs to be found in the device value.
+	 */
+	public StringMatcher(String element ) {
+		this( new String[]{ element }, true );
+	}
+	
+	/**
+	 * Creates a new string matcher.
 	 * 
 	 * @param elements array of elements which needs to be found in the device value.
 	 * @param or true when only one of the given elements needs to be found,
@@ -41,17 +50,20 @@ public class StringMatcher implements Matcher {
 	 */
 	public boolean matches(String deviceValue) {
 		deviceValue = deviceValue.toLowerCase();
+		boolean found = false;
 		for (int i = 0; i < this.elements.length; i++) {
 			String element = this.elements[i];
 			if (deviceValue.indexOf( element ) != -1) {
 				if (this.or) {
 					return true;
+				} else {
+					found = true;
 				}
 			} else if (! this.or) {
 				return false;
 			}
 		}
-		return true;
+		return found;
 	}
 
 }

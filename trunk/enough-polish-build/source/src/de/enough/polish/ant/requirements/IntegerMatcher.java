@@ -21,8 +21,8 @@ public class IntegerMatcher
 implements Matcher 
 {
 
-	private int number;
-	private boolean equalsOrGreater;
+	protected int number;
+	protected boolean equalsOrGreater;
 
 	/**
 	 * Creates a new integer matcher.

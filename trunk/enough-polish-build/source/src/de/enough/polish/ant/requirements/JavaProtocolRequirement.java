@@ -6,8 +6,6 @@
  */
 package de.enough.polish.ant.requirements;
 
-import de.enough.polish.Device;
-import de.enough.polish.util.TextUtil;
 
 /**
  * <p>Selects a device by its support of IO-protocols like http, https etc.</p>
@@ -19,9 +17,8 @@ import de.enough.polish.util.TextUtil;
  * </pre>
  * @author Robert Virkus, robert@enough.de
  */
-public class JavaProtocolRequirement extends Requirement {
+public class JavaProtocolRequirement extends StringRequirement {
 
-	private StringMatcher matcher;
 
 	/**
 	 * Creates a new java protocol requirement.
@@ -30,16 +27,6 @@ public class JavaProtocolRequirement extends Requirement {
 	 */
 	public JavaProtocolRequirement(String value) {
 		super(value, "JavaProtocol");
-		String[] apis = TextUtil.split( value, ',');
-		this.matcher = new StringMatcher( apis, false );
 	}
-
-	/* (non-Javadoc)
-	 * @see de.enough.polish.ant.requirements.Requirement#isMet(de.enough.polish.build.Device, java.lang.String)
-	 */
-	protected boolean isMet(Device device, String property) {
-		return this.matcher.matches( property );
-	}
-	
 
 }
