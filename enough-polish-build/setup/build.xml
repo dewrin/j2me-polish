@@ -1,16 +1,32 @@
+<!-- This file controls the build process.                    -->
+<!-- The most important target is the j2mepolish-target,      -->
+<!-- which controls for what devices the application should   -->
+<!-- be created and so on.                                    -->
+<!--                                                          -->
+<!-- Important: please adjust the property "wtk.home"!        -->
+<!-- Alternatively you can define the "preverify"-attribute   -->
+<!-- of the <build>-element of the J2ME Polish task.          -->
+<!--                                                          -->
+<!-- When you call Ant from the command-line, you can         -->
+<!-- call "ant notest j2mepolish" to obfuscate the example    -->
+<!-- as well. The default just builds the example.            -->
+<!--                                                          -->
+<!-- The full documentation can be found at                   -->
+<!-- http://www.j2mepolish.org                                -->
+<!--                                                          -->
+<!-- Have fun!                                                -->
 <project 
-	name="enough-polish-dict" 
+	name="enough-j2mepolish-example" 
 	default="j2mepolish">
 	
-<!-- task definitions -->
-
+<!-- PLEASE ADJUST THIS PROPERTY!                             -->
+<!-- The wtk.home property should point to the directory      -->
+<!-- containing the Wireless Toolkit.                         -->
+<property name="wtk.home" value="C:\WTK21" />
+	
+<!-- Definition of the J2ME Polish task:                      -->
 <taskdef name="j2mepolish" classname="de.enough.polish.ant.PolishTask" classpath="import/enough-j2mepolish-build.jar:import/jdom.jar:import/proguard.jar:import/retroguard.jar"/>
 
-  <!-- optional J2ME apis -->
-  <!-- in the alpha release the apis.xml file is not used yet.
-       Please adjust the paths to your system -->
-  <property name="polish.api.bluetooth" location="/home/enough/Nokia/Devices/Series_60_MIDP_Concept_SDK_Beta_0_3_1_Nokia_edition/lib/ext/bluetooth.zip" />
-  <property name="polish.api.btapi" location="/home/enough/Nokia/Devices/Series_60_MIDP_Concept_SDK_Beta_0_3_1_Nokia_edition/lib/ext/bluetooth.zip" />
 	
 <!-- build targets, each target can be called via "ant [name]", 
 	 e.g. "ant clean", "ant notest j2mepolish" or just "ant" for calling the default-target -->
@@ -22,9 +38,18 @@
 <target name="init">
   	<property name="test" value="true" />
 </target>
-    
+ 
+<!-- In this target the J2ME Polish task is used.             -->
+<!-- It has 3 sections:                                       -->
+<!--    1. The info-section defines some general information  -->
+<!--    2. The deviceRequirements-section chooses the devices -->
+<!--       for which the application is optimized.            -->
+<!--    3. The build-section controls the actual build        -->
+<!--       process.                                           -->	
 <target name="j2mepolish" 
-		depends="init">
+		depends="init"
+		description="This is the controller for the J2ME build process." 
+		>
 	<j2mepolish>
 	    <!-- general settings -->
 		<info
@@ -49,8 +74,7 @@
 			<requirement name="BitsPerPixel" value="4+" />
 		</deviceRequirements>
 	    <!-- build settings -->
-		<!-- You need to adjust the path to the preverify executable.
-		     Also you could set the resDir attribute to "resources" 
+		<!-- Also you can set the resDir attribute to "resources" 
 		     for an alternative design.
 		 -->
 		<build

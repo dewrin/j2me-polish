@@ -116,6 +116,7 @@ SonyEricsson T68i  SonyEricssonT68
 		<identifier>Nokia/3650</identifier>
 		<groups>Series60</groups>
 		<capability name="JavaPackage" value="mmapi, btapi, wmapi" />
+		<capability name="ScreenSize" value="176x208"/>
 	</device>
 
 	<device>

@@ -71,11 +71,9 @@ public class ProGuardObfuscator extends Obfuscator {
 		// set libraries:
 		
 		cfg.libraryJars  = getPath( bootClassPath.toString() );
-		if (device.getClassPath() != null) {
-			String[] apiPaths = TextUtil.split( device.getClassPath(), File.pathSeparatorChar ) ;
-			for (int i = 0; i < apiPaths.length; i++) {
-				cfg.libraryJars.addAll( getPath( apiPaths[i] ) );
-			}
+		String[] apiPaths = device.getClassPaths();
+		for (int i = 0; i < apiPaths.length; i++) {
+			cfg.libraryJars.addAll( getPath( apiPaths[i] ) );
 		}
 		
         cfg.inJars = getPath( sourceFile );

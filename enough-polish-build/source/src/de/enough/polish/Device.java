@@ -86,6 +86,7 @@ public class Device extends PolishComponent {
 	private DeviceGroup[] groups;
 	private File jarFile;
 	private int numberOfChangedFiles;
+	private String[] classPaths;
 	
 
 	/**
@@ -96,10 +97,12 @@ public class Device extends PolishComponent {
 	 * @param deviceName The name of this device.
 	 * @param vendor The vendor (and "parent") of this device.
 	 * @param groupManager The manager for device-groups.
+	 * @param libraryManager the manager for device-specific APIs
 	 * @throws InvalidComponentException when the given definition has errors
 	 */
-	public Device(Element definition, String identifier, String deviceName, Vendor vendor, DeviceGroupManager groupManager) 
-	throws InvalidComponentException {
+	public Device(Element definition, String identifier, String deviceName, Vendor vendor, DeviceGroupManager groupManager, LibraryManager libraryManager ) 
+	throws InvalidComponentException 
+	{
 		super( vendor );
 		this.identifier = identifier;
 		this.name = deviceName;
@@ -138,9 +141,14 @@ public class Device extends PolishComponent {
 			String[] apis = TextUtil.splitAndTrim( this.supportedApisString, ',' );
 			for (int i = 0; i < apis.length; i++) {
 				String api = apis[i].toLowerCase();
-				addFeature( "api." + api );
-				groupNamesList.add( api );
-				groupsList.add( groupManager.getGroup( api, true ) );
+				String symbol = libraryManager.getSymbol( api );
+				if (symbol == null) {
+					symbol = api;
+				}
+				apis[i] = symbol;
+				addFeature( "api." + symbol );
+				groupNamesList.add( symbol );
+				groupsList.add( groupManager.getGroup( symbol, true ) );
 			}
 			this.supportedApis = apis;
 		}
@@ -418,4 +426,20 @@ public class Device extends PolishComponent {
 		return this.numberOfChangedFiles;
 	}
 
+	/**
+	 * Sets the classpaths as a string array 
+	 * @param classPaths the class paths as a string array
+	 */
+	public void setClassPaths(String[] classPaths) {
+		this.classPaths = classPaths;
+	}
+	
+	/**
+	 * Retrieves the classpaths for this device as a string array
+	 * 
+	 * @return an array containing the classpaths for this device.
+	 */
+	public String[] getClassPaths() {
+		return this.classPaths;
+	}
 }
