@@ -89,6 +89,7 @@ public class DeviceManager {
 		SAXBuilder builder = new SAXBuilder( false );
 		Document document = builder.build( devicesIS );
 		ArrayList devicesList = new ArrayList();
+		HashMap devicesByIdentifier = new HashMap();
 		List xmlList = document.getRootElement().getChildren();
 		for (Iterator iter = xmlList.iterator(); iter.hasNext();) {
 			Element definition = (Element) iter.next();
@@ -101,6 +102,9 @@ public class DeviceManager {
 			String[] identifiers = TextUtil.splitAndTrim(identifierStr,',');
 			for (int i = 0; i < identifiers.length; i++) {
 				String identifier = identifiers[i];
+				if (devicesByIdentifier.get( identifier ) != null) {
+					throw new InvalidComponentException("The device [" + identifier + "] has been defined twice in [devices.xml]. Please remove one of those definitions.");
+				}
 				String[] chunks = TextUtil.split( identifier, '/');
 				if (chunks.length != 2) {
 					throw new InvalidComponentException("The device [" + identifier + "] has an invalid [identifier] - every identifier needs to consists of the vendor and the name, e.g. \"Nokia/6600\". Please check you [devices.xml].");
@@ -109,6 +113,7 @@ public class DeviceManager {
 				String deviceName = chunks[1];
 				Vendor vendor = vendorManager.getVendor( vendorName );
 				Device device = new Device( definition, identifier, deviceName, vendor, groupManager, libraryManager );
+				devicesByIdentifier.put( identifier, device );
 				devicesList.add( device );
 			}
 		}

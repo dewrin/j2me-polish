@@ -141,7 +141,10 @@ public class PolishComponent {
 			if (currentValue == null) {
 				// okay, this capability has not been defined so far:
 				addCapability( key, componentValue );
-			} else if ( (Device.JAVA_PACKAGE.equals(key) ) || (Device.JAVA_PROTOCOL.equals(key)) ) {
+			} else if ( (Device.JAVA_PACKAGE.equals(key) ) 
+					|| (Device.JAVA_PROTOCOL.equals(key)) 
+					|| (Device.VIDEO_FORMAT.equals(key))
+					|| (Device.SOUND_FORMAT.equals(key)) ) {
 				// add additional package/protocol definitions:
 				String newValue = currentValue + "," + componentValue;
 				addCapability(key, newValue);
@@ -226,6 +229,12 @@ public class PolishComponent {
 			name = name.substring( 17 );
 		} else if (name.startsWith("HardwarePlatform.")) {
 			name = name.substring( 17 );
+		}
+		if ( (Device.JAVA_PACKAGE.equals(name) ) 
+				|| (Device.JAVA_PROTOCOL.equals(name)) 
+				|| (Device.VIDEO_FORMAT.equals(name))
+				|| (Device.SOUND_FORMAT.equals(name)) ) {
+			value = value.toLowerCase();
 		}
 		addSingleCapability( name, value );
 		
