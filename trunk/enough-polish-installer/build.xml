@@ -3,6 +3,10 @@
 	default="bin-dist">
 
 <!-- global properties -->
+	<property name="izpack.dir" value="/home/enough/dev/IzPack" />
+	<!-- on mac:
+	<property name="izpack.dir" value="/Applications/IzPack" />
+	-->
 
 <!-- build targets, each target can be called via "ant [name]", e.g. "ant clean" -->
 
@@ -35,16 +39,16 @@
 
 <target name="bin-dist" depends="init">
 	
-	<!-- create and move the build distribution -->
-	<jar destfile="/Applications/IzPack/bin/panels/ChooseLicensePanel.jar"
+	<!-- create and copy the jar file for the ChooseLicensePanel -->
+	<jar destfile="${izpack.dir}/bin/panels/ChooseLicensePanel.jar"
 	     basedir="bin/classes"
 		 includes="ChooseLicensePanel.java"
 		 index="false"
 	     >
 	</jar>
-	<!-- copy the single class -->
+	<!-- copy the single ChooseLicensePanel class -->
 	<copy file="bin/classes/com/izforge/izpack/panels/ChooseLicensePanel.class" 
-	      todir="/Applications/IzPack/bin/panels/ChooseLicensePanel"/>
+	      todir="${izpack.dir}/bin/panels/ChooseLicensePanel"/>
 </target>
 			
 <target name="clean" depends="init">
