@@ -13,21 +13,15 @@ import de.enough.polish.ant.requirements.Requirements;
 import de.enough.polish.exceptions.InvalidComponentException;
 import de.enough.polish.obfuscate.Obfuscator;
 import de.enough.polish.preprocess.*;
-import de.enough.polish.preprocess.PreprocessException;
-import de.enough.polish.preprocess.Preprocessor;
 import de.enough.polish.util.*;
 
 import org.apache.tools.ant.*;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.taskdefs.*;
 import org.apache.tools.ant.types.Path;
 import org.jdom.JDOMException;
 
 import java.io.*;
 import java.util.*;
-import java.util.HashMap;
-import java.util.Hashtable;
 
 /**
  * <p>Manages a J2ME project from the preprocessing to the packaging and obfuscation.</p>
@@ -64,12 +58,16 @@ public class PolishTask extends ConditionalTask {
 	private String[] preserveClasses;
 	private StyleSheet styleSheet;
 	private ImportConverter importConverter;
+	private TextFile styleSheetFile;
 	
 	/**
 	 * Creates a new empty task 
 	 */
 	public PolishTask() {
 		// initialisation is done with the setter-methods.
+		// if you should use the PolishTask not within an ant-build.xm
+		// then make sure to set the project with .setProject(...)
+		
 		//this.quote = File.pathSeparatorChar == '/' ? '\'' : '"';
 	}
 	
@@ -163,17 +161,25 @@ public class PolishTask extends ConditionalTask {
 		if (isDebugEnabled) {
 			try {
 				debugManager = new DebugManager( this.buildSetting.getDebugSetting() );
-			} catch (PreprocessException e) {
+			} catch (BuildException e) {
 				throw new BuildException( e.getMessage() );
 			}
 		}
 		// create project settings:
 		this.polishProject = new PolishProject( this.buildSetting.usesPolishGui(), isDebugEnabled, debugManager );
+		// add some specified features:
 		this.polishProject.addFeature(this.buildSetting.getImageLoadStrategy());
 		if (debugManager != null && this.buildSetting.getDebugSetting().isVisual()) {
 			this.polishProject.addFeature("debug.visual");
 		}
-		// add all ant properties: 
+		FullScreenSetting fullScreenSetting = this.buildSetting.getFullScreenSetting();
+		if (fullScreenSetting.isMenu()) {
+			this.polishProject.addFeature("useMenuFullScreen");
+			this.polishProject.addFeature("useFullScreen");
+		} else if (fullScreenSetting.isEnabled()) {
+			this.polishProject.addFeature("useFullScreen");
+		}
+		// add all ant properties if desired: 
 		if (this.buildSetting.includeAntProperties()) {
 			Hashtable antProperties = this.project.getProperties();
 			Set keySet = antProperties.keySet();
@@ -199,7 +205,6 @@ public class PolishTask extends ConditionalTask {
 				this.polishProject.addDirectFeature( symbols[i] );
 			}
 		}
-		
 		// create vendor/group/device manager:
 		try {
 			VendorManager vendorManager = new VendorManager( this.polishProject, this.buildSetting.getVendors());
@@ -246,6 +251,9 @@ public class PolishTask extends ConditionalTask {
 			dirScanner.setBasedir(dir);
 			dirScanner.scan();
 			this.sourceFiles[i] = getTextFiles( dirName,  dirScanner.getIncludedFiles() );
+		}
+		if (this.buildSetting.usesPolishGui() && this.styleSheetFile == null) {
+			throw new BuildException("Did not find the file [StyleSheet.java] of the polish GUI framework. Please add the [polish] attribute to the <source> element of the <build> setting. The [polish]-attribute should point to the directory which contains the polish-Java-sources.");
 		}
 		
 		// init boot class path:
@@ -301,7 +309,11 @@ public class PolishTask extends ConditionalTask {
 		for (int i = 0; i < fileNames.length; i++) {
 			String fileName = fileNames[i];
 			try {
-				files[i] = new TextFile( baseDir, fileName );
+				TextFile file = new TextFile( baseDir, fileName );
+				if ("de/enough/polish/ui/StyleSheet.java".equals(fileName)) {
+					this.styleSheetFile = file;
+				}
+				files[i] = file;
 			} catch (FileNotFoundException e) {
 				throw new BuildException("Unable to load java source [" + fileName + "]: " + e.getMessage(), e );
 			}
@@ -352,52 +364,41 @@ public class PolishTask extends ConditionalTask {
 			// check if the polish gui is used at all:
 			boolean usePolishGui = this.buildSetting.usesPolishGui()
 								  && device.supportsPolishGui();
+			this.preprocessor.setUsePolishGui(usePolishGui);
+			long lastCssModification = 0;
+			StyleSheet cssStyleSheet = null;
 			if (usePolishGui) {
-				// initialise the CSS-style sheet:
-				CssReader cssReader = new CssReader( this.styleSheet );
-				Vendor vendor = device.getVendor();
-				StyleSheet sheet = vendor.getStyleSheet();
-				if ( sheet != null ) {
-					cssReader.add( sheet );
+				cssStyleSheet = loadStyleSheet( device );
+				lastCssModification = cssStyleSheet.lastModified();
+				this.preprocessor.setSyleSheet( cssStyleSheet );
+				if (cssStyleSheet.containsDynamicStyles()) {
+					this.preprocessor.addSymbol("polish.useDynamicStyles");
 				} else {
-					// CSS file has not been read yet:
-					File cssFile = new File( this.buildSetting.getResDir().getAbsolutePath()
-							+ File.separator + vendor.getIdentifier() 
-							+ File.separator + "polish.css");
-					if (cssFile.exists()) {
-						CssReader reader = new CssReader( this.styleSheet );
-						reader.add( cssFile );
-						vendor.setStyleSheet( reader.getStyleSheet() );
-					} else {
-						vendor.setStyleSheet( new StyleSheet() );
-					}
+					this.preprocessor.removeSymbol("polish.useDynamicStyles");
 				}
-				DeviceGroup[] groups = device.getGroups();
-				for (int i = 0; i < groups.length; i++) {
-					DeviceGroup group = groups[i];
-					sheet = group.getStyleSheet();
-					if (sheet != null) {
-						cssReader.add(sheet);
-					} else {
-						File cssFile = new File( this.buildSetting.getResDir().getAbsolutePath()
-								+ File.separator + vendor.getIdentifier() 
-								+ File.separator + "polish.css");
-						if (cssFile.exists()) {
-							CssReader reader = new CssReader( this.styleSheet );
-							reader.add( cssFile );
-							group.setStyleSheet( reader.getStyleSheet() );
-						} else {
-							group.setStyleSheet( new StyleSheet() );
-						}
-					}
+				if (cssStyleSheet.containsBeforeStyle()) {
+					this.preprocessor.addSymbol("polish.useBeforeStyle");
+				} else {
+					this.preprocessor.removeSymbol("polish.useBeforeStyle");
 				}
-				this.preprocessor.setSyleSheet( cssReader.getStyleSheet() );
+				if (cssStyleSheet.containsAfterStyle()) {
+					this.preprocessor.addSymbol("polish.useAfterStyle");
+				} else {
+					this.preprocessor.removeSymbol("polish.useAfterStyle");
+				}
+			} else {
+				this.preprocessor.removeSymbol("polish.useDynamicStyles");
+				this.preprocessor.removeSymbol("polish.useBeforeStyle");
+				this.preprocessor.removeSymbol("polish.useAfterStyle");
 			}
+			StringList styleSheetCode = null;
+			// preprocess each source file:
 			for (int i = 0; i < this.sourceDirs.length; i++) {
 				File sourceDir = this.sourceDirs[i];
 				this.preprocessor.addVariable( "polish.source", sourceDir.getAbsolutePath() );
 				TextFile[] files = this.sourceFiles[i];
-				//System.out.println("current source dir: " + sourceDir );				
+				//System.out.println("current source dir: " + sourceDir );
+				// preprocess each file in that source-dir:
 				for (int j = 0; j < files.length; j++) {
 					TextFile file = files[j];
 					// check if file needs to be preprocessed at all:
@@ -409,22 +410,15 @@ public class PolishTask extends ConditionalTask {
 					// be changes at all - this could be when
 					// 1. The preprocessed file does not yet exists
 					// 2. The source file has been modified since the last run
-					// 3, The build.xml has been modified since the last run
+					// 3. The build.xml has been modified since the last run
+					// 4. One of the polish.css files has been modified since the last run 
+					// when only the CSS files have changed
 					boolean saveInAnyCase =  ( !targetFile.exists() )
 							 || ( sourceLastModified > targetLastModified );
-					/*
-					if (( sourceLastModified > targetLastModified )) {
-						System.out.println("File has been modified: " + file.getFileName() 
-								+ "\n last mod of source: " + sourceLastModified + " last mod of target: " + targetLastModified );
-					}
-					if (( buildXmlLastModified > targetLastModified ) ) {
-						System.out.println("build.xml has been modified: " + file.getFileName() 
-								+ "\n last mod of target: " + targetLastModified + " last mod of build.xml: " + buildXmlLastModified );
-					}
-					*/
-					if (   ( saveInAnyCase )
-						|| ( buildXmlLastModified > targetLastModified ) )
-					{
+					boolean preprocess = ( saveInAnyCase )
+							 || ( buildXmlLastModified > targetLastModified ) 
+							 || ( lastCssModification > targetLastModified);
+					if (   preprocess ) {
 						// preprocess this file:
 						StringList sourceCode = new StringList( file.getContent() );
 						// generate the class-name from the file-name:
@@ -434,7 +428,11 @@ public class PolishTask extends ConditionalTask {
 							className = TextUtil.replace(className, '/', '.' );
 						}
 						int result = this.preprocessor.preprocess( className, sourceCode );
-						if (result != Preprocessor.SKIP_FILE) {
+						// only think about saving when the file should not be skipped 
+						// and when it is not the StyleSheet.java file:
+						if (file == this.styleSheetFile ) {
+							styleSheetCode = sourceCode;
+						} else  if (result != Preprocessor.SKIP_FILE) {
 							sourceCode.reset();
 							// now replace the import statements:
 							boolean changed = this.importConverter.processImports(usePolishGui, device.isMidp1(), sourceCode);
@@ -450,22 +448,132 @@ public class PolishTask extends ConditionalTask {
 							//} else {
 							//	System.out.println("not saving " + file.getFileName() );
 							}
-						} else {
-							System.out.println("Skipping file " + file.getFileName() );
+						//} else {
+						//	System.out.println("Skipping file " + file.getFileName() );
 						}
 					} // when preprocessing should be done.
 				} // for each file
 			} // for each source folder
+			
+			// now all files have been preprocessed.
+			// Now the StyleSheet.java file needs to be written,
+			// but only when the polish GUI should be used:
+			if (usePolishGui) {
+				// check if the CSS declarations have changed since the last run:
+				File targetFile = new File( targetDir + File.separatorChar + this.styleSheetFile.getFileName() );
+				boolean cssIsNew = (!targetFile.exists())
+					|| ( lastCssModification > targetFile.lastModified() )
+					|| ( buildXmlLastModified > targetFile.lastModified() );
+				if (cssIsNew) {
+					//System.out.println("CSS is new and the style sheet will be generated.");
+					if (styleSheetCode == null) {
+						// the style sheet has not been preprocessed:
+						styleSheetCode = new StringList( this.styleSheetFile.getContent() );
+						String className = "de.enough.polish.ui.StyleSheet";
+						this.preprocessor.preprocess( className, styleSheetCode );
+					}
+					// now insert the CSS information for this device
+					// into the StyleSheet.java source-code:
+					CssConverter cssConverter = new CssConverter();
+					styleSheetCode.reset();
+					cssConverter.convertStyleSheet(styleSheetCode, this.preprocessor.getStyleSheet() ); 				
+					this.styleSheetFile.saveToDir(targetDir, styleSheetCode.getArray(), false );
+				//} else {
+				//	System.out.println("CSSS is not new - last CSS modification == " + lastCssModification + " <= StyleSheet.java.lastModified() == " + targetFile.lastModified() );
+				}
+				
+			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			throw new BuildException( e.getMessage() );
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new BuildException( e.getMessage() );
-		} catch (PreprocessException e) {
+		} catch (BuildException e) {
 			e.printStackTrace();
 			throw new BuildException( e.getMessage() );
 		}
+	}
+
+	/**
+	 * Reads the style sheet for the given device.
+	 * 
+	 * @param device the device
+	 * @return the style sheet for that device
+	 * @throws IOException when a sub-style sheet could not be loaded.
+	 */
+	private StyleSheet loadStyleSheet(Device device) throws IOException {
+		String resDir = this.buildSetting.getResDir().getAbsolutePath()
+						+ File.separator;
+		// initialise the CSS-style sheet:
+		long lastCssModification = this.styleSheet.lastModified();
+		
+		CssReader cssReader = new CssReader( this.styleSheet );
+		
+		// add the vendor style sheet:
+		Vendor vendor = device.getVendor();
+		StyleSheet sheet = vendor.getStyleSheet();
+		if ( sheet == null ) {
+			// CSS file has not been read yet:
+			File cssFile = new File( resDir + vendor.getIdentifier() 
+					+ File.separator + "polish.css");
+			if (cssFile.exists()) {
+				CssReader reader = new CssReader( this.styleSheet );
+				reader.add( cssFile );
+				sheet = reader.getStyleSheet();
+				vendor.setStyleSheet( sheet );
+			} else {
+				sheet = new StyleSheet();
+				vendor.setStyleSheet( sheet );
+			}
+		}
+		cssReader.add( sheet );
+		if (sheet.lastModified() > lastCssModification) {
+			lastCssModification = sheet.lastModified();
+		}
+		
+		// now add the CSS files of the groups:
+		DeviceGroup[] groups = device.getGroups();
+		for (int i = 0; i < groups.length; i++) {
+			DeviceGroup group = groups[i];
+			sheet = group.getStyleSheet();
+			if (sheet == null) {
+				File cssFile = new File( resDir + group.getIdentifier() 
+						+ File.separator + "polish.css");
+				if (cssFile.exists()) {
+					CssReader reader = new CssReader( this.styleSheet );
+					reader.add( cssFile );
+					sheet = reader.getStyleSheet();
+					group.setStyleSheet( sheet );
+				} else {
+					sheet = new StyleSheet();
+					group.setStyleSheet( sheet );
+				}
+			}
+			cssReader.add(sheet);
+			if (sheet.lastModified() > lastCssModification) {
+				lastCssModification = sheet.lastModified();
+			}
+		}
+		
+		// now add the style sheet of the device:
+		// CSS file has not been read yet:
+		File cssFile = new File( resDir + vendor.getIdentifier() 
+				+ File.separator + device.getName() + File.separator + "polish.css");
+		if (cssFile.exists()) {
+			CssReader reader = new CssReader( this.styleSheet );
+			reader.add( cssFile );
+			sheet = reader.getStyleSheet();
+			cssReader.add( sheet );
+		} else {
+			sheet = new StyleSheet();
+		}
+		if (sheet.lastModified() > lastCssModification) {
+			lastCssModification = sheet.lastModified();
+		}
+		sheet = cssReader.getStyleSheet();
+		sheet.setLastModified(lastCssModification);
+		return sheet;
 	}
 
 	/**
@@ -544,8 +652,9 @@ public class PolishTask extends ConditionalTask {
 		try {
 			javac.execute();
 		} catch (BuildException e) {
-			e.printStackTrace();
-			throw new BuildException( "Unable to compile source code for device [" + device.getIdentifier() + "]: " + e.getMessage() );
+			System.out.println("If an error occured in the J2ME Polish packages, please try a clean rebuild - e.g. [ant clean] and then [ant].");
+			System.out.println("Alternatively you might need to define where to find the device-APIs. Following classpath has been used: [" + classPath + "].");
+			throw new BuildException( "Unable to compile source code for device [" + device.getIdentifier() + "]: " + e.getMessage(), e );
 		}
 		
 	}
@@ -749,7 +858,7 @@ public class PolishTask extends ConditionalTask {
 				manifest.addConfiguredAttribute( attribute  );
 			}
 			// add build properties - midlet infos:
-			String[] midletInfos = this.buildSetting.getMidletInfos();
+			String[] midletInfos = this.buildSetting.getMidletInfos( this.infoSetting.getIcon() );
 			for (int i = 0; i < midletInfos.length; i++) {
 				String info = midletInfos[i];
 				Manifest.Attribute attribute = new Manifest.Attribute(InfoSetting.NMIDLET + (i+1), info );
@@ -788,7 +897,7 @@ public class PolishTask extends ConditionalTask {
 			jad.addAttribute( var.getName() , PropertyUtil.writeProperties( var.getValue(), infoProperties) );
 		}
 		// add build properties - midlet infos:
-		String[] midletInfos = this.buildSetting.getMidletInfos();
+		String[] midletInfos = this.buildSetting.getMidletInfos( this.infoSetting.getIcon() );
 		for (int i = 0; i < midletInfos.length; i++) {
 			String info = midletInfos[i];
 			jad.addAttribute( InfoSetting.NMIDLET + (i+1), info );

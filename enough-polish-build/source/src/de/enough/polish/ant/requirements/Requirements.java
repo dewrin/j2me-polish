@@ -38,6 +38,7 @@ extends AndRelation
 	}
 	
 	//TODO rob addConfiguredGroup( OrRelation orRelation )
+	// when requirements should be given in groups
 	
 	
 	/**

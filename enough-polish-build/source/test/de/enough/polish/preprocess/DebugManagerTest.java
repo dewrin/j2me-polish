@@ -6,7 +6,8 @@
  */
 package de.enough.polish.preprocess;
 
-import de.enough.polish.preprocess.PreprocessException;
+
+import org.apache.tools.ant.BuildException;
 
 import junit.framework.TestCase;
 
@@ -26,7 +27,7 @@ public class DebugManagerTest extends TestCase {
 		super(name);
 	}
 	
-	public void testAdding() throws PreprocessException {
+	public void testAdding() throws BuildException {
 		DebugManager manager = new DebugManager( "error", false );
 		manager.addDebugSetting( "com.company.package.*", "info" );
 		manager.addDebugSetting( "com.company.package.MyClass", "debug" );
@@ -90,7 +91,7 @@ public class DebugManagerTest extends TestCase {
 		try {
 			manager.addDebugSetting("com.company.MyClass*", "debug");
 			fail("DebugManager should not accept invalid class-pattern.");
-		} catch (PreprocessException e) {
+		} catch (BuildException e) {
 			// expected behaviour!
 		}
 	}

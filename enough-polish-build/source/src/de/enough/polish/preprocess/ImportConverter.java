@@ -48,6 +48,7 @@ public final class ImportConverter {
 		toPolish.put( "javax.microedition.lcdui.List", "de.enough.polish.ui.List");
 		toPolish.put( "javax.microedition.lcdui.Spacer", "de.enough.polish.ui.Spacer");
 		toPolish.put( "javax.microedition.lcdui.StringItem", "de.enough.polish.ui.StringItem");
+		toPolish.put( "javax.microedition.lcdui.Style", "de.enough.polish.ui.Style");
 		toPolish.put( "javax.microedition.lcdui.TextBox", "de.enough.polish.ui.TextBox");
 		toPolish.put( "javax.microedition.lcdui.TextField", "de.enough.polish.ui.TextField");
 		toPolish.put( "javax.microedition.lcdui.Ticker", "de.enough.polish.ui.Ticker");
@@ -77,7 +78,6 @@ public final class ImportConverter {
 				"import javax.microedition.lcdui.Font;",
 				"import javax.microedition.lcdui.Graphics;",
 				"import javax.microedition.lcdui.Image;",
-				"import javax.microedition.lcdui.Screen;",
 				"import de.enough.polish.ui.*;"
 		};
 

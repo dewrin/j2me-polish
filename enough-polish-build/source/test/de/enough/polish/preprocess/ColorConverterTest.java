@@ -11,7 +11,7 @@ import org.apache.tools.ant.BuildException;
 import junit.framework.TestCase;
 
 /**
- * <p>Tests the colors class.</p>
+ * <p>Tests the ColorConverter class.</p>
  *
  * <p>copyright enough software 2004</p>
  * <pre>
@@ -20,14 +20,14 @@ import junit.framework.TestCase;
  * </pre>
  * @author Robert Virkus, robert@enough.de
  */
-public class ColorsTest extends TestCase {
+public class ColorConverterTest extends TestCase {
 	
-	public ColorsTest(String name) {
+	public ColorConverterTest(String name) {
 		super(name);
 	}
 	
 	public void testHexColors() {
-		Colors colors = new Colors();
+		ColorConverter colors = new ColorConverter();
 		String definition = "#FF0000";
 		String value = colors.parseColor(definition);
 		assertEquals("0xFF0000", value );
@@ -72,7 +72,7 @@ public class ColorsTest extends TestCase {
 	}
 	
 	public void testVgaColors() {
-		Colors colors = new Colors();
+		ColorConverter colors = new ColorConverter();
 		String definition = "black";
 		String value = colors.parseColor(definition);
 		assertEquals("0x000000", value );
@@ -105,7 +105,7 @@ public class ColorsTest extends TestCase {
 	}
 
 	public void testRgbColors() {
-		Colors colors = new Colors();
+		ColorConverter colors = new ColorConverter();
 		String definition = "rgb( 0, 0, 0)";
 		String value = colors.parseColor(definition);
 		assertEquals("0x000000", value );

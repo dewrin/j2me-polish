@@ -9,6 +9,8 @@ package de.enough.polish.preprocess;
 import de.enough.polish.PolishProject;
 import de.enough.polish.util.StringList;
 
+import org.apache.tools.ant.BuildException;
+
 import java.io.File;
 import java.util.HashMap;
 
@@ -121,7 +123,7 @@ public class PreprocessorTest extends TestCase {
 		try {
 			this.preprocessor.preprocess( "MyClass.java", lines );
 			fail("PreprocessException should be thrown when #else is misspelled.");
-		} catch (PreprocessException e) {
+		} catch (BuildException e) {
 			// expected behaviour!
 		}
 		sourceLines = new String[] {
@@ -136,7 +138,7 @@ public class PreprocessorTest extends TestCase {
 		try {
 			this.preprocessor.preprocess( "MyClass.java", lines );
 			fail("PreprocessException should be thrown when #else is first directive.");
-		} catch (PreprocessException e) {
+		} catch (BuildException e) {
 			// expected behaviour!
 		}
 		
@@ -144,9 +146,9 @@ public class PreprocessorTest extends TestCase {
 
 	/**
 	 * Tests the #ifdef directive 
-	 * @throws PreprocessException when the preprocessing fails
+	 * @throws BuildException when the preprocessing fails
 	 */
-	public void testIfdef() throws PreprocessException {
+	public void testIfdef() throws BuildException {
 		String[] sourceLines = new String[] {
 			"	//#ifdef test1 ",
 			"	String hello =  \"test1 is defined\";",
@@ -194,7 +196,7 @@ public class PreprocessorTest extends TestCase {
 		try {
 			this.preprocessor.preprocess( "MyClass.java", lines );
 			fail("PreprocessException should be thrown when #endif is missing.");
-		} catch (PreprocessException e) {
+		} catch (BuildException e) {
 			// expected behaviour!
 		}
 
@@ -255,13 +257,13 @@ public class PreprocessorTest extends TestCase {
 		try {
 			result = this.preprocessor.preprocess( "MyClass.java", lines );
 			fail( "preprocessing should fail when encountering syntax error within inactive if-block." );
-		} catch (PreprocessException e) {
+		} catch (BuildException e) {
 			// expected behaviour
 		}
 		
 	}
 	
-	public void testIfndef() throws PreprocessException {
+	public void testIfndef() throws BuildException {
 		String[] sourceLines = new String[] {
 				"	//#ifndef test1 ",
 				"	//# String hello =  \"test1 is not defined\";",
@@ -310,13 +312,13 @@ public class PreprocessorTest extends TestCase {
 		try {
 			this.preprocessor.preprocess( "MyClass.java", lines );
 			fail("PreprocessException should be thrown when #endif is missing.");
-		} catch (PreprocessException e) {
+		} catch (BuildException e) {
 			// expected behaviour!
 		}
 		
 	}
 	
-	public void testIf() throws PreprocessException {
+	public void testIf() throws BuildException {
 		String[] sourceLines = new String[] {
 				"	//#if test1 ",
 				"	String hello =  \"test1 is defined\";",
@@ -364,7 +366,7 @@ public class PreprocessorTest extends TestCase {
 		try {
 			this.preprocessor.preprocess( "MyClass.java", lines );
 			fail("PreprocessException should be thrown when #endif is missing.");
-		} catch (PreprocessException e) {
+		} catch (BuildException e) {
 			// expected behaviour!
 		}
 
@@ -425,7 +427,7 @@ public class PreprocessorTest extends TestCase {
 		try {
 			result = this.preprocessor.preprocess( "MyClass.java", lines );
 			fail( "preprocessing should fail when encountering syntax error within inactive if-block." );
-		} catch (PreprocessException e) {
+		} catch (BuildException e) {
 			// expected behaviour
 		}
 		
@@ -448,13 +450,13 @@ public class PreprocessorTest extends TestCase {
 		try {
 			result = this.preprocessor.preprocess( "MyClass.java", lines );
 			fail( "preprocessing should fail when encountering syntax error within inactive if-block." );
-		} catch (PreprocessException e) {
+		} catch (BuildException e) {
 			// expected behaviour
 		}
 				
 	}
 	
-	public void testDefine() throws PreprocessException {
+	public void testDefine() throws BuildException {
 		String[] sourceLines = new String[] {
 				"	//#ifdef test1 ",
 				"	String hello =  \"test1 is defined\";",
@@ -484,7 +486,7 @@ public class PreprocessorTest extends TestCase {
 		assertFalse(  this.preprocessor.symbols.get("KNUDDEL") == null);
 	}
 	
-	public void testUndefine() throws PreprocessException {
+	public void testUndefine() throws BuildException {
 		String[] sourceLines = new String[] {
 				"	//#ifdef test1 ",
 				"	String hello =  \"test1 is defined\";",
@@ -515,7 +517,7 @@ public class PreprocessorTest extends TestCase {
 	}
 	
 	
-	public void testInclude() throws PreprocessException {
+	public void testInclude() throws BuildException {
 		String[] sourceLines = new String[] {
 				"	//#ifdef test1 ",
 				"	String hello =  \"test1 is defined\";",
@@ -558,7 +560,7 @@ public class PreprocessorTest extends TestCase {
 		try {
 			this.preprocessor.preprocess( "MyClass.java", lines );
 			fail( "#include directive with invalid property should result in PreprocessException." );
-		} catch (PreprocessException e ) {
+		} catch (BuildException e ) {
 			// expected behaviour
 		}
 
@@ -577,12 +579,12 @@ public class PreprocessorTest extends TestCase {
 		try {
 			this.preprocessor.preprocess( "MyClass.java", lines );
 			fail( "#include directive with invalid file-property should result in PreprocessException." );
-		} catch (PreprocessException e ) {
+		} catch (BuildException e ) {
 			// expected behaviour
 		}
 	}
 	
-	public void testVariables() throws PreprocessException {
+	public void testVariables() throws BuildException {
 		String[] sourceLines = new String[] {
 				"	//#ifdef test1 ",
 				"	String hello =  \"test1 is defined\";",
@@ -610,7 +612,7 @@ public class PreprocessorTest extends TestCase {
 		assertEquals( Preprocessor.CHANGED, result );
 	}
 
-	public void testStyle() throws PreprocessException {
+	public void testStyle() throws BuildException {
 		String[] sourceLines = new String[] {
 				"	//#ifdef test1 ",
 				"	String hello =  \"test1 is defined\";",
@@ -692,7 +694,7 @@ public class PreprocessorTest extends TestCase {
 		try {
 			result = this.preprocessor.preprocess( "MyClass.java", lines );
 			fail("preprocess should fail when encountering #style directive with syntax errors.");
-		} catch (PreprocessException e) {
+		} catch (BuildException e) {
 			// expected behaviour!
 		}
 		// with single semicolon:
@@ -713,9 +715,32 @@ public class PreprocessorTest extends TestCase {
 		try {
 			result = this.preprocessor.preprocess( "MyClass.java", lines );
 			fail("preprocess should fail when encountering #style directive with syntax errors.");
-		} catch (PreprocessException e) {
+		} catch (BuildException e) {
 			// expected behaviour!
 		}
+		
+		// test undefined style:
+		sourceLines = new String[] {
+				"	//#ifdef XXtest1 ",
+				"	String hello =  \"XXtest1 is defined\";",
+				"	//#else",
+				"	//# String hello =  \"XXtest1 is not defined\";",
+				"	//#style styleWhichHasNeverBeenDefined, anotherInvalidStyle",
+				"	//# Item myItem = new StringItem(",
+				"	//#		\"label\", ",
+				"	//#		\"text\"); // create StringItem... ",
+				"	//#endif",
+				"	System.out.println( hello );"
+		};
+		lines = new StringList( sourceLines );
+		try {
+			result = this.preprocessor.preprocess( "MyClass.java", lines );
+			fail("preprocess should fail when encountering #style directive with syntax errors.");
+		} catch (BuildException e) {
+			//e.printStackTrace();
+			// expected behaviour!
+		}
+		
 	}	
 	
 	public void testIncludesPattern() {
@@ -739,7 +764,7 @@ public class PreprocessorTest extends TestCase {
 		assertTrue( Preprocessor.containsDirective("		//#enddebug"));
 	}
 	
-	public void testDebug() throws PreprocessException {
+	public void testDebug() throws BuildException {
 		String[] sourceLines = new String[] {
 				"	//#debug",
 				"	System.out.println( \"test1 is defined\" );",
@@ -913,7 +938,7 @@ public class PreprocessorTest extends TestCase {
 		assertEquals( Preprocessor.CHANGED, result );
 	}
 
-	public void testMdebug() throws PreprocessException {
+	public void testMdebug() throws BuildException {
 		String[] sourceLines = new String[] {
 				"	//#mdebug",
 				"	System.out.println( \"test1 is defined\" );",
@@ -1128,12 +1153,12 @@ public class PreprocessorTest extends TestCase {
 		try {
 			this.preprocessor.preprocess( "com.company.util.MyOtherClass", lines );
 			fail( "#mdebug needs #enddebug, when #enddebug is not present, it should fail.");
-		} catch (PreprocessException e) {
+		} catch (BuildException e) {
 			/// expected behaviour!
 		}
 	}
 	
-	public void testCondition() throws PreprocessException {
+	public void testCondition() throws BuildException {
 		String[] sourceLines = new String[] {
 				"	//#condition ! polish.midp2",
 				"	System.out.println( \"test1 is defined\" );",

@@ -31,7 +31,6 @@ public class BuildSetting {
 	private DebugSetting debugSetting;
 	private MidletSetting midletSetting; 
 	private ObfuscatorSetting obfuscatorSetting;
-	private String version;
 	private File workDir;
 	private File apiDir;
 	private File destDir;
@@ -130,10 +129,6 @@ public class BuildSetting {
 		return this.source;
 	}
 	
-	public void setVersion( String version) {
-		this.version = version;
-	}
-	
 	public void setSymbols( String symbols ) {
 		this.symbols = symbols;
 	}
@@ -141,7 +136,7 @@ public class BuildSetting {
 	public void setUsePolishGui( boolean usePolishGui ) {
 		this.usePolishGui = usePolishGui; 
 	}
-	
+		
 	/**
 	 * Determines whether this project should use the polish GUI at all.
 	 * The GUI is only used when the current device allows the use of the GUI.
@@ -192,6 +187,16 @@ public class BuildSetting {
 			throw new BuildException("The build-attribute [fullscreen] needs to be either [yes], [no] or [menu]. "
 					+ "The setting [" + setting + "] is not supported.");
 		}
+	}
+
+
+	/**
+	 * Retrieves the full screen setting.
+	 * 
+	 * @return the full screen setting
+	 */
+	public FullScreenSetting getFullScreenSetting() {
+		return this.fullScreenSetting;
 	}
 	
 	public DebugSetting getDebugSetting() {
@@ -465,14 +470,15 @@ public class BuildSetting {
 	 * The infos contain the name, the icon and the class of the midlet
 	 * and are used for the JAD and the manifest.
 	 * 
+	 * @param defaultIcon the url of the default icon.
 	 * @return The infos of all midlets in a String array.
 	 * 		The first midlet is also the first element in the returned array.
 	 */
-	public String[] getMidletInfos() {
+	public String[] getMidletInfos( String defaultIcon ) {
 		Midlet[] midlets = this.midletSetting.getMidlets();
 		String[] midletInfos = new String[ midlets.length ];
 		for (int i = 0; i < midlets.length; i++) {
-			midletInfos[i] = midlets[i].getMidletInfo();
+			midletInfos[i] = midlets[i].getMidletInfo( defaultIcon );
 		}
 		return midletInfos;
 	}
@@ -519,4 +525,5 @@ public class BuildSetting {
 		}
 		this.obfuscatorSetting.setEnable( obfuscate );
 	}
+
 }

@@ -6,7 +6,10 @@
  */
 package de.enough.polish.preprocess;
 
+import de.enough.polish.util.CastUtil;
 import de.enough.polish.util.TextUtil;
+
+import org.apache.tools.ant.BuildException;
 
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -30,41 +33,50 @@ public class BooleanEvaluator {
 	public static final int AND = 2;
 	public static final int OR = 3;
 	public static final int XOR = 4;
+	public static final int GREATER = 5;
+	public static final int LESSER = 6;
+	public static final int EQUALS = 7;
+	public static final int GREATER_EQUALS = 8;
+	public static final int LESSER_EQUALS = 9;
 
 	private static final String SYMBOL = "(\\w|-|:|\\.)+"; 
 	protected static final Pattern SYMBOL_PATTERN = Pattern.compile( SYMBOL ); 
-	private static final String OPERATOR = "(&&|\\^|\\|\\|)"; 
+	private static final String OPERATOR = "(&&|\\^|\\|\\||==|>=|<=|>|<)"; 
 	protected static final Pattern OPERATOR_PATTERN = Pattern.compile( OPERATOR ); 
 	private static final String TERM = "\\(\\s*!?\\s*" + SYMBOL + "\\s*(" + OPERATOR 
 								       + "\\s*!?\\s*" + SYMBOL + "\\s*)+\\)";
 	protected static final Pattern TERM_PATTERN = Pattern.compile( TERM );
 
 	private HashMap symbols;
+	private HashMap variables;
 
 	/**
 	 * Creates a new boolean evaluator.
 	 * 
 	 * @param symbols a map containing all defined symbols
-	 * @throws NullPointerException when symbols is null
+	 * @param variables a map containing all defined variables
+	 * @throws NullPointerException when symbols or variables are null
 	 */ 
-	public BooleanEvaluator( HashMap symbols ) {
-		if (symbols == null) {
-			throw new NullPointerException("Got invalid symbols: [null].");
-		} 
-		this.symbols = symbols;
+	public BooleanEvaluator( HashMap symbols, HashMap variables ) {
+		setEnvironment(symbols, variables);
 	}
 
 	/**
-	 * Sets the symbols for this evaluator.
+	 * Sets the environment for this evaluator.
 	 * 
 	 * @param symbols a map containing all defined symbols
-	 * @throws NullPointerException when symbols is null
+	 * @param variables a map containing all defined variables
+	 * @throws NullPointerException when symbols or variables are null
 	 */
-	public void setSymbols( HashMap symbols ) {
+	public void setEnvironment( HashMap symbols, HashMap variables ) {
 		if (symbols == null) {
 			throw new NullPointerException("Got invalid symbols: [null].");
 		} 
+		if ( variables == null) {
+			throw new NullPointerException("Got invalid variables: [null].");
+		}
 		this.symbols = symbols;
+		this.variables = variables;
 	}
 	
 	/**
@@ -75,10 +87,10 @@ public class BooleanEvaluator {
 	 * @param fileName the name of the source code file
 	 * @param line the line number in the source code file (first line is 1)
 	 * @return true when the expression yields to true
-	 * @throws PreprocessException when there is a syntax error in the expression
+	 * @throws BuildException when there is a syntax error in the expression
 	 */
 	public boolean evaluate( String expression, String fileName, int line ) 
-	throws PreprocessException 
+	throws BuildException 
 	{
 		// main loop: evaluate all simple expressions (without parenthesisses)
 		Matcher matcher = TERM_PATTERN.matcher( expression );
@@ -106,19 +118,19 @@ public class BooleanEvaluator {
 	 * @param fileName the name of the source file
 	 * @param line the line number of this term
 	 * @return true when the term represents true
-	 * @throws PreprocessException when there is a paranthesis in the term
+	 * @throws BuildException when there is a paranthesis in the term
 	 */
 	protected boolean evaluateTerm(String term, String fileName, int line)
-	throws PreprocessException
+	throws BuildException
 	{
 		// check for parenthesisses:
 		if (term.indexOf('(') != -1) {
-			throw new PreprocessException(fileName + " line " + line 
+			throw new BuildException(fileName + " line " + line 
 					+ ": invalid/additional parenthesis \"(\" in term [" + term 
 					+ "] (the term might be simplified)." ); 
 		}
 		if (term.indexOf(')') != -1) {
-			throw new PreprocessException(fileName + " line " + line 
+			throw new BuildException(fileName + " line " + line 
 					+ ": invalid/additional parenthesis \")\" in term [" + term 
 					+ "] (the term might be simplified)." ); 
 		}
@@ -128,6 +140,7 @@ public class BooleanEvaluator {
 		boolean result = true;
 		int operator = NONE;
 		String symbol = null;
+		String lastSymbol = null; // is needed for >, <, ==, <= and >=
 		while (symbolMatcher.find()) {
 			// evaluate symbol:
 			symbol = symbolMatcher.group();
@@ -146,15 +159,63 @@ public class BooleanEvaluator {
 				symbolResult = !symbolResult;
 			}
 			// combine temporary result with main result:
-			switch (operator) {
-				case NONE: result = symbolResult; break;
-				case AND: result &= symbolResult; break;
-				case OR: result |= symbolResult; break;
-				case XOR: result ^= symbolResult; break;
-				case INVALID:
-					throw new PreprocessException(fileName + " line " + line 
-							+ ": found no operator before symbol [" + symbol + "] in term [" + term 
-							+ "] (both symbol and term might be simplified)." ); 
+			if (operator == NONE) {
+				result = symbolResult;
+			} else if (operator == AND) {
+				result &= symbolResult;
+			} else if (operator ==  OR) {
+				result |= symbolResult;
+			} else if (operator == XOR) {
+				result ^= symbolResult; 
+			} else if (operator == INVALID) {
+				throw new BuildException(fileName + " line " + line 
+						+ ": found no operator before symbol [" + symbol + "] in term [" + term 
+						+ "] (both symbol and term might be simplified)." );
+			} else {
+				//System.out.println("comparing [" + lastSymbol + "] with [" + symbol + "].");
+				// this is either >, <, ==, >= or <=
+				String var  = (String) this.variables.get( symbol );
+				if (var == null) {
+					var = symbol;
+				}
+				String lastVar = (String) this.variables.get( lastSymbol );
+				if (lastVar == null) {
+					lastVar = lastSymbol;
+				}
+				if ( operator == EQUALS ) {
+					result = var.equals( lastVar );
+					//System.out.println( var + " == " + lastVar + " = " + result);
+				} else {
+					// this is either >, <, >= or <= - so a numerical comparison is required
+					int numVar = 0;
+					int numLastVar = 0;
+					try {
+						numVar = CastUtil.getInt( var );
+						numLastVar = CastUtil.getInt( lastVar );
+					} catch (Exception e) {
+						throw new BuildException(fileName + " line " + line 
+								+ ": unable to parse integer-arguments [" + symbol + "] or [" 
+								+ lastSymbol + "] in term [" + term 
+								+ "] (both symbols and term might be simplified)." );
+					}
+					if (operator == GREATER ) {
+						result = numLastVar > numVar;
+						//System.out.println( numLastVar + " > " + numVar + " = " + result );
+					} else if (operator == LESSER) {
+						result = numLastVar < numVar;
+						//System.out.println( numLastVar + " < " + numVar + " = " + result );
+					} else if (operator == GREATER_EQUALS) {
+						result = numLastVar >= numVar;
+						//System.out.println( numLastVar + " >= " + numVar + " = " + result );
+					} else if (operator == LESSER_EQUALS) {
+						result = numLastVar <= numVar;
+						//System.out.println( numLastVar + " <= " + numVar + " = " + result );
+					} else {
+						throw new BuildException(fileName + " line " + line 
+								+ ": unknown operator in term [" + term + "]. The term might be simplified." ); 
+					}
+					//System.out.println("result: " + result);
+				}
 			}
 			
 			// evaluate next operator:
@@ -162,13 +223,13 @@ public class BooleanEvaluator {
 				// check if operator is in the correct position:
 				int operatorPos = operatorMatcher.start();
 				if (operatorPos < lastSymbolEnd ) {
-					throw new PreprocessException( fileName + " line " + line  
+					throw new BuildException( fileName + " line " + line  
 							+": found invalid/additional operator in [" + term +"] (that term might be simplified)." );
 					
 				}
 				String empty = term.substring( lastSymbolEnd + 1, operatorPos ).trim();
 				if (empty.length() > 0) {
-					throw new PreprocessException( fileName + " line " + line  
+					throw new BuildException( fileName + " line " + line  
 							+": missing or invalid operator after [" + symbol +"] in term [" + term
 							+"] (both symbol and term might be simplified)." );
 				}
@@ -180,14 +241,26 @@ public class BooleanEvaluator {
 					operator = OR;
 				} else if ("^".equals( operatorSymbol)) {
 					operator = XOR;
+				} else if (">".equals( operatorSymbol)) {
+					operator = GREATER;
+				} else if ("<".equals( operatorSymbol)) {
+					operator = LESSER;
+				} else if ("==".equals( operatorSymbol)) {
+					operator = EQUALS;
+				} else if (">=".equals( operatorSymbol)) {
+					operator = GREATER_EQUALS;
+				} else if ("<=".equals( operatorSymbol)) {
+					operator = LESSER_EQUALS;
 				}
 			} else { // no more operator found:
 				operator = INVALID;
 			}
-		}
+			lastSymbol = symbol;
+			//System.out.println("operator == " + operator);
+		} // while there are more symbols
 		// check if there are any more operators after the last symbol:
 		if (operator != INVALID){
-			throw new PreprocessException( fileName + " line " + line  
+			throw new BuildException( fileName + " line " + line  
 					+ ": found invalid/additional operator [" + operatorMatcher.group() 
 					+ "] after symbol [" + symbol + "] in term [" + term 
 					+ "] (both symbol and term might be simplified)." ); 

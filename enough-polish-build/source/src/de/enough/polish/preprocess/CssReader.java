@@ -42,12 +42,6 @@ public final class CssReader {
 		this.styleSheet = new StyleSheet( styleSheet );
 	}	
 	
-	// damit nicht alles nochmal neu eingelesen werden muss:
-	// vendor.setStyleSheet( StyleSheet )
-	// group.setStyleSheet( .. )
-	// ? device.setStyleSheet( .. ) [evtl. ganz nuetzlich wenn mehrere sprachen processed werden]
-	// cssReader.createStyleSheet
-	
 	/**
 	 * Reads the given file and adds/supplements all styles.
 	 * 
@@ -65,6 +59,9 @@ public final class CssReader {
 	 * @throws IOException when the file could not be found or not be loaded
 	 */
 	public void add(File file) throws IOException {
+		if (this.styleSheet.lastModified() < file.lastModified() ) {
+			this.styleSheet.setLastModified( file.lastModified() );
+		}
 		BufferedReader in = new BufferedReader(new FileReader(file));
 		String line;
 		StringBuffer buffer = new StringBuffer();

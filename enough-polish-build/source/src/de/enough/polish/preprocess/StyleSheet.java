@@ -6,6 +6,8 @@
  */
 package de.enough.polish.preprocess;
 
+import de.enough.polish.util.TextUtil;
+
 import org.apache.tools.ant.BuildException;
 
 import java.util.*;
@@ -30,8 +32,35 @@ public class StyleSheet {
 		KEYWORDS.put("background", Boolean.TRUE );
 		KEYWORDS.put("border", Boolean.TRUE );
 		KEYWORDS.put("extends", Boolean.TRUE );
+		KEYWORDS.put("int", Boolean.TRUE );
+		KEYWORDS.put("double", Boolean.TRUE );
+		KEYWORDS.put("float", Boolean.TRUE );
+		KEYWORDS.put("boolean", Boolean.TRUE );
+		KEYWORDS.put("class", Boolean.TRUE );
+		KEYWORDS.put("public", Boolean.TRUE );
+		KEYWORDS.put("private", Boolean.TRUE );
+		KEYWORDS.put("protected", Boolean.TRUE );
+		KEYWORDS.put("final", Boolean.TRUE );
+		KEYWORDS.put("static", Boolean.TRUE );
+		KEYWORDS.put("transient", Boolean.TRUE );
 	}
-	
+	// some CSS classes which are NOT dynamic classes (like p, a, or form) 
+	private static final HashMap PSEUDO_CLASSES = new HashMap();
+	static {
+		PSEUDO_CLASSES.put("focussed", Boolean.TRUE );
+		PSEUDO_CLASSES.put("title", Boolean.TRUE );
+		PSEUDO_CLASSES.put("default", Boolean.TRUE );
+	}
+	private final static CssBlock DEFAULT_STYLE = new CssBlock( 
+			"default {"
+			+ "font-color: black;"
+			+ "font-face: system;"
+			+ "font-style: bold;"
+			+ "font-size: medium;"
+			+ "background-color: white;"
+			+ "}"
+			);
+
 	private HashMap stylesByName;
 	private ArrayList styles;
 	private HashMap backgrounds;
@@ -41,6 +70,11 @@ public class StyleSheet {
 	private HashMap usedStyles;
 	
 	private boolean isInitialised;
+	private long lastModified;
+
+	private boolean containsDynamicStyles;
+	private boolean containsBeforeStyle;
+	private boolean containsAfterStyle;
 	
 	/**
 	 * Creates a new empty style sheet
@@ -62,6 +96,8 @@ public class StyleSheet {
 	public StyleSheet(StyleSheet sheet) {
 		this();
 		add( sheet );
+		this.lastModified = sheet.lastModified;
+		this.containsDynamicStyles = sheet.containsDynamicStyles;
 	}
 	
 
@@ -84,6 +120,12 @@ public class StyleSheet {
 				this.styles.add( copy );
 			} else {
 				existing.add( original );
+			}
+			if (original.getGroup("before") != null) {
+				this.containsBeforeStyle = true;
+			}
+			if (original.getGroup("after") != null) {
+				this.containsAfterStyle = true;
 			}
 		}
 	}
@@ -119,7 +161,16 @@ public class StyleSheet {
 		name = name.toLowerCase();
 		return (Style) this.stylesByName.get( name );
 	}
-	
+
+	/**
+	 * Retrieves the default style.
+	 * 
+	 * @return the default style
+	 * @see #getStyle(String) - getStyle("default") yields the same result.
+	 */
+	public Style getDefaultStyle() {
+		return (Style) this.stylesByName.get( "default" );
+	}	
 	/**
 	 * Determines whether the specified style is known.
 	 * 
@@ -128,6 +179,10 @@ public class StyleSheet {
 	 */
 	public boolean isDefined( String name ) {
 		name = name.toLowerCase();
+		if ("default".equals(name)) {
+			// the default style is always defined!
+			return true;
+		}
 		return (this.stylesByName.get(name) != null);
 	}
 	
@@ -140,6 +195,15 @@ public class StyleSheet {
 		this.usedStyles.put( name, Boolean.TRUE );
 	}
 
+	/**
+	 * Retrieves all styles which are actually used by the application.
+	 * 
+	 * @return an array of all styles which are actually used.
+	 */
+	public String[] getUsedStyleNames() {
+		return (String[]) this.usedStyles.keySet().toArray( new String[ this.usedStyles.size() ] );
+	}
+	
 	/**
 	 * Removes all style-definitions
 	public void clear() {
@@ -158,9 +222,6 @@ public class StyleSheet {
 	public void addCssBlock( CssBlock cssBlock ) {
 		this.isInitialised = false;
 		String selector = cssBlock.getSelector().toLowerCase();
-		if (selector.charAt(0) == '.') {
-			selector = selector.substring( 1 );
-		}
 		String[] groupNames = cssBlock.getGroupNames();
 		HashMap[] groups = new HashMap[ groupNames.length ];
 		for (int i = 0; i < groups.length; i++) {
@@ -188,6 +249,27 @@ public class StyleSheet {
 				}
 			}
 		} else { // this is a style:
+			boolean isDynamicStyle = false;
+			// check if this style is dynamic:
+			isDynamicStyle =  (selector.indexOf(' ') != -1)
+						   || (selector.indexOf('\t') != -1)
+						   || (selector.indexOf('>') != -1)
+						   || (selector.indexOf('*') != -1);
+			if (selector.charAt(0) == '.') {
+				selector = selector.substring( 1 );
+				if (PSEUDO_CLASSES.get(selector) != null) { 
+					throw new BuildException("Invalid CSS code: The style [." + selector + "] uses a reserved name, please choose another one.");
+				}
+			} else {
+				// this could be a DYNAMIC style:
+				if (PSEUDO_CLASSES.get(selector) == null) {
+					isDynamicStyle = true;
+				}
+			}
+			if (isDynamicStyle) {
+				this.containsDynamicStyles = true;
+				//System.out.println("project uses dynamic style: [" + selector + "]");				
+			}
 			String parent = "default";
 			int extendsPos = selector.indexOf(" extends ");
 			if (extendsPos != -1) {
@@ -204,19 +286,75 @@ public class StyleSheet {
 			if (KEYWORDS.get(selector) != null) {
 				throw new BuildException( "Invalid CSS code: The style-selector [" + selector + "] uses a reserved keyword, please choose another name.");
 			}
-			// check for invalid selector-names:
-			if ( (selector.indexOf(' ') != -1) || (selector.indexOf('\t') != -1)) {
-				throw new BuildException( "Invalid CSS code: The style-selector [" + selector + "] is invalid, please do not include spaces in selector-names.");
+			String styleName = TextUtil.replace( selector, '-', '_' );
+			if (isDynamicStyle) {
+				selector = TextUtil.replace( selector, ".", "");
+				selector = TextUtil.replace( selector, '\t', ' ');
+				selector = TextUtil.replace( selector, " > ", ">");
+				selector = TextUtil.replace( selector, " > ", ">");
+				selector = TextUtil.replace( selector, " * ", "*");
+				selector = TextUtil.replace( selector, "  ", " ");
+				styleName = TextUtil.replace( selector, ' ', '_');
+				styleName = TextUtil.replace( styleName, ">", "__");
+				styleName = TextUtil.replace( styleName, "*", "___");
 			}
-			Style style = (Style) this.stylesByName.get( selector );
+			// check style name for invalid characters:
+			if ( (styleName.indexOf('.') != -1 )
+				|| (styleName.indexOf('"') != -1 )
+				|| (styleName.indexOf('\'') != -1 )
+				|| (styleName.indexOf('*') != -1 )
+				|| (styleName.indexOf('+') != -1 )
+				|| (styleName.indexOf('-') != -1 )
+				|| (styleName.indexOf('/') != -1 )
+				|| (styleName.indexOf(':') != -1 )
+				|| (styleName.indexOf('=') != -1 )
+				|| (styleName.indexOf('|') != -1 )
+				|| (styleName.indexOf('&') != -1 )
+				|| (styleName.indexOf('~') != -1 )
+				|| (styleName.indexOf('!') != -1 )
+				|| (styleName.indexOf('^') != -1 )
+				|| (styleName.indexOf('(') != -1 )
+				|| (styleName.indexOf(')') != -1 )
+				|| (styleName.indexOf('%') != -1 )
+				|| (styleName.indexOf('?') != -1 )
+				|| (styleName.indexOf('#') != -1 )
+				|| (styleName.indexOf('$') != -1 )
+				|| (styleName.indexOf('@') != -1 ) ) {
+				throw new BuildException( "Invalid CSS code: The style-selector [" + selector + "] contains invalid characters, please use only alpha-numeric characters for style-names.");
+			}
+				
+			
+			Style style = (Style) this.stylesByName.get( styleName );
 			if (style == null) {
-				style = new Style( selector, parent, cssBlock );
+				style = new Style( selector, styleName, isDynamicStyle, parent, cssBlock );
 				this.styles.add( style );
+				//System.out.println("added new style [" + style.getStyleName() + "].");
 				this.stylesByName.put(  selector, style );
 			} else {
 				style.add( cssBlock );
 			}
+			if (style.getGroup("before") != null) {
+				this.containsBeforeStyle = true;
+			}
+			if (style.getGroup("after") != null) {
+				this.containsAfterStyle = true;
+			}
 		}
+	}
+	
+	/**
+	 * Determines whether this sheet contains dynamic styles.
+	 * Dynamic styles are set during runtime and can be used
+	 * to make design changes without actually changing the source
+	 * code at all.
+	 * Since dynamic styles are much slower than static ones,
+	 * a preprocessing-variable "polish.usesDynamicStyles" is
+	 * set whenever dynamic styles are used.
+	 * 
+	 * @return true when this sheet contains dynamic styles.
+	 */
+	public boolean containsDynamicStyles() {
+		return this.containsDynamicStyles;
 	}
 	
 	/**
@@ -238,10 +376,14 @@ public class StyleSheet {
 	 * @see #getSourceCode()
 	 */
 	public void inherit() {
-		//TODO rob create default-style when not explicitely defined.
+		// create default-style when not explicitely defined:
+		if (this.stylesByName.get("default") == null ) {
+			addCssBlock(DEFAULT_STYLE);
+		}
 		Style[] allStyles = getAllStyles();
 		for (int i = 0; i < allStyles.length; i++) {
 			Style style = allStyles[i];
+			//System.out.println("inheriting style [" + style.getSelector() + "].");
 			checkInheritanceHierarchy( style );
 			String parentName = style.getParentName();
 			if (parentName != null) {
@@ -252,6 +394,7 @@ public class StyleSheet {
 				style.setParent( parent );
 			}
 		}
+		this.isInitialised = true;
 	}
 	
 	/**
@@ -327,15 +470,6 @@ public class StyleSheet {
 	}
 
 	/**
-	 * Retrieves all styles which are actually used by the application.
-	 * 
-	 * @return an array of all styles which are actually used.
-	 */
-	public String[] getUsedStyleNames() {
-		return (String[]) this.usedStyles.keySet().toArray( new String[ this.usedStyles.size() ] );
-	}
-
-	/**
 	 * Checks if a specific style is actually used.
 	 * 
 	 * @param name the name of the style
@@ -345,4 +479,94 @@ public class StyleSheet {
 		return ( this.usedStyles.get( name ) != null );
 	}
 
+	/**
+	 * @return the time of the last modification 
+	 */
+	public long lastModified() {
+		return this.lastModified;
+	}
+	
+	public void setLastModified( long lastModified ) {
+		this.lastModified = lastModified;
+	}
+
+	/**
+	 * Retrieves all independent color definitions.
+	 * 
+	 * @return the list of colors which has been defined.
+	 */
+	public HashMap getColors() {
+		return this.colors;
+	}
+	
+	/**
+	 * Gets all independently defined defined fonts.
+	 * 
+	 * @return a map with all defined fonts.
+	 */
+	public HashMap getFonts() {
+		return this.fonts;
+	}
+	
+	/**
+	 * Gets all independently defined backgrounds.
+	 * 
+	 * @return all backgrounds in a map.
+	 */
+	public HashMap getBackgrounds() {
+		return this.backgrounds;
+	}
+	
+	/**
+	 * Gets all independently defined borders.
+	 * 
+	 * @return all borders in a map.
+	 */
+	public HashMap getBorders() {
+		return this.borders;
+	}
+
+	/**
+	 * Gets the names of all defined styles.
+	 * 
+	 * @return the names of all defined styles.
+	 */
+	public String[] getStyleNames() {
+		return (String[]) this.stylesByName.keySet().toArray( new String[ this.stylesByName.size()] );
+	}
+
+	/**
+	 * Retrieves all dynamic styles.
+	 *
+	 * @return all dynamic styles.
+	 */
+	public Style[] getDynamicStyles() {
+		ArrayList dynamicStyles = new ArrayList();
+		Style[] allStyles = getAllStyles();
+		for (int i = 0; i < allStyles.length; i++) {
+			Style style = allStyles[i];
+			if (style.isDynamic()) {
+				dynamicStyles.add( style );
+			}
+		}
+		return (Style[]) dynamicStyles.toArray( new Style[ dynamicStyles.size() ] );
+	}
+
+	/**
+	 * Determines whether this sheet contains style which use the before-element.
+	 * 
+	 * @return true when this sheet contains styles which make use of the before element
+	 */
+	public boolean containsAfterStyle() {
+		return this.containsAfterStyle;
+	}
+	
+	/**
+	 * Determines whether this sheet contains style which use the after-element.
+	 * 
+	 * @return true when this sheet contains styles which make use of the after element
+	 */
+	public boolean containsBeforeStyle() {
+		return this.containsBeforeStyle;
+	}
 }

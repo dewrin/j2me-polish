@@ -8,6 +8,8 @@ package de.enough.polish.preprocess;
 
 import de.enough.polish.util.TextUtil;
 
+import org.apache.tools.ant.BuildException;
+
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,7 +17,7 @@ import java.util.regex.Pattern;
 import junit.framework.TestCase;
 
 /**
- * <p>Tests the BooleanReader class</p>
+ * <p>Tests the BooleanEvaluator class</p>
  *
  * <p>copyright enough software 2004</p>
  * <pre>
@@ -151,7 +153,7 @@ public class BooleanEvaluatorTest extends TestCase {
 		assertFalse( matcher.find() );
 	}
 	
-	public void testEvaluateTerm() throws PreprocessException {
+	public void testEvaluateTerm() throws BuildException {
 		HashMap symbols = new HashMap();
 		symbols.put( "test1", Boolean.TRUE );
 		symbols.put( "test2", Boolean.TRUE );
@@ -161,8 +163,12 @@ public class BooleanEvaluatorTest extends TestCase {
 		symbols.put( "var-2:defined", Boolean.TRUE );
 		symbols.put( "polish.midp1", Boolean.TRUE );
 		symbols.put( "polish.midp2", Boolean.TRUE );
+		HashMap variables = new HashMap();
+		variables.put("polish.Screen.Width", "100");
+		variables.put("polish.Screen.Height", "80");
+		variables.put("polish.BitsPerPixel", "8");
 		
-		BooleanEvaluator evaluator = new BooleanEvaluator( symbols );
+		BooleanEvaluator evaluator = new BooleanEvaluator( symbols, variables );
 		String term = "test1 ||  test2";
 		assertTrue( evaluator.evaluateTerm( term, "MyClass", 12) );
 		term = "test1 &&  test2";
@@ -241,7 +247,7 @@ public class BooleanEvaluatorTest extends TestCase {
 		try {
 			evaluator.evaluateTerm( term, "MyClass", 12 );
 			fail( "evaluation of term [" + term + "] should fail.");
-		} catch (PreprocessException e) {
+		} catch (BuildException e) {
 			// expected behaviour!
 		}
 		
@@ -249,7 +255,7 @@ public class BooleanEvaluatorTest extends TestCase {
 		try {
 			evaluator.evaluateTerm( term, "MyClass", 12 );
 			fail( "evaluation of term [" + term + "] should fail.");
-		} catch (PreprocessException e) {
+		} catch (BuildException e) {
 			// expected behaviour!
 		}
 		
@@ -257,7 +263,7 @@ public class BooleanEvaluatorTest extends TestCase {
 		try {
 			evaluator.evaluateTerm( term, "MyClass", 12 );
 			fail( "evaluation of term [" + term + "] should fail.");
-		} catch (PreprocessException e) {
+		} catch (BuildException e) {
 			// expected behaviour!
 		}
 		
@@ -265,7 +271,7 @@ public class BooleanEvaluatorTest extends TestCase {
 		try {
 			evaluator.evaluateTerm( term, "MyClass", 12 );
 			fail( "evaluation of term [" + term + "] should fail.");
-		} catch (PreprocessException e) {
+		} catch (BuildException e) {
 			// expected behaviour!
 		}
 		
@@ -273,7 +279,7 @@ public class BooleanEvaluatorTest extends TestCase {
 		try {
 			evaluator.evaluateTerm( term, "MyClass", 12 );
 			fail( "evaluation of term [" + term + "] should fail.");
-		} catch (PreprocessException e) {
+		} catch (BuildException e) {
 			// expected behaviour!
 		}
 		
@@ -281,7 +287,7 @@ public class BooleanEvaluatorTest extends TestCase {
 		try {
 			evaluator.evaluateTerm( term, "MyClass", 12 );
 			fail( "evaluation of term [" + term + "] should fail.");
-		} catch (PreprocessException e) {
+		} catch (BuildException e) {
 			// expected behaviour!
 		}
 
@@ -289,7 +295,7 @@ public class BooleanEvaluatorTest extends TestCase {
 		try {
 			evaluator.evaluateTerm( term, "MyClass", 12 );
 			fail( "evaluation of term [" + term + "] should fail.");
-		} catch (PreprocessException e) {
+		} catch (BuildException e) {
 			// expected behaviour!
 		}
 		
@@ -297,12 +303,12 @@ public class BooleanEvaluatorTest extends TestCase {
 		try {
 			evaluator.evaluateTerm( term, "MyClass", 12 );
 			fail( "evaluation of term [" + term + "] should fail.");
-		} catch (PreprocessException e) {
+		} catch (BuildException e) {
 			// expected behaviour!
 		}
 	}
 	
-	public void testEvaluateExpression() throws PreprocessException {
+	public void testEvaluateExpression() throws BuildException {
 		HashMap symbols = new HashMap();
 		symbols.put( "test1", Boolean.TRUE );
 		symbols.put( "test2", Boolean.TRUE );
@@ -310,8 +316,12 @@ public class BooleanEvaluatorTest extends TestCase {
 		symbols.put( "sym-2", Boolean.TRUE );
 		symbols.put( "var-1:defined", Boolean.TRUE );
 		symbols.put( "var-2:defined", Boolean.TRUE );
+		HashMap variables = new HashMap();
+		variables.put("polish.Screen.Width", "100");
+		variables.put("polish.Screen.Height", "80");
+		variables.put("polish.BitsPerPixel", "8");
 		
-		BooleanEvaluator evaluator = new BooleanEvaluator( symbols );
+		BooleanEvaluator evaluator = new BooleanEvaluator( symbols, variables );
 		String expression = "test1 && test2";
 		assertTrue( evaluator.evaluate(expression, "MyClass", 103 ));
 		expression = "test1 && ! test2";
@@ -338,6 +348,59 @@ public class BooleanEvaluatorTest extends TestCase {
 		expression = "false";
 		assertFalse( evaluator.evaluate(expression, "MyClass", 103 ));
 		
+	}
+	
+	public void testCompare() {
+		HashMap symbols = new HashMap();
+		symbols.put( "test1", Boolean.TRUE );
+		symbols.put( "test2", Boolean.TRUE );
+		symbols.put( "sym-1", Boolean.TRUE );
+		symbols.put( "sym-2", Boolean.TRUE );
+		symbols.put( "var-1:defined", Boolean.TRUE );
+		symbols.put( "var-2:defined", Boolean.TRUE );
+		symbols.put( "polish.midp1", Boolean.TRUE );
+		symbols.put( "polish.midp2", Boolean.TRUE );
+		HashMap variables = new HashMap();
+		variables.put("polish.Screen.Width", "100");
+		variables.put("polish.Screen.Height", "80");
+		variables.put("polish.BitsPerPixel", "8");
+		
+		BooleanEvaluator evaluator = new BooleanEvaluator( symbols, variables );
+		String term = "polish.BitsPerPixel >=  8";
+		assertTrue( evaluator.evaluateTerm( term, "MyClass", 12) );
+		term = "polish.BitsPerPixel ==  8";
+		assertTrue( evaluator.evaluateTerm( term, "MyClass", 12) );
+		term = "polish.BitsPerPixel <=  8";
+		assertTrue( evaluator.evaluateTerm( term, "MyClass", 12) );
+		term = "polish.BitsPerPixel >  8";
+		assertFalse( evaluator.evaluateTerm( term, "MyClass", 12) );
+		term = "polish.BitsPerPixel <  8";
+		assertFalse( evaluator.evaluateTerm( term, "MyClass", 12) );
+		// other way round of arguments:
+		term = "8 >=  polish.BitsPerPixel";
+		assertTrue( evaluator.evaluateTerm( term, "MyClass", 12) );
+		term = "8 == polish.BitsPerPixel";
+		assertTrue( evaluator.evaluateTerm( term, "MyClass", 12) );
+		term = "8 <= polish.BitsPerPixel";
+		assertTrue( evaluator.evaluateTerm( term, "MyClass", 12) );
+		term = "8 < polish.BitsPerPixel";
+		assertFalse( evaluator.evaluateTerm( term, "MyClass", 12) );
+		term = "8 > polish.BitsPerPixel";
+		assertFalse( evaluator.evaluateTerm( term, "MyClass", 12) );
+		
+		// try higher numbers:
+		term = "polish.Screen.Width >=  80";
+		assertTrue( evaluator.evaluateTerm( term, "MyClass", 12) );
+		term = "polish.Screen.Width ==  80";
+		assertFalse( evaluator.evaluateTerm( term, "MyClass", 12) );
+		term = "polish.Screen.Width <=  80";
+		assertFalse( evaluator.evaluateTerm( term, "MyClass", 12) );
+		term = "polish.Screen.Width >  80";
+		assertTrue( evaluator.evaluateTerm( term, "MyClass", 12) );
+		term = "polish.Screen.Width <  80";
+		assertFalse( evaluator.evaluateTerm( term, "MyClass", 12) );		
+		term = "polish.Screen.Width <  180";
+		assertTrue( evaluator.evaluateTerm( term, "MyClass", 12) );		
 	}
 
 }

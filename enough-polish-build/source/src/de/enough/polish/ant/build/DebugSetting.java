@@ -36,6 +36,7 @@ public class DebugSetting extends ConditionalElement {
 	 */
 	public DebugSetting() {
 		this.filters = new ArrayList();
+		this.level = "debug";
 	}
 	
 
