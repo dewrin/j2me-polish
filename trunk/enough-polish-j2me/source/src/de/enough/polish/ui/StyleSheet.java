@@ -34,7 +34,7 @@ public final class StyleSheet {
 	//#endif
 	//#ifdef false
 	public static final Style defaultStyle = null;
-	public static Style focussedStyle = null;
+	public static Style focusedStyle = null;
 	//#endif
 	private static Hashtable stylesByName = new Hashtable();
 	

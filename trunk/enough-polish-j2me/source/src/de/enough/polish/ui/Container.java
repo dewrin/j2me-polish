@@ -17,7 +17,7 @@ import javax.microedition.lcdui.Graphics;
  * <p>Main purpose is to manage all items of a Form or similiar canvasses.</p>
  * <p>Containers support following CSS attributes:
  * <ul>
- * 		<li><b>focussed</b>: The name of the focussed style, e.g. "style( funnyFocussed );"
+ * 		<li><b>focused</b>: The name of the focused style, e.g. "style( funnyFocussed );"
  * 				</li>
  * 		<li><b></b>: </li>
  * </ul>
@@ -34,15 +34,15 @@ public class Container extends Item {
 	protected ArrayList itemsList;
 	protected Item[] items;
 	protected boolean focusFirstElement;
-	protected Style focussedStyle;
+	protected Style focusedStyle;
 	private Style itemStyle;
-	private Item focussedItem;
-	private int focussedIndex = -1;
+	private Item focusedItem;
+	private int focusedIndex = -1;
 	
 	/**
 	 * Creates a new empty container.
 	 * 
-	 * @param focusFirstElement true when the first focussable element should be focussed automatically.
+	 * @param focusFirstElement true when the first focussable element should be focused automatically.
 	 */
 	public Container( boolean focusFirstElement ) {
 		this( focusFirstElement, null );
@@ -51,15 +51,15 @@ public class Container extends Item {
 	/**
 	 * Creates a new empty container.
 	 * 
-	 * @param focusFirstElement true when the first focussable element should be focussed automatically.
+	 * @param focusFirstElement true when the first focussable element should be focused automatically.
 	 * @param style the style for this container
 	 */
 	public Container(boolean focusFirstElement, Style style) {
 		super( style );
 		this.itemsList = new ArrayList();
 		this.focusFirstElement = focusFirstElement;
-		if (this.focussedStyle == null) {
-			this.focussedStyle = StyleSheet.focussedStyle;
+		if (this.focusedStyle == null) {
+			this.focusedStyle = StyleSheet.focusedStyle;
 		}
 	}
 
@@ -135,7 +135,7 @@ public class Container extends Item {
 	 * Focusses the specified item.
 	 * 
 	 * @param index the index of the item. The first item has the index 0. 
-	 * @return true when the specified item could be focussed.
+	 * @return true when the specified item could be focused.
 	 * 		   It needs to have an appearanceMode which is not Item.PLAIN to
 	 *         be focussable.
 	 */
@@ -152,18 +152,18 @@ public class Container extends Item {
 	 * Sets the focus to the given item.
 	 * 
 	 * @param index the position
-	 * @param item the item which should be focussed
+	 * @param item the item which should be focused
 	 */
 	private void focus( int index, Item item ) {
-		// first defocus the last focussed item:
-		if (this.focussedItem != null) {
-			this.focussedItem.setStyle(this.itemStyle);
+		// first defocus the last focused item:
+		if (this.focusedItem != null) {
+			this.focusedItem.setStyle(this.itemStyle);
 		}
-		// save style of the to be focussed item:
+		// save style of the to be focused item:
 		this.itemStyle = item.getStyle();
-		this.focussedIndex = index;
-		this.focussedItem = item;
-		item.setStyle( this.focussedStyle );
+		this.focusedIndex = index;
+		this.focusedItem = item;
+		item.setStyle( this.focusedStyle );
 		this.isInitialised = false;
 	}
 
@@ -226,8 +226,8 @@ public class Container extends Item {
 	 * @see de.enough.polish.ui.Item#handleKeyPressed(int, int)
 	 */
 	protected boolean handleKeyPressed(int keyCode, int gameAction) {
-		if (this.focussedItem != null) {
-			if ( this.focussedItem.handleKeyPressed(keyCode, gameAction) ) {
+		if (this.focusedItem != null) {
+			if ( this.focusedItem.handleKeyPressed(keyCode, gameAction) ) {
 				return true;
 			}
 			
@@ -244,12 +244,12 @@ public class Container extends Item {
 	/**
 	 * Shifts the focus to the next or the previous item.
 	 * 
-	 * @param focusNext true when the next item should be focussed, false when
-	 * 		  the previous item should be focussed.
+	 * @param focusNext true when the next item should be focused, false when
+	 * 		  the previous item should be focused.
 	 * @return true when the focus could be moved to either the next or the previous item.
 	 */
 	private boolean shiftFocus(boolean focusNext ) {
-		int i = this.focussedIndex;
+		int i = this.focusedIndex;
 		Item item = null;
 		while (true) {
 			if (focusNext) {
@@ -276,12 +276,12 @@ public class Container extends Item {
 	}
 
 	/**
-	 * Retrieves the index of the item which is currently focussed.
+	 * Retrieves the index of the item which is currently focused.
 	 * 
-	 * @return the index of the focussed item, -1 when none is focussed.
+	 * @return the index of the focused item, -1 when none is focused.
 	 */
 	public int getFocussedIndex() {
-		return this.focussedIndex;
+		return this.focusedIndex;
 	}
 	
 	/* (non-Javadoc)
@@ -305,11 +305,11 @@ public class Container extends Item {
 			this.border = null;
 			this.borderWidth = 0;
 		}
-		String focussed = style.getProperty("focussed-style");
-		if (focussed != null) {
-			Style focStyle = StyleSheet.getStyle( focussed );
+		String focused = style.getProperty("focused-style");
+		if (focused != null) {
+			Style focStyle = StyleSheet.getStyle( focused );
 			if (focStyle != null) {
-				this.focussedStyle = focStyle;
+				this.focusedStyle = focStyle;
 			}
 		}
 	}
