@@ -36,6 +36,7 @@ public class DebugManager {
 	
 	private HashMap levelOrder;
 	private boolean verbose;
+	private boolean isVisual;
 	
 	private void init(){
 		this.classPatterns = new HashMap();
@@ -98,6 +99,7 @@ public class DebugManager {
 	public DebugManager(DebugSetting setting) throws PreprocessException {
 		init();
 		this.verbose = setting.isVerbose();
+		this.isVisual = setting.isVisual();
 		Integer level = (Integer) this.levelOrder.get( setting.getLevel() );
 		if (level != null) {
 			this.debugLevel = level.intValue();
@@ -202,6 +204,13 @@ public class DebugManager {
 		} else {
 			return UNDEFINED;
 		}
+	}
+
+	/**
+	 * @return true when the visual debugging mode is enabled.
+	 */
+	public boolean isVisual() {
+		return this.isVisual;
 	}
 
 }

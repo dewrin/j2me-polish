@@ -31,6 +31,7 @@ public class StringList {
 	private String[] lines;
 	private int startIndex = 0;
 	private int currentIndex = -1;
+	private int numberOfInsertedLines;
 	
 	/**
 	 * Creates a new StringList.
@@ -90,6 +91,7 @@ public class StringList {
 	 * @param values the string array which should be inserted.
 	 */
 	public void insert( String[] values ) {
+		this.numberOfInsertedLines += values.length;
 		String[] newLines = new String[ this.lines.length + values.length ];
 		// copy the lines up to the current position:
 		System.arraycopy( this.lines, 0, newLines, 0, this.currentIndex+1 );
@@ -99,6 +101,15 @@ public class StringList {
 		System.arraycopy( this.lines, this.currentIndex+1, newLines, this.currentIndex + 1 + values.length, this.lines.length - (this.currentIndex+1) );
 		// set the new lines:
 		this.lines = newLines;
+	}
+	
+	/**
+	 * Retrieves the number of lines which have been inserted.
+	 * 
+	 * @return the number of lines which have been inserted so far.
+	 */
+	public int getNumberOfInsertedLines() {
+		return this.numberOfInsertedLines;
 	}
 
 	/**

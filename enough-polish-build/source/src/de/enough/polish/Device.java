@@ -100,6 +100,8 @@ public class Device extends PolishComponent {
 				}
 				addComponent(group);
 			}
+		} else {
+			this.groups = new String[0];
 		}
 		
 		// set specific features:

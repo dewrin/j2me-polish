@@ -33,8 +33,10 @@ public class StringListTest extends TestCase {
 		assertTrue( list.next() );
 		assertTrue( list.next() );
 		assertEquals( "two", list.getCurrent() );
+		assertEquals( 0, list.getNumberOfInsertedLines() );
 		lines = new String[] { "a", "b", "c" };
 		list.insert( lines );
+		assertEquals( 3, list.getNumberOfInsertedLines() );
 		assertTrue( list.next() );
 		assertEquals( "a", list.getCurrent() );
 		assertTrue( list.next() );
