@@ -44,9 +44,9 @@ public class BuildSetting {
 	private Variable[] variables;
 	private Source source;
 	private boolean usePolishGui;
-	private String midp1Path;
-	private String midp2Path;
-	private String preverify;
+	private File midp1Path;
+	private File midp2Path;
+	private File preverify;
 	private Project project;
 	private boolean includeAntProperties;
 	
@@ -64,8 +64,8 @@ public class BuildSetting {
 		this.devices = new File("./devices.xml");
 		this.vendors = new File("./vendors.xml");
 		this.groups = new File("./groups.xml");
-		this.midp1Path = "./import/midp1.jar";
-		this.midp2Path = "./import/midp2.jar";
+		this.midp1Path = new File( "./import/midp1.jar" );
+		this.midp2Path = new File( "./import/midp2.jar" );
 		this.imageLoadStrategy = IMG_LOAD_FOREGROUND;
 	}
 	
@@ -383,10 +383,9 @@ public class BuildSetting {
 	 * 
 	 * @return The path to the api-file of the MIDP/1.0 environment 
 	 */
-	public String getMidp1Path() {
-		File file = new File( this.midp1Path );
-		if (!file.exists()) {
-			throw new BuildException("The default path to the MIDP/1.0-API [" + this.midp1Path + "] points to a non-existing file. Please specify it with the [midp1Path] attribute of the <build> element.");
+	public File getMidp1Path() {
+		if (!this.midp1Path.exists()) {
+			throw new BuildException("The default path to the MIDP/1.0-API [" + this.midp1Path.getAbsolutePath() + "] points to a non-existing file. Please specify it with the [midp1Path] attribute of the <build> element.");
 		}
 		return this.midp1Path;
 	}
@@ -396,10 +395,9 @@ public class BuildSetting {
 	 *  
 	 * @param midp1Path The path to the MIDP/1.0-api-file
 	 */
-	public void setMidp1Path( String midp1Path ) {
-		File file = new File( midp1Path );
-		if (!file.exists()) {
-			throw new BuildException("Invalid path to the MIDP/1.0-API: [" + midp1Path + "] (File not found).");
+	public void setMidp1Path( File midp1Path ) {
+		if (!midp1Path.exists()) {
+			throw new BuildException("Invalid path to the MIDP/1.0-API: [" + midp1Path.getAbsolutePath() + "] (File not found).");
 		}
 		this.midp1Path = midp1Path;
 	}
@@ -409,10 +407,9 @@ public class BuildSetting {
 	 * 
 	 * @return The path to the api-file of the MIDP/2.0 environment 
 	 */
-	public String getMidp2Path() {
-		File file = new File( this.midp2Path );
-		if (!file.exists()) {
-			throw new BuildException("The default path to the MIDP/2.0-API [" + this.midp2Path + "] points to a non-existing file. Please specify it with the [midp2Path] attribute of the <build> element.");
+	public File getMidp2Path() {
+		if (!this.midp2Path.exists()) {
+			throw new BuildException("The default path to the MIDP/2.0-API [" + this.midp2Path.getAbsolutePath() + "] points to a non-existing file. Please specify it with the [midp2Path] attribute of the <build> element.");
 		}
 		return this.midp2Path;
 	}
@@ -424,10 +421,9 @@ public class BuildSetting {
 	 *  
 	 * @param midp2Path The path to the MIDP/2.0-api-file
 	 */
-	public void setMidp2Path( String midp2Path ) {
-		File file = new File( midp2Path );
-		if (!file.exists()) {
-			throw new BuildException("Invalid path to the MIDP/2.0-API: [" + midp2Path + "] (File not found).");
+	public void setMidp2Path( File midp2Path ) {
+		if (!midp2Path.exists()) {
+			throw new BuildException("Invalid path to the MIDP/2.0-API: [" + midp2Path.getAbsolutePath() + "] (File not found).");
 		}
 		this.midp2Path = midp2Path;
 		if (this.midp1Path == null) {
@@ -442,11 +438,14 @@ public class BuildSetting {
 		return this.symbols;
 	}
 	
-	public void setPreverify( String preverify ) {
+	public void setPreverify( File preverify ) {
+		if (!preverify.exists()) {
+			throw new BuildException("The path to the preverify-tool is invalid: [" + preverify.getAbsolutePath() + "] points to a non-existing file. Please correct the [preverify] attribute of the <build> element.");
+		}
 		this.preverify = preverify;
 	}
 	
-	public String getPreverify() {
+	public File getPreverify() {
 		return this.preverify;
 	}
 

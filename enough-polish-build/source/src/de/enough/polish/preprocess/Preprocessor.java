@@ -912,7 +912,7 @@ public class Preprocessor {
 			+ "\" - " + className 
 			+ " line " + (lines.getCurrentIndex() + 1 - lines.getNumberOfInsertedLines()) 
 			+ "\" );";
-		if (this.debugManager.isVisual()) {
+		if (this.debugManager.useGui()) {
 			debugVerbose = "de.enough.polish.util.Debug.debug" + debugVerbose;
 		} else {
 			debugVerbose = "System.out.println" + debugVerbose;

@@ -169,8 +169,8 @@ public class PolishTask extends ConditionalTask {
 		this.polishProject = new PolishProject( this.buildSetting.usesPolishGui(), isDebugEnabled, debugManager );
 		// add some specified features:
 		this.polishProject.addFeature(this.buildSetting.getImageLoadStrategy());
-		if (debugManager != null && this.buildSetting.getDebugSetting().isVisual()) {
-			this.polishProject.addFeature("debug.visual");
+		if (debugManager != null && this.buildSetting.getDebugSetting().useGui()) {
+			this.polishProject.addFeature("useDebugGui");
 		}
 		FullScreenSetting fullScreenSetting = this.buildSetting.getFullScreenSetting();
 		if (fullScreenSetting.isMenu()) {
@@ -257,8 +257,8 @@ public class PolishTask extends ConditionalTask {
 		}
 		
 		// init boot class path:
-		this.midp1BootClassPath = new Path( this.project, this.buildSetting.getMidp1Path());
-		this.midp2BootClassPath = new Path( this.project, this.buildSetting.getMidp2Path());
+		this.midp1BootClassPath = new Path( this.project, this.buildSetting.getMidp1Path().getAbsolutePath());
+		this.midp2BootClassPath = new Path( this.project, this.buildSetting.getMidp2Path().getAbsolutePath());
 		
 		// init path for device APIs:
 		this.apiPaths = new HashMap();
@@ -724,7 +724,7 @@ public class PolishTask extends ConditionalTask {
 	 */
 	private void preverify( Device device ) {
 		System.out.println("preverifying for device [" + device.getIdentifier() + "].");
-		String preverify = this.buildSetting.getPreverify();
+		File preverify = this.buildSetting.getPreverify();
 		String classPath;
 		if (device.isMidp1()) {
 			classPath = this.midp1BootClassPath.toString();
@@ -737,7 +737,7 @@ public class PolishTask extends ConditionalTask {
 		device.setPreverifyDir( preverifyDir ); 
 		*/
 		String[] commands = new String[] {
-			preverify, 
+			preverify.getAbsolutePath(), 
 			"-classpath", classPath,
 			"-d", device.getClassesDir(), // destination-dir - default is ./output
 			"-cldc",

@@ -27,7 +27,7 @@ public class DebugSetting extends ConditionalElement {
 	
 	private boolean enable;
 	private boolean verbose;
-	private boolean visual;
+	private boolean useGui;
 	private String level;
 	private ArrayList filters;
 
@@ -100,23 +100,23 @@ public class DebugSetting extends ConditionalElement {
 	}
 
 	/**
-	 * Determines if the visual debugging mode is enabled.
-	 * When this mode is enabled, the preprocessing-symbol "polish.debug.visual"
-	 * is defined.
+	 * Determines if the gui debugging mode is enabled.
+	 * When this mode is enabled, the preprocessing-symbol "polish.useDebugGui"
+	 * will be set.
 	 *  
-	 * @return true when the visual debugging mode is enabled.
+	 * @return true when the gui debugging mode is enabled.
 	 */
-	public boolean isVisual() {
-		return this.visual;
+	public boolean useGui() {
+		return this.useGui;
 	}
 
 	/**
-	 * Sets the visual debugging mode.
+	 * Sets the gui debugging mode.
 	 * 
-	 * @param visual true when the visual debugging mode is enabled.
+	 * @param useGui true when the gui debugging mode is enabled.
 	 */
-	public void setVisual(boolean visual) {
-		this.visual = visual;
+	public void setUseGui(boolean useGui) {
+		this.useGui = useGui;
 	}
 	
 	public void addConfiguredFilter( Filter filter ) {
