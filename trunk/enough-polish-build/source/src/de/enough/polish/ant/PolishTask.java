@@ -55,12 +55,14 @@ public class PolishTask extends ConditionalTask {
 	private Path midp2BootClassPath;
 	private HashMap apiPaths;
 	private String apiDir;
+	private char quote;
 	
 	/**
 	 * Creates a new empty task 
 	 */
 	public PolishTask() {
 		// initialisation is done with the setter-methods.
+		this.quote = File.pathSeparatorChar == '/' ? '\'' : '"';
 	}
 	
 	public void addConfiguredInfo( InfoSetting setting ) {
@@ -82,6 +84,9 @@ public class PolishTask extends ConditionalTask {
 	public void addConfiguredBuild( BuildSetting setting ) {
 		if (setting.getMidlets() == null || setting.getMidlets().length == 0) {
 			throw new BuildException("Midlets need to be defined in the build section with either <midlets> or <midlet>.");
+		}
+		if (setting.getPreverify() == null) {
+			throw new BuildException("Nested element [build] needs to define the attribute [preverify] which points to the preverify-executable of the wireless toolkit.");
 		}
 		this.buildSetting = setting;
 	}
@@ -242,6 +247,7 @@ public class PolishTask extends ConditionalTask {
 			String targetDir = this.buildSetting.getTargetDir().getAbsolutePath() 
 				+ "/" + device.getIdentifier()
 				+ "/source";
+			device.setSourceDir(targetDir);
 			this.preprocessor.setTargetDir( targetDir );
 			this.preprocessor.setSymbols( device.getFeatures() );
 			this.preprocessor.setVariables( device.getCapabilities() );
@@ -283,12 +289,14 @@ public class PolishTask extends ConditionalTask {
 		System.out.println("now compiling for device [" +  device.getIdentifier() + "]." );
 		String targetBase = this.buildSetting.getTargetDir().getAbsolutePath() 
 			+ "/" + device.getIdentifier();
-		File targetDir = new File( targetBase + "/classes" );
+		String targetDirName = targetBase + "/classes";
+		device.setClassesDir( targetDirName );
+		File targetDir = new File( targetDirName );
 		if (!targetDir.exists()) {
 			targetDir.mkdirs();
 		}
 		javac.setDestdir( targetDir );
-		javac.setSrcdir(new Path( this.project,  targetBase + "/source") );
+		javac.setSrcdir(new Path( this.project,  device.getSourceDir() ) );
 		if (device.isMidp1()) {
 			javac.setBootclasspath(this.midp1BootClassPath);
 		} else {
@@ -298,30 +306,46 @@ public class PolishTask extends ConditionalTask {
 		// check for each supported api, if the appropriate path-property
 		// has been set: mmapi = ${polish.api.mmapi}
 		// when this has not been defined, just look in the import-dir
-		String[] apis = device.getSupportedApis();
-		StringBuffer classPath = new StringBuffer();
-		Hashtable properties = this.project.getProperties(); 
-		for (int i = 0; i < apis.length; i++) {
-			String api = apis[i];
-			String path = (String) this.apiPaths.get( api );
-			if (path != null) {
-				classPath.append( ':' )
-						 .append( path );
-			} else {
-				path = (String) properties.get( "polish.api." + api );
-				if (path == null) {
-					//TODO use system specific path-seperator(if needed by Path):
-					path = this.apiDir + "/" + api + ".jar:" + this.apiDir + "/" + api + ".zip";
-				}  
-				//TODO use system specific path-seperator (if needed by Path):
-				classPath.append(':')
-						 .append( path );
-				this.apiPaths.put( api, path );
+		String apisStr = device.getSupportedApisAsString();
+		if(apisStr == null) {
+			apisStr = "";
+		}  
+		// check if the class path has been resolved before:
+		String classPath = (String) this.apiPaths.get( apisStr );
+		if (classPath == null) {
+			String[] apis = device.getSupportedApis();
+			if (apis == null) {
+				apis = new String[0];
+			}
+			StringBuffer classPathBuffer = new StringBuffer();
+			Hashtable properties = this.project.getProperties(); 
+			for (int i = 0; i < apis.length; i++) {
+				String api = apis[i];
+				String path = (String) this.apiPaths.get( api );
+				if (path != null) {
+					classPathBuffer.append( ':' )
+							 .append( path );
+				} else {
+					path = (String) properties.get( "polish.api." + api );
+					if (path == null) {
+						path = this.apiDir + File.separatorChar + api + ".jar" 
+							 + File.pathSeparatorChar 
+							 + this.apiDir + File.separatorChar + api + ".zip";
+					}  
+					classPathBuffer.append( File.pathSeparatorChar )
+							 .append( path );
+					this.apiPaths.put( api, path );
+				}
+			} // for each api
+			if (apis.length > 0) {
+				classPath = classPathBuffer.toString().substring(1);
+				this.apiPaths.put(apisStr, classPath );
 			}
 		}
-		if (apis.length > 0) {
-			javac.setClasspath( new Path(this.project, classPath.toString().substring(1) ) );
-			System.out.println( "using classpath [" + classPath.toString().substring(1) + "]." );
+		if (classPath != null) {
+			javac.setClasspath( new Path(this.project, classPath ) );
+			device.setClassPath(classPath);
+			//System.out.println( "using classpath [" + classPath.toString().substring(1) + "]." );
 		}
 		
 		// start compile:
@@ -351,9 +375,76 @@ public class PolishTask extends ConditionalTask {
 	 */
 	private void preverify( Device device ) {
 		// TODO enough implement preverify
+		System.out.println("preverifying for device [" + device.getIdentifier() + "].");
+		String preverify = this.buildSetting.getPreverify();
+		if (preverify == null ) {
+			throw new BuildException("You need to define the property ${polish.preverify} in your build.xml."
+				+ " It needs to point to the preverify-command of your wirless toolkit." ); 
+
+		}
+		if (preverify.indexOf(" ") != -1) {
+			preverify = '"' + preverify + '"';
+		}
+		String classPath;
+		if (device.isMidp1()) {
+			classPath = this.midp1BootClassPath.toString();
+		} else {
+			classPath = this.midp2BootClassPath.toString();
+		}
+		classPath += File.pathSeparatorChar + device.getClassPath();
+		
+		String[] commands = new String[] {
+			addQuotes( preverify ), 
+			"-classpath", addQuotes( classPath ),
+			"-d",   addQuotes( device.getClassesDir() ) , // destination-dir - default is ./output
+			"-cldc",
+			addQuotes( device.getClassesDir() )
+		};
+		StringBuffer commandBuffer = new StringBuffer();
+		for (int i = 0; i < commands.length; i++) {
+			commandBuffer.append( commands[i] ).append(' ');
+		}
+		
+		try {
+			Process preverifyProc = Runtime.getRuntime().exec( commands, null );
+			InputStream in = preverifyProc.getErrorStream();
+			int ch;
+			StringBuffer message = new StringBuffer();
+			while ( (ch = in.read()) != -1) {
+				message.append((char) ch );
+			}
+			int exitValue = preverifyProc.waitFor();
+			if (exitValue != 0) {
+				throw new BuildException("Unable to preverify: " + message.toString()  
+					+ " - The exit-status is [" + exitValue + "]\n"
+					+ " The call was: [" + commandBuffer.toString() + "]."
+				);
+			}
+		} catch (IOException e ) {
+			throw new BuildException("Unable to preverify: " + e.getMessage()
+					+ "\n The call was: [" + commandBuffer.toString() + "].", e);
+		} catch (InterruptedException e) {
+			throw new BuildException("Unable to preverify: " + e.getMessage()
+					+ "\n The call was: [" + commandBuffer.toString() + "].", e);
+		}
 		
 	}
 	
+	/**
+	 * Adds quotes around a path when it contains whitespace.
+	 *
+	 * @param path The path
+	 * @return The path with quotes when it contains whitespace or without quotes
+     * 		   when it does not contain whitespace.
+	 */
+	private String addQuotes(String path) {
+		if (path.indexOf(' ') != -1) {
+			return this.quote + path + this.quote;
+		} else {
+			return path;
+		}
+	}
+
 	/**
 	 * Jars the code.
 	 * 

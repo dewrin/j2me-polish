@@ -53,6 +53,11 @@ public class Device extends PolishComponent {
 	private String vendorName;
 	private int midpVersion;
 	private String[] supportedApis;
+	private String supportedApisString;
+	
+	private String classPath;
+	private String sourceDir;
+	private String classesDir;
 	
 
 	/**
@@ -104,10 +109,10 @@ public class Device extends PolishComponent {
 		
 		// set specific features:
 		// set api-support:
-		String supportedApisStr = getCapability( JAVA_PACKAGE );
-		if (supportedApisStr != null) {
-			System.out.println(this.identifier +  " found apis: [" + supportedApisStr + "].");
-			String[] apis = TextUtil.splitAndTrim( supportedApisStr, ',' );
+		this.supportedApisString = getCapability( JAVA_PACKAGE );
+		if (this.supportedApisString != null) {
+			//System.out.println(this.identifier +  " found apis: [" + supportedApisStr + "].");
+			String[] apis = TextUtil.splitAndTrim( this.supportedApisString, ',' );
 			for (int i = 0; i < apis.length; i++) {
 				String api = apis[i].toLowerCase();
 				addFeature( "api." + api );
@@ -208,6 +213,57 @@ public class Device extends PolishComponent {
 	 */
 	public String[] getSupportedApis() {
 		return this.supportedApis;
+	}
+
+
+	/**
+	 * Retrieves all APIs which this device supports.
+	 * 
+	 * @return All APIs which are supported by this device as a String.
+	 */
+	public String getSupportedApisAsString() {
+		return this.supportedApisString;
+	}
+
+	/**
+	 * @return Returns the classesDir.
+	 */
+	public String getClassesDir() {
+		return this.classesDir;
+	}
+	/**
+	 * @param classesDir The classesDir to set.
+	 */
+	public void setClassesDir(String classesDir) {
+		this.classesDir = classesDir;
+	}
+
+	/**
+	 * @return Returns the classPath.
+	 */
+	public String getClassPath() {
+		return this.classPath;
+	}
+	
+	/**
+	 * @param classPath The classPath to set.
+	 */
+	public void setClassPath(String classPath) {
+		this.classPath = classPath;
+	}
+
+	/**
+	 * @return Returns the sourceDir.
+	 */
+	public String getSourceDir() {
+		return this.sourceDir;
+	}
+	
+	/**
+	 * @param sourceDir The sourceDir to set.
+	 */
+	public void setSourceDir(String sourceDir) {
+		this.sourceDir = sourceDir;
 	}
 
 }

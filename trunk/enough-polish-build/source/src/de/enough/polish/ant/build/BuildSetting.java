@@ -42,6 +42,7 @@ public class BuildSetting {
 	private boolean usePolishGui;
 	private String midp1Path;
 	private String midp2Path;
+	private String preverify;
 	
 	/**
 	 * Creates a new build setting.
@@ -301,4 +302,11 @@ public class BuildSetting {
 		return this.symbols;
 	}
 	
+	public void setPreverify( String preverify ) {
+		this.preverify = preverify;
+	}
+	
+	public String getPreverify() {
+		return this.preverify;
+	}
 }

@@ -9,6 +9,8 @@
         <include name="*.jar"/>
       </fileset>
   </path>
+  <!-- needed polish settings -->
+  <property name="polish.preverify" location="/home/enough/dev/WTK2.1/bin/preverify" />
   
   <!-- optional J2ME apis -->
   <property name="polish.api.mmapi" location="/home/enough/Nokia/Devices/Series_60_MIDP_Concept_SDK_Beta_0_3_1_Nokia_edition/lib/ext/mma.zip" />
@@ -109,6 +111,7 @@
 			targetDir="build"
 			midp1Path="/home/enough/dev/WTK2.1/wtklib/emptyapi.zip"
 			midp2Path="/home/enough/dev/WTK2.1/wtklib/emptyapi.zip"
+			preverify="${polish.preverify}"
 			>
 			<!-- 			midp2Path="/home/enough/dev/WTK2.1/lib/midpapi20.jar"
 			 -->
