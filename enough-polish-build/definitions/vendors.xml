@@ -1,0 +1,40 @@
+<!-- defines all supported producer of J2ME devices -->
+<manufacturers>
+
+	<manufacturer>
+		<name>Nokia</name>
+		<symbols</symbols>
+		<variables>
+			<variable name="colors.focus" value="0x0022DD" />
+		</variables>
+	</manufacturer>
+	
+	<manufacturer>
+		<name>Siemens</name>
+		<symbols</symbols>
+		<variables>
+		</variables>
+	</manufacturer>
+	
+	<manufacturer>
+		<name>Motorola</name>
+		<symbols</symbols>
+		<variables>
+		</variables>
+	</manufacturer>
+	
+	<manufacturer>
+		<name>Sony-Ericsson</name>
+		<symbols</symbols>
+		<variables>
+		</variables>		
+	</manufacturer>
+	
+	<manufacturer>
+		<name>Samsung</name>
+		<symbols</symbols>
+		<variables>
+		</variables>
+	</manufacturer>
+
+</manufacturers>

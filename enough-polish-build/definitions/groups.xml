@@ -1,0 +1,22 @@
+<!-- definition of device-groups -->
+<groups>
+	<group>
+		<name>Nokia-UI</name>
+		<apis>nokia-ui</apis>
+		<variables>
+			<variable name="classes.fullscreen" value="com.nokia.mid.ui.FullCanvas" />
+			<variable name="classes.fullscreen.menu" value="de.enough.polish.nokia.FullMenuCanvas" />
+		</variables>
+	</group>
+
+	<group>
+		<name>Series60</name>
+		<parent>Nokia-UI</parent>
+	</group>
+
+	<group>
+		<name>Series90</name>
+		<parent>Nokia-UI</parent>
+	</group>
+		
+</groups>
