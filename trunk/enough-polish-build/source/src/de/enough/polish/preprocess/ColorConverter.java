@@ -10,7 +10,9 @@ import de.enough.polish.util.TextUtil;
 
 import org.apache.tools.ant.BuildException;
 
+import java.util.*;
 import java.util.HashMap;
+import java.util.Set;
 
 /**
  * <p>Translates colors.</p>
@@ -22,7 +24,7 @@ import java.util.HashMap;
  * </pre>
  * @author Robert Virkus, robert@enough.de
  */
-public class Colors {
+public class ColorConverter {
 	
 	/**
 	 * Defines the standard VGA colors.
@@ -54,7 +56,7 @@ public class Colors {
 	/**
 	 * Creates a new colors parser.
 	 */
-	public Colors() {
+	public ColorConverter() {
 		this.tempColors = new HashMap();
 	}
 	
@@ -150,6 +152,23 @@ public class Colors {
 		
 		//TODO allow procentual values
 		throw new BuildException("Invalid color definition in CSS: [" + definition + "] is not a valid value." );
+	}
+	
+	/**
+	 * Sets the temporary colors.
+	 * 
+	 * @param newColors all colors in a map.
+	 * @throws BuildException when one of the given colors is invalid 
+	 */
+	public void setTemporaryColors( HashMap newColors ) {
+		this.tempColors = new HashMap();
+		Set keys = newColors.keySet();
+		for (Iterator iter = keys.iterator(); iter.hasNext();) {
+			String colorName = (String) iter.next();
+			HashMap map = (HashMap) newColors.get( colorName );
+			String color = (String) map.get(colorName);
+			this.tempColors.put( colorName, parseColor( color ));
+		}
 	}
 	
 }

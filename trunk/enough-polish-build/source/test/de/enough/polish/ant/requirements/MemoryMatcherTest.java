@@ -62,6 +62,17 @@ public class MemoryMatcherTest extends TestCase {
 		assertFalse( matcher.matches("120bytes"));
 		assertTrue( matcher.matches("5 gb"));
 		assertTrue( matcher.matches("5gb"));
+		needed = "0.5+ mb";
+		matcher = new MemoryMatcher( needed );
+		assertTrue( matcher.matches("512 kb"));
+		assertTrue( matcher.matches("512kb"));
+		assertTrue( matcher.matches("0.5 mb"));
+		assertTrue( matcher.matches("0.5mb"));
+		assertTrue( matcher.matches("1.2 mb"));
+		assertTrue( matcher.matches("1.2mb"));
+		assertFalse( matcher.matches("2048 b"));
+		assertFalse( matcher.matches("2048 bytes"));
+		assertFalse( matcher.matches("2048bytes"));
 		try {
 			needed = "120+";
 			matcher = new MemoryMatcher( needed );

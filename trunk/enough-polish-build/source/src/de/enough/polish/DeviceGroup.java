@@ -49,6 +49,15 @@ public class DeviceGroup extends PolishComponent {
 	}
 	
 	/**
+	 * Creates a new empty group.
+	 * 
+	 * @param name the name of the group
+	 */
+	public DeviceGroup(String name) {
+		this.identifier = name;
+	}
+
+	/**
 	 * @return The name of the parent of this group.
 	 */
 	public String getParentIdentifier() {

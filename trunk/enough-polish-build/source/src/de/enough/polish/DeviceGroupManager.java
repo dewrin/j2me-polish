@@ -93,4 +93,20 @@ public class DeviceGroupManager {
 	public DeviceGroup getGroup( String name ) {
 		return (DeviceGroup) this.groups.get( name );
 	}
+
+	/**
+	 * Gets or creates the group with the specified name.
+	 * 
+	 * @param name the name of the group
+	 * @param create when true is given, the group will be created when it does not exist
+	 * @return the group with the specified name.
+	 */
+	public Object getGroup(String name, boolean create) {
+		DeviceGroup group = (DeviceGroup) this.groups.get( name );
+		if (group == null && create) {
+			group = new DeviceGroup( name );
+			this.groups.put( name, group );
+		}
+		return group;
+	}
 }

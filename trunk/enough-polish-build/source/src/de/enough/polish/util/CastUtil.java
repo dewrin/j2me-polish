@@ -39,4 +39,22 @@ public final class CastUtil {
 			  || ("yes".equals(valueStr)) );
 	}
 	
+	/**
+	 * Retrieves the integer-value represented by the given object.
+	 * 
+	 * @param value the value which represents an integer
+	 * @return the integer value
+	 * @throws NullPointerException when the given value is null
+	 * @throws NumberFormatException when the value does not represent an integer
+	 */
+	public static int getInt( Object value ) {
+		if (value == null) {
+			throw new NullPointerException("Unable to parse int-value [null].");
+		}
+		if (value instanceof Integer) {
+			return ((Integer) value).intValue();
+		}
+		return Integer.parseInt(value.toString());
+	}
+	
 }

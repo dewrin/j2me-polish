@@ -8,11 +8,13 @@ package de.enough.polish;
 
 import de.enough.polish.ant.requirements.MemoryMatcher;
 import de.enough.polish.exceptions.InvalidComponentException;
+import de.enough.polish.util.CastUtil;
 import de.enough.polish.util.TextUtil;
 
 import org.jdom.Element;
 
 import java.io.File;
+import java.util.ArrayList;
 
 
 /**
@@ -91,21 +93,22 @@ public class Device extends PolishComponent {
 		loadCapabilities( definition, this.identifier, "devices.xml" );
 		
 		//add groups:
+		ArrayList groupNamesList = new ArrayList();
+		ArrayList groupsList = new ArrayList();
 		String groupsDefinition = definition.getChildTextTrim( "groups");
 		if (groupsDefinition != null) {
-			this.groupNames = TextUtil.splitAndTrim(groupsDefinition, ',');
-			this.groups = new DeviceGroup[ this.groupNames.length ];
+			String[] tempGroupNames = TextUtil.splitAndTrim(groupsDefinition, ',');			
 			for (int i = 0; i < this.groupNames.length; i++) {
-				DeviceGroup group = groupManager.getGroup( this.groupNames[i] );
+				String groupName = tempGroupNames[i];
+				DeviceGroup group = groupManager.getGroup( groupName );
 				if (group == null) {
-					throw new InvalidComponentException("The device [" + this.identifier + "] contains the undefined group [" + this.groupNames[i] + "] - please check either [devices.xml] or [groups.xml].");
+					throw new InvalidComponentException("The device [" + this.identifier + "] contains the undefined group [" + groupName + "] - please check either [devices.xml] or [groups.xml].");
 				}
 				this.groups[i] = group;
 				addComponent(group);
+				groupsList.add( group );
+				groupNamesList.add( groupName );
 			}
-		} else {
-			this.groupNames = new String[0];
-			this.groups = new DeviceGroup[0];
 		}
 		
 		// set specific features:
@@ -117,6 +120,8 @@ public class Device extends PolishComponent {
 			for (int i = 0; i < apis.length; i++) {
 				String api = apis[i].toLowerCase();
 				addFeature( "api." + api );
+				groupNamesList.add( api );
+				groupsList.add( groupManager.getGroup( api, true ) );
 			}
 			this.supportedApis = apis;
 		}
@@ -129,15 +134,18 @@ public class Device extends PolishComponent {
 		if (midp.startsWith("MIDP/1.")) {
 			addFeature( "midp1");
 			this.midpVersion = MIDP_1;
+			groupNamesList.add( "midp1" );
+			groupsList.add( groupManager.getGroup( "midp1", true ) );
 		} else if (midp.startsWith("MIDP/2.")) {
 			addFeature( "midp2");
 			this.midpVersion = MIDP_2;
+			groupNamesList.add( "midp2" );
+			groupsList.add( groupManager.getGroup( "midp2", true ) );
 		}
 		String supportsPolishGuiText = definition.getAttributeValue("supportsPolishGui");
 		if (supportsPolishGuiText != null) {
 			supportsPolishGuiText = supportsPolishGuiText.toLowerCase();
-			this.supportsPolishGui = "true".equals( supportsPolishGuiText ) 
-										   || "yes".equals( supportsPolishGuiText );
+			this.supportsPolishGui = CastUtil.getBoolean(supportsPolishGuiText ); 
 		} else {
 			// basically assume that any device supports the polish GUI:
 			this.supportsPolishGui = true;
@@ -158,6 +166,39 @@ public class Device extends PolishComponent {
 		if (this.supportsPolishGui) {
 			addFeature( SUPPORTS_POLISH_GUI );
 		}
+		String bitsPerPixel = this.getCapability( BITS_PER_PIXEL );
+		if (bitsPerPixel != null ) {
+			if ("1".equals( bitsPerPixel)) {
+				groupNamesList.add( "BitsPerPixel.1" );
+				groupsList.add( groupManager.getGroup( "BitsPerPixel.1", true ) );
+			} else if ("4".equals( bitsPerPixel)) {
+				groupNamesList.add( "BitsPerPixel.4" );
+				groupsList.add( groupManager.getGroup( "BitsPerPixel.4", true ) );
+			} else if ("8".equals( bitsPerPixel)) {
+				groupNamesList.add( "BitsPerPixel.8" );
+				groupsList.add( groupManager.getGroup( "BitsPerPixel.8", true ) ); 
+				groupNamesList.add( "BitsPerPixel.4+" );
+				groupsList.add( groupManager.getGroup( "BitsPerPixel.4+", true ) ); 
+			} else if ("16".equals( bitsPerPixel)) {
+				groupNamesList.add( "BitsPerPixel.16" );
+				groupsList.add( groupManager.getGroup( "BitsPerPixel.16", true ) ); 
+				groupNamesList.add( "BitsPerPixel.8+" );
+				groupsList.add( groupManager.getGroup( "BitsPerPixel.8+", true ) ); 
+				groupNamesList.add( "BitsPerPixel.4+" );
+				groupsList.add( groupManager.getGroup( "BitsPerPixel.4+", true ) ); 
+			} else if ("24".equals( bitsPerPixel)) {
+				groupNamesList.add( "BitsPerPixel.24" );
+				groupsList.add( groupManager.getGroup( "BitsPerPixel.24", true ) ); 
+				groupNamesList.add( "BitsPerPixel.16+" );
+				groupsList.add( groupManager.getGroup( "BitsPerPixel.16+", true ) ); 
+				groupNamesList.add( "BitsPerPixel.8+" );
+				groupsList.add( groupManager.getGroup( "BitsPerPixel.8+", true ) ); 
+				groupNamesList.add( "BitsPerPixel.4+" );
+				groupsList.add( groupManager.getGroup( "BitsPerPixel.4+", true ) ); 
+			}
+		}
+		this.groupNames = (String[]) groupNamesList.toArray( new String[groupNamesList.size() ] );
+		this.groups = (DeviceGroup[]) groupsList.toArray( new DeviceGroup[groupsList.size() ] );
 	}
 	
 	/**

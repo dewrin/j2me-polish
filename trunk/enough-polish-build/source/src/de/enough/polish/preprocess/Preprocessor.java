@@ -9,7 +9,10 @@ package de.enough.polish.preprocess;
 import de.enough.polish.PolishProject;
 import de.enough.polish.util.*;
 
+import org.apache.tools.ant.BuildException;
+
 import java.io.*;
+import java.util.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -68,6 +71,7 @@ public class Preprocessor {
 	private int ifDirectiveCount;
 	private BooleanEvaluator booleanEvaluator;
 	private StyleSheet styleSheet;
+	private boolean usePolishGui;
 
 	/**
 	 * Creates a new Preprocessor - usually for a specific device or a device group.
@@ -93,6 +97,10 @@ public class Preprocessor {
 	{
 		this.debugManager = project.getDebugManager();
 		this.enableDebug = project.isDebugEnabled();
+		this.usePolishGui = project.usesPolishGui();
+		if (variables == null) {
+			variables = new HashMap();
+		}
 		this.variables = variables;
 		if (symbols == null) {
 			symbols = new HashMap();
@@ -102,8 +110,9 @@ public class Preprocessor {
 		this.backup = backup;
 		this.indent = indent;
 		this.newExtension = newExt;
-		this.booleanEvaluator = new BooleanEvaluator( symbols );
+		this.booleanEvaluator = new BooleanEvaluator( symbols, variables );
 		this.destinationDir = destinationDir;
+		
 		this.withinIfDirectives = new HashMap();
 		this.withinIfDirectives.put( "elifdef", Boolean.TRUE );
 		this.withinIfDirectives.put( "elifndef", Boolean.TRUE );
@@ -141,10 +150,33 @@ public class Preprocessor {
 	 * Sets the symbols. Any old settings will be discarded.
 	 * 
 	 * @param symbols All new symbols, defined in a HashMap.
+	 * @throws BuildException when an invalid symbol is defined (currently only "false" is checked);
 	 */
 	public void setSymbols(HashMap symbols) {
+		// check symbols:
+		Set keySet = symbols.keySet();
+		for (Iterator iter = keySet.iterator(); iter.hasNext();) {
+			String symbol = (String) iter.next();
+			if ("false".equals(symbol)) {
+				throw new BuildException("The symbol [false] must not be defined. Please check your settings in your build.xml, devices.xml, groups.xml and vendors.xml");
+			}
+		}
 		this.symbols = symbols;
-		this.booleanEvaluator.setSymbols(symbols);
+		this.booleanEvaluator.setEnvironment(symbols, this.variables);
+	}
+	
+	/**
+	 * Turns the support for the J2ME Polish GUI on or off.
+	 *  
+	 * @param usePolishGui true when the GUI is supported, false otherwise
+	 */
+	public void setUsePolishGui( boolean usePolishGui ) {
+		this.usePolishGui = usePolishGui;
+		if (usePolishGui) {
+			addSymbol("polish.usePolishGui");
+		} else {
+			removeSymbol("polish.usePolishGui");
+		}
 	}
 	
 	/**
@@ -155,6 +187,15 @@ public class Preprocessor {
 	public void addSymbol( String name ) {
 		this.symbols.put( name, Boolean.TRUE );
 	}
+
+	/**
+	 * Removes a symbol from the list of defined symbols.
+	 * 
+	 * @param name The name of the symbol.
+	 */
+	public void removeSymbol(String name) {
+		this.symbols.remove(name);
+	}
 	
 	/**
 	 * Sets the variables, any old settings will be lost.
@@ -163,6 +204,7 @@ public class Preprocessor {
 	 */
 	public void setVariables(HashMap variables) {
 		this.variables = variables;
+		this.booleanEvaluator.setEnvironment(this.symbols, variables);
 	}
 	
 	/**
@@ -196,10 +238,10 @@ public class Preprocessor {
 	 * @return true when the file was preprocessed or changed
 	 * @throws FileNotFoundException when the file was not found
 	 * @throws IOException when the file could not be read or written
-	 * @throws PreprocessException when the preprocessing fails
+	 * @throws BuildException when the preprocessing fails
 	 */
 	public boolean preprocess( File sourceDir, String fileName ) 
-	throws FileNotFoundException, IOException, PreprocessException
+	throws FileNotFoundException, IOException, BuildException
 	{
 		this.ifDirectiveCount = 0;
 		File sourceFile = new File( sourceDir.getAbsolutePath()  + "/" + fileName );
@@ -256,10 +298,10 @@ public class Preprocessor {
 	 * @param className the name of the source file.
 	 * @param lines the source code. Changes are made directly in the code.
 	 * @return true when changes were made.
-	 * @throws PreprocessException when the preprocessing fails.
+	 * @throws BuildException when the preprocessing fails.
 	 */
 	public int preprocess(String className, StringList lines) 
-	throws PreprocessException 
+	throws BuildException 
 	{
 		boolean changed = false;
 		try {
@@ -267,7 +309,7 @@ public class Preprocessor {
 				String line = lines.getCurrent();
 				if (line.indexOf('#') != -1) {
 					// could be that there is a preprocess instruction:
-					int result = checkForFirstLevelDirective( className, lines, line, line.trim() );
+					int result = processSingleLine( className, lines, line, line.trim() );
 					if (result == CHANGED ) {
 						changed = true;
 					} else if (result == SKIP_FILE) {
@@ -275,7 +317,7 @@ public class Preprocessor {
 					}
 				}
 			}
-		} catch (PreprocessException e) {
+		} catch (BuildException e) {
 			reset();
 			throw e;
 		}
@@ -296,10 +338,10 @@ public class Preprocessor {
 	 * @return either NOT_PROCESSED when no first level directive was found, 
 	 * 			CHANGED when a directive was found and changes were made or
 	 * 			DIRECTIVE_FOUND when a valid first level directive was found but no changes were made 
-	 * @throws PreprocessException when there was a syntax error in the directives
+	 * @throws BuildException when there was a syntax error in the directives
 	 */
-	protected int checkForFirstLevelDirective( String className, StringList lines, String line, String trimmedLine ) 
-	throws PreprocessException 
+	protected int processSingleLine( String className, StringList lines, String line, String trimmedLine ) 
+	throws BuildException 
 	{
 		if (!trimmedLine.startsWith("//#")) {
 			// this is not a preprocesssing directive:
@@ -374,14 +416,14 @@ public class Preprocessor {
 	}
 	
 	private int checkInvalidDirective( String className, StringList lines, String line, String command, String argument )
-	throws PreprocessException
+	throws BuildException
 	{
 		if ( (this.ifDirectiveCount > 0) && (this.withinIfDirectives.get( command ) != null) ) {
 			return NOT_CHANGED;
 		} else if ( this.ignoreDirectives.get( command ) != null ) {
 			return DIRECTIVE_FOUND;
 		} else {
-			throw new PreprocessException(
+			throw new BuildException(
 					className + " line " + (lines.getCurrentIndex() + 1) 
 					+ ": unable to process command [" + command 
 					+ "] with argument [" + argument 
@@ -398,10 +440,10 @@ public class Preprocessor {
 	 * @param lines the source code
 	 * @param className the name of the source file
 	 * @return true when any lines were actually changed
-	 * @throws PreprocessException when the preprocessing fails
+	 * @throws BuildException when the preprocessing fails
 	 */
 	private boolean processIfdef(String argument, StringList lines, String className )
-	throws PreprocessException
+	throws BuildException
 	{
 		boolean conditionFulfilled = (this.symbols.get( argument ) != null);
 		return processIfVariations( conditionFulfilled, lines, className );
@@ -414,10 +456,10 @@ public class Preprocessor {
 	 * @param lines the source code
 	 * @param className name of the file which is processed
 	 * @return true when changes were made
-	 * @throws PreprocessException when the preprocessing fails
+	 * @throws BuildException when the preprocessing fails
 	 */
 	private boolean processIfndef(String argument, StringList lines, String className ) 
-	throws PreprocessException
+	throws BuildException
 	{
 		boolean conditionFulfilled = (this.symbols.get( argument ) == null);
 		return processIfVariations( conditionFulfilled, lines, className );
@@ -430,10 +472,10 @@ public class Preprocessor {
 	 * @param lines the source code
 	 * @param className the name of the source file
 	 * @return true when any lines were actually changed
-	 * @throws PreprocessException when the preprocessing fails
+	 * @throws BuildException when the preprocessing fails
 	 */
 	private boolean processIfVariations(boolean conditionFulfilled, StringList lines, String className )
-	throws PreprocessException
+	throws BuildException
 	{
 		this.ifDirectiveCount++;
 		int currentIfDirectiveCount = this.ifDirectiveCount;
@@ -446,7 +488,7 @@ public class Preprocessor {
 			String trimmedLine = line.trim();
 			int result = NOT_CHANGED; 
 			if (conditionFulfilled) {
-				result = checkForFirstLevelDirective( className, lines, line, trimmedLine );
+				result = processSingleLine( className, lines, line, trimmedLine );
 			}
 			if (result == CHANGED ) {
 				processed = true;
@@ -463,21 +505,21 @@ public class Preprocessor {
 				elseFound = true;
 			} else if ( trimmedLine.startsWith("//#elifdef") && (this.ifDirectiveCount == currentIfDirectiveCount)) {
 				if (elseFound) {
-					throw new PreprocessException( className + " line " + (lines.getCurrentIndex() +1) 
+					throw new BuildException( className + " line " + (lines.getCurrentIndex() +1) 
 							+ ": found directive #elifdef after #else branch.");
 				}
 				String symbol = line.substring( 10 ).trim();
 				conditionFulfilled = (this.symbols.get( symbol ) != null);
 			} else if (trimmedLine.startsWith("//#elifndef") && (this.ifDirectiveCount == currentIfDirectiveCount)) {
 				if (elseFound) {
-					throw new PreprocessException( className + " line " + (lines.getCurrentIndex() +1) 
+					throw new BuildException( className + " line " + (lines.getCurrentIndex() +1) 
 							+ ": found directive #elifndef after #else branch.");
 				}
 				String symbol = line.substring( 11 ).trim();
 				conditionFulfilled = (this.symbols.get( symbol ) == null);
 			} else if (trimmedLine.startsWith("//#elif") && (this.ifDirectiveCount == currentIfDirectiveCount)) {
 				if (elseFound) {
-					throw new PreprocessException( className + " line " + (lines.getCurrentIndex() +1) 
+					throw new BuildException( className + " line " + (lines.getCurrentIndex() +1) 
 							+ ": found directive #elifndef after #else branch.");
 				}
 				String argument = line.substring( 8 ).trim();
@@ -503,7 +545,7 @@ public class Preprocessor {
 			}
 		} // loop until endif is found
 		if (!endifFound) {
-			throw new PreprocessException(className + " line " + (commandStartLine +1) 
+			throw new BuildException(className + " line " + (commandStartLine +1) 
 					+": #ifdef is not terminated with #endif!" );
 		}
 		this.ifDirectiveCount--;
@@ -517,10 +559,10 @@ public class Preprocessor {
 	 * @param className the name of the file
 	 * @param lines the list of source code
 	 * @return true when the argument results in true
-	 * @throws PreprocessException when there is an syntax error in the expression
+	 * @throws BuildException when there is an syntax error in the expression
 	 */
 	protected boolean checkIfCondition(String argument, String className, StringList lines ) 
-	throws PreprocessException 
+	throws BuildException 
 	{
 		return this.booleanEvaluator.evaluate( argument, className, lines.getCurrentIndex() + 1);
 	}
@@ -583,10 +625,10 @@ public class Preprocessor {
 	 * @param lines the source code
 	 * @param className the name of the source file
 	 * @return true when changes were made
-	 * @throws PreprocessException when the preprocessing fails
+	 * @throws BuildException when the preprocessing fails
 	 */
 	private boolean processIf(String argument, StringList lines, String className ) 
-	throws PreprocessException
+	throws BuildException
 	{
 		boolean conditionFulfilled = checkIfCondition( argument, className, lines );
 		return processIfVariations( conditionFulfilled, lines, className );
@@ -598,11 +640,15 @@ public class Preprocessor {
 	 * @param argument the symbol which needs to be defined
 	 * @param lines the source code
 	 * @param className the name of the source file
-	 * @throws PreprocessException when the preprocessing fails
+	 * @throws BuildException when the preprocessing fails
 	 */
 	private void processDefine(String argument, StringList lines, String className ) 
-	throws PreprocessException
+	throws BuildException
 	{
+		if (argument.equals("false")) {
+			throw new BuildException( className + " line " + (lines.getCurrentIndex() +1) 
+					+ ": found invalid #define directive: the symbol [false] cannot be defined.");
+		}
 		this.symbols.put( argument, Boolean.TRUE );
 	}
 
@@ -612,11 +658,15 @@ public class Preprocessor {
 	 * @param argument the symbol which should be undefined
 	 * @param lines the source code
 	 * @param className the name of the source file
-	 * @throws PreprocessException when the preprocessing fails
+	 * @throws BuildException when the preprocessing fails
 	 */
 	private void processUndefine(String argument, StringList lines, String className ) 
-	throws PreprocessException
+	throws BuildException
 	{
+		if (argument.equals("true")) {
+			throw new BuildException( className + " line " + (lines.getCurrentIndex() +1) 
+					+ ": found invalid #undefine directive: the symbol [true] cannot be defined.");
+		}
 		this.symbols.remove( argument );
 	}
 
@@ -627,17 +677,17 @@ public class Preprocessor {
 	 * @param lines the source code
 	 * @param className the name of the source file
 	 * @return true when the content has been changed
-	 * @throws PreprocessException when the preprocessing fails
+	 * @throws BuildException when the preprocessing fails
 	 */
 	private boolean processVariable(String argument, StringList lines, String className ) 
-	throws PreprocessException
+	throws BuildException
 	{
 		try {
 			String line = PropertyUtil.writeProperties( argument, this.variables, true );
 			lines.setCurrent( line );
 			return true;
 		} catch (IllegalArgumentException e) {
-			throw new PreprocessException( className + " line " + (lines.getCurrentIndex() +1)
+			throw new BuildException( className + " line " + (lines.getCurrentIndex() +1)
 					+ ": unable to preprocess //#= in line [" + argument + "]: " + e.getMessage()  );
 		}
 	}
@@ -649,10 +699,10 @@ public class Preprocessor {
 	 * @param lines the source code
 	 * @param className the name of the source file
 	 * @return true when changes were made (always)
-	 * @throws PreprocessException when the preprocessing fails
+	 * @throws BuildException when the preprocessing fails
 	 */
 	private boolean processInclude(String argument, StringList lines, String className) 
-	throws PreprocessException
+	throws BuildException
 	{
 		String file = argument;
 		try {
@@ -661,13 +711,13 @@ public class Preprocessor {
 			lines.insert( includes );
 			return true;
 		} catch (IllegalArgumentException e) {
-			throw new PreprocessException( className + " line " + (lines.getCurrentIndex() +1)
+			throw new BuildException( className + " line " + (lines.getCurrentIndex() +1)
 					+ ": unable to include file [" + argument + "]: " + e.getMessage()  );
 		} catch (IOException e) {
 			if (!argument.equals(file)) {
 				argument += "] / [" + file;
 			}
-			throw new PreprocessException( className + " line " + (lines.getCurrentIndex() +1)
+			throw new BuildException( className + " line " + (lines.getCurrentIndex() +1)
 					+ ": unable to include file [" + argument + "]: " + e.getClass().getName() + ": " + e.getMessage() );
 		}
 	}
@@ -679,27 +729,40 @@ public class Preprocessor {
 	 * @param lines the source code
 	 * @param className the name of the source file
 	 * @return true when changes were made
-	 * @throws PreprocessException when the preprocessing fails
+	 * @throws BuildException when the preprocessing fails
 	 */
 	private boolean processStyle(String styleNames, StringList lines, String className) 
-	throws PreprocessException
+	throws BuildException
 	{
+		if (!this.usePolishGui) {
+			return false;
+		}
 		int styleDirectiveLine = lines.getCurrentIndex() + 1;
+		if (this.styleSheet == null) {
+			throw new BuildException(
+					className + " line " + styleDirectiveLine
+					+ ": unable to process #style directive: no style-sheet found. Please create [resources/polish.css].");
+		}
 		// get the style-name:
 		String[] styles = TextUtil.splitAndTrim(styleNames, ',');
 		String style = null;
 		for (int i = 0; i < styles.length; i++) {
-			String name = styles[i];
+			String name = styles[i].toLowerCase();
 			if (this.styleSheet.isDefined(name)) {
 				style = name;
 				break;
 			}
 		}
 		if (style == null) {
-			throw new PreprocessException(
+			String message;
+			if (styles.length == 1) {
+				message = "the style [" + styleNames + "] is not defined. Please define the style in the appropriate polish.css file.";
+			} else {
+				message = "none of the styles [" + styleNames + "] is defined. Please define at least one of the styles in the appropriate polish.css file.";
+			}
+			throw new BuildException(
 					className + " line " + styleDirectiveLine
-					+ ": unable to process #style directive: the style(s) [" + styleNames + "] is/are not defined."
-					);
+					+ ": unable to process #style directive: " + message );
 		}
 		// when the #style directive is followed by a new operator, then
 		// the defined style will be included as last argument in the new operator,
@@ -707,50 +770,54 @@ public class Preprocessor {
 		String nextLine = null;
 		if (lines.next()) {
 			nextLine = lines.getCurrent();
+			String trimmed = nextLine.trim(); 
+			if ( trimmed.startsWith("//#=") ) {
+				processSingleLine(className, lines, nextLine, trimmed);
+				nextLine = lines.getCurrent();
+			}
 		}
-		if ( (nextLine != null) && (nextLine.indexOf("new ") != -1) && (!containsDirective( nextLine )) ) {
+		// get the statement which follows the #style-directive and
+		// which is closed by a semicolon:
+		if ( nextLine != null ) {
 			uncommentLine( nextLine, lines );
 			while ( nextLine.indexOf(';') == -1) {
 				if (!lines.next()) {
-					throw new PreprocessException(
+					throw new BuildException(
 							className + " line " + styleDirectiveLine
 							+ ": unable to process #style directive: there is a new operator without closing semicolon in the following line(s)."
 							);
 				}
 				if ( containsDirective( nextLine) ) {
-					throw new PreprocessException(
+					throw new BuildException(
 							className + " line " + styleDirectiveLine
 							+ ": unable to process #style directive: there is a new operator without closing semicolon in the following line(s)."
 					);
 				}
-				nextLine = lines.getCurrent();
-				
+				nextLine = lines.getCurrent();				
 				uncommentLine( nextLine, lines );
 			}
 			// get uncommented line:
 			nextLine = lines.getCurrent();
-			int parenthesisPos = nextLine.indexOf(')');
+			int parenthesisPos = nextLine.lastIndexOf(')');
 			if ( parenthesisPos == -1 ) {
-				throw new PreprocessException(
+				throw new BuildException(
 						className + " line " + styleDirectiveLine
-						+ ": unable to process #style directive: there is a new operator without closing parenthesis in the following line(s). " 
-						+ "The closing parenthesis needs to be on the same line as the semicolon!" 
+						+ ": unable to process #style directive: the statement which follows the #style directive must be closed by a parenthesis and a semicolon on the same line: [);]. "  
 				);
 			}
 			// append the style-parameter as the last argument:
 			StringBuffer buffer = new StringBuffer();
 			buffer.append( nextLine.substring(0, parenthesisPos ) )
-					.append( ", StyleSheet.getStyle( \"")
+					.append( ", StyleSheet." )
 					.append( style )
-					.append( "\") " )
+					.append( "Style " )
 					.append( nextLine.substring( parenthesisPos ) );
 			lines.setCurrent( buffer.toString() );
 		} else { // either there is no next line or the next line has no new operator
 			lines.prev();
-			lines.insert( "\tStyleSheet.setCurrentStyle( \"" + style + "\" );"  );
+			lines.insert( "\tStyleSheet.currentStyle = StyleSheet." + style + "Style;"  );
 		}
 		// mark the style as beeing used:
-		//TODO allow usage of favourite styles #style myStyle, okStyle, baseStyle
 		this.styleSheet.addUsedStyle( style );
 		return true;
 	}
@@ -762,10 +829,10 @@ public class Preprocessor {
 	 * @param lines the source code
 	 * @param className the name of the source file
 	 * @return true when changes were made
-	 * @throws PreprocessException when the preprocessing fails
+	 * @throws BuildException when the preprocessing fails
 	 */
 	private boolean processDebug(String argument, StringList lines, String className) 
-	throws PreprocessException
+	throws BuildException
 	{
 		lines.next();
 		String line = lines.getCurrent();
@@ -793,10 +860,10 @@ public class Preprocessor {
 	 * @param lines the source code
 	 * @param className the name of the source file
 	 * @return true when changes were made
-	 * @throws PreprocessException when the preprocessing fails
+	 * @throws BuildException when the preprocessing fails
 	 */
 	private boolean processMdebug(String argument, StringList lines, String className) 
-	throws PreprocessException
+	throws BuildException
 	{
 		boolean debug = false;
 		boolean changed = false;
@@ -826,7 +893,7 @@ public class Preprocessor {
 			}
 		}
 		if (! endTagFound ) {
-			throw new PreprocessException(
+			throw new BuildException(
 					className + " line " + startLine
 					+ ": missing #enddebug directive for multi-line debug directive #mdebug."
 			);

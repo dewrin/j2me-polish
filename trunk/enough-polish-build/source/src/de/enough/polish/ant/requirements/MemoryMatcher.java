@@ -60,10 +60,11 @@ implements Matcher
 		if (splitPos == -1) {
 			splitPos = value.indexOf('\t');
 		}
-		int valueNumber;
+		double valueNumber;
+		String valueString = null;
 		String valueUnit;
 		if (splitPos != -1) {
-			valueNumber = Integer.parseInt( value.substring(0, splitPos).trim());
+			valueString = value.substring(0, splitPos).trim();
 			valueUnit = value.substring( splitPos + 1 ).trim();
 		} else {
 			// check number char by char:
@@ -72,20 +73,25 @@ implements Matcher
 			int pos = 0;
 			for (pos = 0; pos < valueChars.length; pos++) {
 				char c = valueChars[pos];
-				if ( Character.isDigit( c ) ) {
+				if ( Character.isDigit( c ) || (c == '.' ) ) {
 					buffer.append( c );
 				} else {
 					break;
 				}
 			}
-			valueNumber = Integer.parseInt( buffer.toString() );
+			valueString = buffer.toString();
 			valueUnit = value.substring( pos ).trim();
+		}
+		if (valueString.indexOf('.') == -1) {
+			valueNumber = Integer.parseInt( valueString );
+		} else {
+			valueNumber = Double.parseDouble( valueString );
 		}
 		Long unitMultiply = (Long) UNITS.get(valueUnit);
 		if (unitMultiply == null) {
 			throw new BuildException("Invalid memory-value [" + value +"] / unit [" + valueUnit + "] found: please specify a valid unit (kb, mb etc).");
 		}
-		return valueNumber * unitMultiply.longValue();
+		return (long) (valueNumber * unitMultiply.longValue());
 	}
 
 	/* (non-Javadoc)

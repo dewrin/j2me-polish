@@ -27,7 +27,7 @@ public class Midlet {
 	 * Creates a new midlet definition.
 	 */
 	public Midlet() {
-		this.icon = "";
+		// initialisation is done with the setter and getter methods
 	}
 	
 	
@@ -100,9 +100,10 @@ public class Midlet {
 	/**
 	 * Retrieves the info for the manifest and JAD file of this midlet.
 	 * 
+	 * @param defaultIcon the name of the default icon.
 	 * @return The info containing the name, icon and class of this midlet.
 	 */
-	public String getMidletInfo() {
+	public String getMidletInfo( String defaultIcon ) {
 		if (this.name == null) {
 			String altName = this.className;
 			int dotPos = altName.lastIndexOf('.');
@@ -110,6 +111,13 @@ public class Midlet {
 				altName = altName.substring( dotPos + 1);
 			}
 			this.name = altName; 
+		}
+		if (this.icon == null) {
+			if (defaultIcon != null) {
+				this.icon = defaultIcon;
+			} else {
+				this.icon = "";
+			}
 		}
 		return this.name + "," + this.icon + "," + this.className;
 	}

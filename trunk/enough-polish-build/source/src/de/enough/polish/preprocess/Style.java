@@ -22,33 +22,19 @@ import java.util.Set;
  */
 public class Style {
 	
-	public Background background;
-	public Border border;
-	public Font font;
-	public int fontColor;
-	public Font labelFont;
-	public int labelFontColor;
-	public int paddingLeft;
-	public int paddingTop;
-	public int paddingRight;
-	public int paddingBottom;
-	public int marginLeft;
-	public int marginTop;
-	public int marginRight;
-	public int marginBottom;
-	
-	public int appearanceMode;
-	public int layout;
-	
 	private HashMap properties;
 	private HashMap groupsByName;
 	private ArrayList groupNamesList;
 	private String selector;
 	private String parentName;
+	private String styleName;
+	private boolean isDynamic;
 
 	
-	public Style( String selector, String parent, CssBlock cssBlock ) {
+	public Style( String selector, String styleName, boolean isDynamic, String parent, CssBlock cssBlock ) {
 		this.selector = selector;
+		this.styleName = styleName;
+		this.isDynamic = isDynamic;
 		this.parentName = parent;
 		this.properties = new HashMap();
 		this.groupsByName = new HashMap();
@@ -63,7 +49,10 @@ public class Style {
 	 */
 	public Style(Style style) {
 		this.properties = new HashMap( style.properties );
+		this.groupNamesList = new ArrayList( style.groupNamesList );
 		this.selector = style.selector;
+		this.styleName = style.styleName;
+		this.isDynamic = style.isDynamic;
 		this.parentName = style.parentName;
 		HashMap source = style.groupsByName;
 		HashMap target = new HashMap();
@@ -115,7 +104,7 @@ public class Style {
 				set = parentGroup.keySet();
 				for (Iterator iter = set.iterator(); iter.hasNext();) {
 					String key = (String) iter.next();
-					if ( targetGroup.get(key) == null) {
+					if ( (!key.equals(groupName)) && (targetGroup.get(key) == null)) {
 						//System.out.println("setting property [" + key + "] with value [" + parentGroup.get(key) + "]." );
 						targetGroup.put( key, parentGroup.get(key));
 					//} else {
@@ -127,7 +116,9 @@ public class Style {
 	}
 
 	/**
-	 * @param cssBlock
+	 * Adds the given CSS declarations to this style.
+	 * 
+	 * @param cssBlock the CSS declarations
 	 */
 	public void add(CssBlock cssBlock) {
 		this.properties.putAll( cssBlock.getDeclarationsMap() );
@@ -140,6 +131,14 @@ public class Style {
 				this.groupsByName.put( groupName, group ); 
 				this.groupNamesList.add( groupName );
 			} else {
+				// check if a type: none; directive has been specified earlier,
+				// e.g. "background: none;". This directive is now obsolete,
+				// since more specific values are added.
+				// But for margins and paddings it is still usefull - so only
+				// remove it for border and background:
+				if ("border".equals(groupName) || "background".equals(groupName)) {
+					targetGroup.remove( groupName );
+				}
 				targetGroup.putAll( group );
 			}
 		}
@@ -162,6 +161,14 @@ public class Style {
 				this.groupsByName.put( groupName, group ); 
 				this.groupNamesList.add( groupName );
 			} else {
+				// check if a type: none; directive has been specified earlier,
+				// e.g. "background: none;". This directive is now obsolete,
+				// since more specific values are added.
+				// But for margins and paddings it is still usefull - so only
+				// remove it for border and background:
+				if ("border".equals(groupName) || "background".equals(groupName)) {
+					targetGroup.remove( groupName );
+				}
 				targetGroup.putAll( group );
 			}
 		}
@@ -169,13 +176,25 @@ public class Style {
 
 	
 	/**
+	 * Retrieves the group with the specified name.
+	 * 
 	 * @param groupName the name of the group
 	 * @return the map containing all defined attributes of the group
 	 */
 	public HashMap getGroup(String groupName ) {
 		return (HashMap) this.groupsByName.get( groupName );
 	}
-	
+
+	/**
+	 * Removes the group with the specified name from this style.
+	 * 
+	 * @param groupName the name of the group
+	 * @return the map containing all defined attributes of the group
+	 */
+	public HashMap removeGroup(String groupName ) {
+		this.groupNamesList.remove(groupName);
+		return (HashMap) this.groupsByName.remove( groupName );
+	}	
 	/**
 	 * Retrieves the names of all stored groups.
 	 * 
@@ -194,4 +213,63 @@ public class Style {
 		return this.selector;
 	}
 
+	/**
+	 * Changes the selector of this style.
+	 * 
+	 * @param selector the new selector
+	 */
+	public void setSelector(String selector) {
+		this.selector = selector;
+	}
+
+	/**
+	 * Adds a group to this style.
+	 * 
+	 * @param groupName the name of the group
+	 * @param group the group
+	 */
+	public void addGroup(String groupName, HashMap group) {
+		boolean addName = (this.groupsByName.get( groupName ) == null);
+		this.groupsByName.put( groupName, group );
+		if (addName) {
+			this.groupNamesList.add( groupName );
+		}
+	}
+	
+	/**
+	 * Creates String representation of this style.
+	 * Is used for debugging puposes only,
+	 * 
+	 * @return the buffer plus contents as a string
+	 */
+	public String toString() {
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("Style ")
+			  .append( this.selector )
+			  .append(" extends " ).append( this.parentName ).append( ":\n");
+		String[] groupNames = getGroupNames();
+		for (int i = 0; i < groupNames.length; i++) {
+			String name = groupNames[i];
+			HashMap group = getGroup(name);
+			if (group == null) {
+				group = new HashMap();
+				group.put( "INVALID GROUP", name  );
+			}
+			buffer.append(name).append(": ").append( group.toString() ).append("\n");
+		}
+		return buffer.toString();
+	}
+
+	/**
+	 * @return Returns true when this style is a dynamic one
+	 */
+	public boolean isDynamic() {
+		return this.isDynamic;
+	}
+	/**
+	 * @return Returns the name of this style, which can be used instead of the selector for java-variables.
+	 */
+	public String getStyleName() {
+		return this.styleName;
+	}
 }

@@ -9,6 +9,8 @@ package de.enough.polish.preprocess;
 import de.enough.polish.ant.build.DebugSetting;
 import de.enough.polish.ant.build.Filter;
 
+import org.apache.tools.ant.BuildException;
+
 import java.util.HashMap;
 
 /**
@@ -94,9 +96,9 @@ public class DebugManager {
 	 * 
 	 * @param setting The settings for this manager.
 	 * 
-	 * @throws PreprocessException when the pattern of an included debug-filter is invalid
+	 * @throws BuildException when the pattern of an included debug-filter is invalid
 	 */
-	public DebugManager(DebugSetting setting) throws PreprocessException {
+	public DebugManager(DebugSetting setting) throws BuildException {
 		init();
 		this.verbose = setting.isVerbose();
 		this.isVisual = setting.isVisual();
@@ -120,15 +122,15 @@ public class DebugManager {
 	 * @param pattern the class-name or class-pattern. A pattern is like an import-declaration,
 	 * 			e.g. "com.company.package.*"
 	 * @param level the level which should be allowed, e.g. "debug", "info", "warn", "error", "fatal" or userdefined.
-	 * @throws PreprocessException when the pattern is invalid
+	 * @throws BuildException when the pattern is invalid
 	 */
 	public void addDebugSetting( String pattern, String level ) 
-	throws PreprocessException 
+	throws BuildException 
 	{
 		if (pattern.endsWith(".*")) {
 			pattern = pattern.substring(0, pattern.length() - 2);
 		} else if (pattern.indexOf('*') != -1) {
-			throw new PreprocessException("Invalid class-pattern ["  + pattern + "] for debug-level [" + level +"] found! Patterns must end with a [.*] like import-patterns, e.g. \"com.company.package.*\"");
+			throw new BuildException("Invalid class-pattern ["  + pattern + "] for debug-level [" + level +"] found! Patterns must end with a [.*] like import-patterns, e.g. \"com.company.package.*\"");
 		}
 		Integer order = (Integer) this.levelOrder.get( level );
 		if (order == null) {
