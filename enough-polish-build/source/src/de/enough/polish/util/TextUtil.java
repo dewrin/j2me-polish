@@ -60,14 +60,7 @@ public final class TextUtil {
 	 * @throws NullPointerException when the input is null.
 	 */
 	public static String replace(String input, char search, char replacement) {
-		char[] chars = input.toCharArray();
-		for (int i = 0; i < chars.length; i++) {
-			char c = chars[i];
-			if (c == search) {
-				chars[i] = replacement;
-			}
-		}
-		return new String( chars );
+		return input.replace(search, replacement);
 	}
 	
 	/**
