@@ -24,6 +24,7 @@ import org.apache.tools.ant.types.Path;
 import org.jdom.JDOMException;
 
 import java.io.*;
+import java.util.*;
 import java.util.HashMap;
 import java.util.Hashtable;
 
@@ -156,13 +157,23 @@ public class PolishTask extends ConditionalTask {
 		if (debugManager != null && this.buildSetting.getDebugSetting().isVisual()) {
 			this.polishProject.addFeature("debug.visual");
 		}
+		// add all ant properties: 
+		Hashtable antProperties = this.project.getProperties();
+		Set keySet = antProperties.keySet();
+		for (Iterator iter = keySet.iterator(); iter.hasNext();) {
+			String key = (String) iter.next();
+			this.polishProject.addDirectCapability( key, (String) antProperties.get(key) );
+		}
+		// add all variables from the build.xml:
 		Variable[] variables = this.buildSetting.getVariables();
 		if (variables != null) {
 			for (int i = 0; i < variables.length; i++) {
 				Variable var = variables[i];
+				System.out.println("adding variable [" + var.getName() + "]." );
 				this.polishProject.addDirectCapability( var );
 			}
 		}
+		// add all symbols from the build.xml:
 		String symbolDefinition = this.buildSetting.getSymbols();
 		if (symbolDefinition != null) {
 			String[] symbols = TextUtil.splitAndTrim( symbolDefinition, ',' );

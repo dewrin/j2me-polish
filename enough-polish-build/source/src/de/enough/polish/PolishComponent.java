@@ -243,12 +243,23 @@ public class PolishComponent {
 	}
 	
 	/**
-	 * Adds a capability without changing it to this component.
+	 * Adds a capability without changing its name to this component.
 	 * 
 	 * @param capability The capability which should be added
 	 */
 	public void addDirectCapability(Variable capability) {
 		this.capabilities.put( capability.getName(), capability.getValue() );
+	}
+	
+
+	/**
+	 * Adds a capability without changing its name to this component.
+	 * 
+	 * @param name The name of the capability.
+	 * @param value The value of the capability.
+	 */
+	public void addDirectCapability(String name, String value) {
+		this.capabilities.put( name, value );
 	}
 	
 	/**

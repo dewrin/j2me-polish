@@ -69,32 +69,22 @@ public class Device extends PolishComponent {
 	 * Creates a new device.
 	 * 
 	 * @param definition the xml definition of this device.
-	 * @param vendorManager The manager of the device-manufacturers
+	 * @param identifier The identifier of this device.
+	 * @param deviceName The name of this device.
+	 * @param vendor The vendor (and "parent") of this device.
 	 * @param groupManager The manager for device-groups.
 	 * @throws InvalidComponentException when the given definition has errors
 	 */
-	public Device(Element  definition,  VendorManager vendorManager, DeviceGroupManager groupManager ) 
+	public Device(Element definition, String identifier, String deviceName, Vendor vendor, DeviceGroupManager groupManager) 
 	throws InvalidComponentException {
-		this.identifier = definition.getChildTextTrim( "identifier");
-		if (this.identifier == null) {
-			throw new InvalidComponentException("Unable to initialise device. Every device needs to define either its [identifier] or its [name] and [vendor]. Check your [devices.xml].");
-		}
-		//System.out.println("\ninitialising device " + this.identifier);
-		String[] chunks = TextUtil.split( this.identifier, '/');
-		if (chunks.length != 2) {
-			//TODO there could be several device definitions in one xml-block
-			throw new InvalidComponentException("The device [" + this.identifier + "] has an invalid [identifier] - every identifier needs to consists of the vendor and the name, e.g. \"Nokia/6600\". Please check you [devices.xml].");
-		}
-		this.vendorName = chunks[0];
-		this.name = chunks[1];
+		super( vendor );
+		this.identifier = identifier;
+		this.name = deviceName;
+		this.vendorName = vendor.getIdentifier();
+		
 		addCapability( NAME, this.name );
 		addCapability( VENDOR, this.vendorName );
 		addCapability( IDENTIFIER, this.identifier );
-		Vendor vendor = vendorManager.getVendor( this.vendorName );
-		if (vendor == null) {
-			throw new InvalidComponentException("The device [" + this.name + "] defines the vendor [" + this.vendorName + "] which is not defined within [vendors.xml] - please check your settings.");
-		}
-		addComponent(vendor);
 		
 		// load capabilities and features:
 		loadCapabilities( definition, this.identifier, "devices.xml" );
@@ -164,7 +154,6 @@ public class Device extends PolishComponent {
 		}
 	}
 	
-
 	/**
 	 * Determines whether this device supports the polish-gui-framework.
 	 * Usually this is the case when the device meets some capabilities like
