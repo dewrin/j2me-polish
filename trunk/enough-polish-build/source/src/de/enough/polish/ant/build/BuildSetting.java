@@ -76,6 +76,7 @@ public class BuildSetting {
 	private ResourceUtil resourceUtil;
 	private ArrayList sourceDirs;
 	private File polishDir;
+	private JadAttributes jadAttributes;
 	
 	/**
 	 * Creates a new build setting.
@@ -135,6 +136,18 @@ public class BuildSetting {
 	
 	public Variable[] getVariables() {
 		return this.variables;
+	}
+	
+	public void addConfiguredJad( JadAttributes attributes ) {
+		this.jadAttributes = attributes;
+	}
+	
+	public Attribute[] getJadAttributes() {
+		if (this.jadAttributes == null) {
+			return new Attribute[0];
+		} else {
+			return this.jadAttributes.getAttributes();
+		}
 	}
 	
 	/**
