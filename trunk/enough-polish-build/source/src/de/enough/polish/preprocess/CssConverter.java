@@ -653,6 +653,13 @@ public class CssConverter extends Converter {
 			}
 		} else {
 			type = type.toLowerCase();
+			if ("image".equals( type )) {
+				String imageUrl = (String) group.get("image");
+				if ("none".equals(imageUrl)) {
+					// this a simple background, even though the type is specified:
+					type = "simple";
+				}
+			}
 		}
 		String className = (String) BACKGROUND_TYPES.get(type);
 		if (className == null) {
