@@ -133,7 +133,7 @@
 			<fullscreen enable="yes" menu="yes" />
 			-->
 			<!-- project-wide variables - used for preprocessing  -->
-			<variables>
+			<variables includeAntProperties="true">
 				<variable name="update-url" value="http://www.enough.de/update" />
 			</variables>
 			<!-- sources -->

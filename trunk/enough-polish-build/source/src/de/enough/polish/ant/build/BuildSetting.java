@@ -49,6 +49,7 @@ public class BuildSetting {
 	private String midp2Path;
 	private String preverify;
 	private Project project;
+	private boolean includeAntProperties;
 	
 	/**
 	 * Creates a new build setting.
@@ -64,6 +65,8 @@ public class BuildSetting {
 		this.devices = new File("./devices.xml");
 		this.vendors = new File("./vendors.xml");
 		this.groups = new File("./groups.xml");
+		this.midp1Path = "./import/midp1.jar";
+		this.midp2Path = "./import/midp2.jar";
 		this.imageLoadStrategy = IMG_LOAD_FOREGROUND;
 	}
 	
@@ -101,6 +104,7 @@ public class BuildSetting {
 	}
 	
 	public void addConfiguredVariables( Variables vars ) {
+		this.includeAntProperties = vars.includeAntProperties();
 		this.variables = vars.getVariables();
 	}
 	
@@ -108,6 +112,13 @@ public class BuildSetting {
 		return this.variables;
 	}
 	
+	/**
+	 * @return Returns the includeAntProperties.
+	 */
+	public boolean includeAntProperties() {
+		return this.includeAntProperties;
+	}
+
 	public void addConfiguredSource( Source src ) {
 		if (src.getUrl() == null) {
 			throw new BuildException("The nested element <source> needs to define the attribute [url].");
@@ -368,6 +379,10 @@ public class BuildSetting {
 	 * @return The path to the api-file of the MIDP/1.0 environment 
 	 */
 	public String getMidp1Path() {
+		File file = new File( this.midp1Path );
+		if (!file.exists()) {
+			throw new BuildException("The default path to the MIDP/1.0-API [" + this.midp1Path + "] points to a non-existing file. Please specify it with the [midp1Path] attribute of the <build> element.");
+		}
 		return this.midp1Path;
 	}
 	
@@ -390,6 +405,10 @@ public class BuildSetting {
 	 * @return The path to the api-file of the MIDP/2.0 environment 
 	 */
 	public String getMidp2Path() {
+		File file = new File( this.midp2Path );
+		if (!file.exists()) {
+			throw new BuildException("The default path to the MIDP/2.0-API [" + this.midp2Path + "] points to a non-existing file. Please specify it with the [midp2Path] attribute of the <build> element.");
+		}
 		return this.midp2Path;
 	}
 	
