@@ -26,6 +26,7 @@ import java.util.ArrayList;
 public class Variables {
 	
 	private ArrayList variables;
+	private boolean includeAntProperties;
 
 	/**
 	 * Creates a new list of variables.
@@ -48,4 +49,16 @@ public class Variables {
 		return (Variable[]) this.variables.toArray( new Variable[ this.variables.size() ] );
 	}
 
+	/**
+	 * @return Returns the includeAntProperties.
+	 */
+	public boolean includeAntProperties() {
+		return this.includeAntProperties;
+	}
+	/**
+	 * @param includeAntProperties The includeAntProperties to set.
+	 */
+	public void setIncludeAntProperties(boolean includeAntProperties) {
+		this.includeAntProperties = includeAntProperties;
+	}
 }

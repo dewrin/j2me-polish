@@ -61,6 +61,8 @@ public class PolishTask extends ConditionalTask {
 	private File apiDir;
 	private Obfuscator obfuscator;
 	private String[] preserveClasses;
+
+	private ImportManager importManager;
 	
 	/**
 	 * Creates a new empty task 
@@ -171,11 +173,13 @@ public class PolishTask extends ConditionalTask {
 			this.polishProject.addFeature("debug.visual");
 		}
 		// add all ant properties: 
-		Hashtable antProperties = this.project.getProperties();
-		Set keySet = antProperties.keySet();
-		for (Iterator iter = keySet.iterator(); iter.hasNext();) {
-			String key = (String) iter.next();
-			this.polishProject.addDirectCapability( key, (String) antProperties.get(key) );
+		if (this.buildSetting.includeAntProperties()) {
+			Hashtable antProperties = this.project.getProperties();
+			Set keySet = antProperties.keySet();
+			for (Iterator iter = keySet.iterator(); iter.hasNext();) {
+				String key = (String) iter.next();
+				this.polishProject.addDirectCapability( key, (String) antProperties.get(key) );
+			}
 		}
 		// add all variables from the build.xml:
 		Variable[] variables = this.buildSetting.getVariables();
@@ -261,6 +265,9 @@ public class PolishTask extends ConditionalTask {
 			System.arraycopy( midletClasses, 0, this.preserveClasses, keepClasses.length, midletClasses.length  );
 			this.obfuscator = Obfuscator.getInstance( obfuscatorSetting.getName(), obfuscatorSetting.getClassName() );
 		}
+		
+		// init import manager:
+		this.importManager = new ImportManager();
 	}
 
 	/**
@@ -368,8 +375,11 @@ public class PolishTask extends ConditionalTask {
 						}
 						int result = this.preprocessor.preprocess( className, sourceCode );
 						if (result != Preprocessor.SKIP_FILE) {
-							if (usePolishGui) {
-								// now replace the import statements:
+							sourceCode.reset();
+							// now replace the import statements:
+							boolean changed = this.importManager.processImports(usePolishGui, device.isMidp1(), sourceCode);
+							if (changed) {
+								result = Preprocessor.CHANGED;
 							}
 							// save modified file:
 							if ( ( saveInAnyCase ) 

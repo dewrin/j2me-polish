@@ -180,6 +180,16 @@ public class StringList {
 			return true;
 		}
 	}
+
+	/**
+	 * Sets the current index.
+	 * 
+	 * @param index The new index.
+	 * @see #getCurrentIndex()
+	 */
+	public void setCurrentIndex(int index) {
+		this.currentIndex = index;
+	}
 	
 
 }
