@@ -29,7 +29,7 @@ public class InfoSetting {
 	public static final String MIDLET_NAME = "MIDlet-Name"; // J & M
 	public static final String MIDLET_VERSION = "MIDlet-Version"; // J & M
 	public static final String MIDLET_VENDOR = "MIDlet-Vendor"; // J & M
-	public static final String MIDLET_JAR_URL = "MIDlet-Jar-Url"; // J
+	public static final String MIDLET_JAR_URL = "MIDlet-Jar-URL"; // J
 	public static final String MIDLET_JAR_SIZE = "MIDlet-Jar-Size"; // J
 	public static final String MICRO_EDITION_PROFILE = "MicroEdition-Profile"; // M
 	public static final String MICRO_EDITION_CONFIGURATION = "MicroEdition-Configuration"; // M

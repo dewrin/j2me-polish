@@ -286,7 +286,7 @@ public class PolishTask extends ConditionalTask {
 		Javac javac = new Javac();
 		javac.setProject( this.project );
 		javac.setTaskName(getTaskName() + "-javac-" + device.getIdentifier() );
-		//TODO check if javac.target=1.1 is really needed
+		//javac.target=1.1 is needed for the preverification:
 		javac.setTarget("1.1");
 		
 		System.out.println("now compiling for device [" +  device.getIdentifier() + "]." );
