@@ -29,22 +29,16 @@
 <devices>
 
 <!-- Standard devices -->
-	<device>
-		<identifier>
-		    Generic/midp1
-		</identifier>
+	<device
+		supportsPolishGui="true" >
+		<identifier>Generic/midp1</identifier>
 		<capability name="JavaPlatform" value="MIDP/1.0" />
-		<capability name="ScreenSize" value="111x100" />
-		<capability name="BitsPerPixel" value="2" />
 	</device>
 
-	<device>
-		<identifier>
-		    Generic/midp2
-		</identifier>
+	<device
+		supportsPolishGui="true" >
+		<identifier>Generic/midp2</identifier>
 		<capability name="JavaPlatform" value="MIDP/2.0" />
-		<capability name="ScreenSize" value="111x100" />
-		<capability name="BitsPerPixel" value="12" />
 	</device>
 	
 <!-- Sony-Ericsson devices -->
