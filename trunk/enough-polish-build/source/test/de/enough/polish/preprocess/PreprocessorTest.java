@@ -68,7 +68,37 @@ public class PreprocessorTest extends TestCase {
 		variables.put( "polish.message", "Hello world!");
 		
 		this.preprocessor = new Preprocessor( project, currentDir, variables, symbols, false, false, true, null );
-		this.preprocessor.setSyleSheet( new StyleSheet() );
+		
+		//prepare styles:
+		StyleSheet sheet = new StyleSheet();
+		StringBuffer buffer = new StringBuffer();
+		buffer.append( ".funny {" )
+			   .append( "	font-face: system; " )
+			   .append( "	font-size: medium;" )
+			   .append( "	font-style: italic;" )
+			   .append( "	font-color: blue;" )
+			   .append( "}" );
+		CssBlock block = new CssBlock( buffer.toString() );
+		sheet.addCssBlock(block);
+		buffer = new StringBuffer();
+		buffer.append( ".weird {" )
+			   .append( "	font-style: italic;" )
+			   .append( "	font-color: blue;" )
+			   .append( "}" );
+		block = new CssBlock( buffer.toString() );
+		sheet.addCssBlock(block);
+		buffer = new StringBuffer();
+		buffer.append( ".crazy {" )
+			   .append( "	font-style: italic;" )
+			   .append( "	font-color: blue;" )
+			   .append( "	background-color: #808080;" )
+			   .append( "}" );
+		block = new CssBlock( buffer.toString() );
+		sheet.addCssBlock(block);
+		assertTrue( sheet.isDefined("weird"));
+		assertTrue( sheet.isDefined("funny"));
+		assertTrue( sheet.isDefined("crazy"));
+		this.preprocessor.setSyleSheet( sheet );
 	}
 
 	/* (non-Javadoc)
@@ -594,7 +624,7 @@ public class PreprocessorTest extends TestCase {
 		int result = this.preprocessor.preprocess( "MyClass.java", lines );
 		assertEquals( Preprocessor.NOT_CHANGED, result );
 		StyleSheet styleSheet = this.preprocessor.getStyleSheet();
-		assertFalse( styleSheet.isDefined("weird"));
+		assertFalse( styleSheet.isUsed("weird"));
 		
 		sourceLines = new String[] {
 				"	//#ifdef XXtest1 ",
@@ -689,24 +719,24 @@ public class PreprocessorTest extends TestCase {
 	}	
 	
 	public void testIncludesPattern() {
-		assertTrue( Preprocessor.includesDirective("		//#ifdef test2"));
-		assertTrue( Preprocessor.includesDirective("		//#ifndef test2"));
-		assertTrue( Preprocessor.includesDirective("		//#if (t1 && t2)|| t3"));
-		assertTrue( Preprocessor.includesDirective("		//#elif (t1 && t2)|| t3"));
-		assertTrue( Preprocessor.includesDirective("		//#elifdef t3"));
-		assertTrue( Preprocessor.includesDirective("		//#elifndef t3"));
-		assertTrue( Preprocessor.includesDirective("		//#endif"));
-		assertTrue( Preprocessor.includesDirective("		//#style x"));
-		assertTrue( Preprocessor.includesDirective("		//#= some = ${my.var};"));
-		assertTrue( Preprocessor.includesDirective("		//#include test.java"));
-		assertTrue( Preprocessor.includesDirective("		//#endinclude"));
-		assertTrue( Preprocessor.includesDirective("		//#define something"));
-		assertTrue( Preprocessor.includesDirective("		//#undefine something"));
-		assertTrue( Preprocessor.includesDirective("		//#endif"));
-		assertTrue( Preprocessor.includesDirective("		//#debug"));
-		assertTrue( Preprocessor.includesDirective("		//#debug info"));
-		assertTrue( Preprocessor.includesDirective("		//#mdebug"));
-		assertTrue( Preprocessor.includesDirective("		//#enddebug"));
+		assertTrue( Preprocessor.containsDirective("		//#ifdef test2"));
+		assertTrue( Preprocessor.containsDirective("		//#ifndef test2"));
+		assertTrue( Preprocessor.containsDirective("		//#if (t1 && t2)|| t3"));
+		assertTrue( Preprocessor.containsDirective("		//#elif (t1 && t2)|| t3"));
+		assertTrue( Preprocessor.containsDirective("		//#elifdef t3"));
+		assertTrue( Preprocessor.containsDirective("		//#elifndef t3"));
+		assertTrue( Preprocessor.containsDirective("		//#endif"));
+		assertTrue( Preprocessor.containsDirective("		//#style x"));
+		assertTrue( Preprocessor.containsDirective("		//#= some = ${my.var};"));
+		assertTrue( Preprocessor.containsDirective("		//#include test.java"));
+		assertTrue( Preprocessor.containsDirective("		//#endinclude"));
+		assertTrue( Preprocessor.containsDirective("		//#define something"));
+		assertTrue( Preprocessor.containsDirective("		//#undefine something"));
+		assertTrue( Preprocessor.containsDirective("		//#endif"));
+		assertTrue( Preprocessor.containsDirective("		//#debug"));
+		assertTrue( Preprocessor.containsDirective("		//#debug info"));
+		assertTrue( Preprocessor.containsDirective("		//#mdebug"));
+		assertTrue( Preprocessor.containsDirective("		//#enddebug"));
 	}
 	
 	public void testDebug() throws PreprocessException {
