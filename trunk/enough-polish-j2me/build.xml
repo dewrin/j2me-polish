@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="enough-polish" default="javadoc">
+<project name="enough-polish" default="doc">
 
-    <target name="javadoc">
+    <target name="doc">
         <javadoc 
         	destdir="doc" 
         	access="public" 
