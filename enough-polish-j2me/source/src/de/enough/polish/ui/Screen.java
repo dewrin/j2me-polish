@@ -60,6 +60,7 @@ import javax.microedition.lcdui.*;
  */
 public abstract class Screen 
 //#if polish.useFullScreen && polish.classes.fullscreen:defined
+//#define tmp.fullScreen
 //#= extends ${polish.classes.fullscreen}
 //#else
 extends Canvas
@@ -76,6 +77,7 @@ extends Canvas
 	protected String cssSelector;
 	protected CommandListener cmdListener;
 	protected Container container;
+	protected boolean isLayoutVCenter;
 	//#if polish.useMenuFullScreen && polish.classes.fullscreen:defined
 		//#define tmp.menuFullScreen
 		private Command menuSingleCommand;
@@ -130,6 +132,7 @@ extends Canvas
 			this.background = style.background;
 			this.border = style.border;
 			this.container.setStyle(style, true);
+			this.isLayoutVCenter = (( style.layout & Item.LAYOUT_VCENTER ) == Item.LAYOUT_VCENTER); 
 		} else {
 			this.background = null;
 			this.border = null;
@@ -137,16 +140,16 @@ extends Canvas
 		//#ifdef tmp.menuFullScreen
 		Style menuStyle = StyleSheet.getStyle("menu");
 		if (menuStyle != null) {
-		String colorStr = menuStyle.getProperty("menubar-color");
-		if (colorStr != null) {
-			this.menuBarColor = Integer.parseInt(colorStr);
+			String colorStr = menuStyle.getProperty("menubar-color");
+			if (colorStr != null) {
+				this.menuBarColor = Integer.parseInt(colorStr);
+			}
+			colorStr = menuStyle.getProperty("menufont-color");
+			if (colorStr != null) {
+				this.menuFontColor = Integer.parseInt(colorStr);
+			}
 		}
-		colorStr = menuStyle.getProperty("menufont-color");
-		if (colorStr != null) {
-			this.menuFontColor = Integer.parseInt(colorStr);
-		}
-		}
-	//#endif
+		//#endif
 	}
 	
 	public boolean animate() {
@@ -188,7 +191,7 @@ extends Canvas
 				int menuHeight = this.menuContainer.getItemHeight(this.menuMaxWidth, this.menuMaxWidth);
 				int titleHeight = this.title.getItemHeight( this.screenWidth, this.screenWidth )
 					+ 1; //TODO add paddingVertical?
-				y = this.screenHeight - (menuHeight + this.menuHeightClosed + 1);
+				y = this.screenHeight - (menuHeight + this.menuHeightClosed + 2);
 				if (y < titleHeight) {
 					y = titleHeight; 
 				}
@@ -196,9 +199,11 @@ extends Canvas
 			} 
 			if (this.menuContainer.size() > 0) {
 				// clear menu-bar:
-				g.setColor( this.menuBarColor );
 				int yStart = this.screenHeight - this.menuHeightClosed;
-				g.fillRect(0, yStart, this.screenWidth,  this.menuHeightClosed );
+				if (this.menuBarColor != Item.TRANSPARENT) {
+					g.setColor( this.menuBarColor );
+					g.fillRect(0, yStart, this.screenWidth,  this.menuHeightClosed );
+				}
 				String menuText = null;
 				if (this.menuOpened) {
 					//TODO rob internationalise cmd.selectMenu
@@ -235,6 +240,13 @@ extends Canvas
 	 * @param g the graphics on which the screen should be painted
 	 */
 	protected void paintScreen( int x, int y, int rightBorder, Graphics g ) {
+		if (this.isLayoutVCenter) {
+			int containerHeight = this.container.getItemHeight( rightBorder -x, rightBorder);
+			int availableHeight = this.screenHeight - y - containerHeight;
+			if (availableHeight > 0) {
+				y += (availableHeight / 2);
+			}
+		}
 		this.container.paint( x, y, x, rightBorder, g );
 	}
 	
