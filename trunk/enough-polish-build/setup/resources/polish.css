@@ -1,0 +1,90 @@
+colors {
+	brown: #FF0011;
+	pink:  rgb(248,39,186);
+	darkpink:  rgb(185,26,138);
+	lightgray: #C9C9C9;
+}
+
+
+default {
+	background: none;
+	border: none;
+	label-color: yellow;
+	font {
+		face: proportional;
+		size: medium;
+		style: plain;
+		color: green;
+	}
+}
+
+menu {
+	background-color: white;
+	font-color: black;
+}
+
+title {
+	padding: 2;
+	margin-top: 0;
+	margin-bottom: 5;
+	margin-left: 0;
+	margin-right: 0;
+	font-face: proportional;
+	font-size: large;
+	font-style: bold;
+	font-color: white;
+	background {
+		/*type: round-rect;
+		arc: 10; */
+		color: darkpink;
+		/*border-color: yellow;
+		border-width: 2;*/
+	}
+	border: none;
+	layout: horizontal-center | horizontal-expand;
+}
+
+focussed {
+	before: url(dot.png);
+	padding: 2;
+	padding-horizontal: 5;
+	margin-top: 2;
+	margin-bottom: 2;
+	background: none;
+	border {
+		type: round-rect;
+		arc: 8;
+		color: yellow;
+		width: 2;
+	}
+	font {
+		style: bold;
+		color: black;
+	}
+	layout: horizontal-expand | right;
+}
+
+list {
+	background {
+		type: pulsating;
+		start-color: white;
+		end-color: pink;
+		steps: 30;
+		repeat: false;
+		back-and-forth: false;
+	}
+	padding-left: 10;
+	padding-right: 10;
+}
+
+list icon {
+	background: none;
+	margin-right: 0;
+	font-color: white;
+	font-style: bold;
+	layout: right;
+	icon-image: url( %INDEX%icon.png );
+	padding: 2;
+	padding-right: 4;
+	padding-horizontal: 5;
+}

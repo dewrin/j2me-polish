@@ -1,6 +1,6 @@
 <project 
 	name="enough-polish-build" 
-	default="j2mepolish">
+	default="bin-dist">
 
 <!-- global properties -->
 
@@ -165,13 +165,6 @@
 </target>
 
 
-<target name="dist" depends="init">
-	<jar destfile="dist/enough-j2mepolish-build.jar"
-	     basedir="bin/classes"
-	     >
-	</jar>
-</target>
-
 <target name="bin-dist" depends="init">
 	<!-- create a list of all J2ME source files: -->
 	<indexWriter 
@@ -179,7 +172,7 @@
 		>
 		<fileset dir="../enough-polish-j2me/source/src" includes="**/*.java" />
 	</indexWriter>
-	<!-- create the binary jar distribution -->
+	<!-- create the binary build distribution -->
 	<jar destfile="dist/enough-j2mepolish-build.jar"
 	     basedir="bin/classes"
 		 excludes="**/*.html"
@@ -188,6 +181,34 @@
 		<fileset dir="." includes="apis.xml,vendors.xml,groups.xml,devices.xml, build/j2mepolish.index.txt" />
 		<fileset dir="../enough-polish-j2me/source" includes="src/**/*.java" />
 	</jar>
+	<!-- create the binary J2ME util distribution -->
+	<jar destfile="dist/enough-j2mepolish-util.jar"
+	     basedir="../enough-polish-j2me/bin/classes"
+		 excludes="**/*.html"
+		 index="true"
+		 includes="de/enough/polish/util/*.class"
+	     >
+	</jar>
+</target>
+	
+<target name="setup" 
+		 depends="bin-dist"
+		 description="creates the j2mepolish.zip used for setup." 
+	>
+	<mkdir dir="tmp/import" />
+	<!-- create the installation zip file -->
+	<copy todir="tmp/" >
+		<fileset dir="." includes="apis.xml,vendors.xml,groups.xml,devices.xml" />
+		<fileset dir="setup" />
+	</copy>
+	<copy todir="tmp/import">
+		<fileset dir="import" includes="jdom.jar,proguard.jar,retroguard.jar" />
+		<fileset dir="dist" includes="*.jar" />
+	</copy>
+	<!-- create ZIP file -->
+	<zip destfile="dist/j2mepolish.zip" 
+		 basedir="tmp" 
+		 />
 </target>
 		
 <target name="test" depends="bin-dist">
@@ -198,6 +219,7 @@
 <target name="clean" depends="init">
 	<delete dir="build" />
 	<delete dir="dist" />
+	<delete dir="tmp" />
 </target>
 
 
