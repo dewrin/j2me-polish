@@ -18,9 +18,13 @@ import de.enough.polish.util.TextUtil;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.taskdefs.Javac;
+import org.apache.tools.ant.types.Path;
 import org.jdom.JDOMException;
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.Hashtable;
 
 /**
  * <p>Manages a J2ME project from the preprocessing to the packaging and obfuscation.</p>
@@ -47,6 +51,10 @@ public class PolishTask extends ConditionalTask {
 	private Preprocessor preprocessor;
 	private File[] sourceDirs;
 	private String[][] sourceFiles;
+	private Path midp1BootClassPath;
+	private Path midp2BootClassPath;
+	private HashMap apiPaths;
+	private String apiDir;
 	
 	/**
 	 * Creates a new empty task 
@@ -85,7 +93,9 @@ public class PolishTask extends ConditionalTask {
 		checkSettings();
 		initProject();
 		selectDevices();
-		for ( int i=0; i<this.devices.length; i++) {
+		int devCount = this.devices.length;
+		System.out.println("Processing [" + devCount + "] devices...");
+		for ( int i=0; i<devCount; i++) {
 			Device device = this.devices[i];
 			preprocess( device );
 			compile( device );
@@ -117,7 +127,6 @@ public class PolishTask extends ConditionalTask {
 	 * Initialises this project and instanciates several helper classes.
 	 */
 	private void initProject() {
-		//TODO enough implement initProject
 		// create debug manager:
 		boolean isDebugEnabled = this.buildSetting.isDebugEnabled(); 
 		DebugManager debugManager = null;
@@ -131,9 +140,26 @@ public class PolishTask extends ConditionalTask {
 		}
 		// create project settings:
 		this.polishProject = new Project( this.buildSetting.usesPolishGui(), isDebugEnabled, debugManager );
+		this.polishProject.addFeature(this.buildSetting.getImageLoadStrategy());
 		if (debugManager != null && this.buildSetting.getDebugSetting().isVisual()) {
 			this.polishProject.addFeature("debug.visual");
 		}
+		Capability[] variables = this.buildSetting.getVariables();
+		if (variables != null) {
+			for (int i = 0; i < variables.length; i++) {
+				Capability var = variables[i];
+				this.polishProject.addDirectCapability( var );
+			}
+		}
+		String symbolDefinition = this.buildSetting.getSymbols();
+		if (symbolDefinition != null) {
+			String[] symbols = TextUtil.splitAndTrim( symbolDefinition, ',' );
+			for (int i = 0; i < symbols.length; i++) {
+				this.polishProject.addDirectFeature( symbols[i] );
+			}
+		}
+		
+		// create vendor/group/device manager:
 		try {
 			VendorManager vendorManager = new VendorManager( this.polishProject, this.buildSetting.getVendors());
 			DeviceGroupManager groupManager = new DeviceGroupManager( this.buildSetting.getGroups() ); 
@@ -146,6 +172,7 @@ public class PolishTask extends ConditionalTask {
 			throw new BuildException("unable to create device manager: " + e.getMessage(), e );
 		}
 		this.preprocessor = new Preprocessor( this.polishProject, null, null, null, false, false, true, null );
+		
 		//	initialise the preprocessing-source-directories:
 		DirectoryScanner dirScanner = new DirectoryScanner();
 		dirScanner.setIncludes( new String[]{"**/*.java"} );
@@ -176,7 +203,16 @@ public class PolishTask extends ConditionalTask {
 			dirScanner.setBasedir(dir);
 			dirScanner.scan();
 			this.sourceFiles[i] = dirScanner.getIncludedFiles();
+			//TODO read source files content
 		}
+		
+		// init boot class path:
+		this.midp1BootClassPath = new Path( this.project, this.buildSetting.getMidp1Path());
+		this.midp2BootClassPath = new Path( this.project, this.buildSetting.getMidp2Path());
+		
+		// init path for device APIs:
+		this.apiPaths = new HashMap();
+		this.apiDir = "./import";
 	}
 
 	/**
@@ -202,19 +238,21 @@ public class PolishTask extends ConditionalTask {
 	 * @param device The device for which the preprocessing should be done.
 	 */
 	private void preprocess( Device device ) {
-		// TODO enough implement preprocess
 		try {
-			this.preprocessor.setTargetDir( this.buildSetting.getTargetDir().getAbsolutePath() + "/" + device.getIdentifier() );
+			String targetDir = this.buildSetting.getTargetDir().getAbsolutePath() 
+				+ "/" + device.getIdentifier()
+				+ "/source";
+			this.preprocessor.setTargetDir( targetDir );
 			this.preprocessor.setSymbols( device.getFeatures() );
 			this.preprocessor.setVariables( device.getCapabilities() );
 			System.out.println("now preprocessing for device [" +  device.getIdentifier() + "]." );
 			for (int i = 0; i < this.sourceDirs.length; i++) {
 				File sourceDir = this.sourceDirs[i];
 				String[] files = this.sourceFiles[i];
-				System.out.println("current source dir: " + sourceDir );				
+				//System.out.println("current source dir: " + sourceDir );				
 				for (int j = 0; j < files.length; j++) {
 					String file = files[j];
-					System.out.println("preprocesssing " + file);
+					//System.out.println("preprocesssing " + file);
 					this.preprocessor.preprocess( sourceDir, file);
 				}
 			}
@@ -236,7 +274,63 @@ public class PolishTask extends ConditionalTask {
 	 * @param device The device for which the source code should be compiled.
 	 */
 	private void compile( Device device ) {
-		// TODO enough implement compile
+		Javac javac = new Javac();
+		javac.setProject( this.project );
+		javac.setTaskName(getTaskName() + "-" + device.getIdentifier() );
+		//TODO check if javac.target=1.1 is really needed
+		javac.setTarget("1.1");
+		
+		System.out.println("now compiling for device [" +  device.getIdentifier() + "]." );
+		String targetBase = this.buildSetting.getTargetDir().getAbsolutePath() 
+			+ "/" + device.getIdentifier();
+		File targetDir = new File( targetBase + "/classes" );
+		if (!targetDir.exists()) {
+			targetDir.mkdirs();
+		}
+		javac.setDestdir( targetDir );
+		javac.setSrcdir(new Path( this.project,  targetBase + "/source") );
+		if (device.isMidp1()) {
+			javac.setBootclasspath(this.midp1BootClassPath);
+		} else {
+			javac.setBootclasspath(this.midp2BootClassPath);
+		}
+		
+		// check for each supported api, if the appropriate path-property
+		// has been set: mmapi = ${polish.api.mmapi}
+		// when this has not been defined, just look in the import-dir
+		String[] apis = device.getSupportedApis();
+		StringBuffer classPath = new StringBuffer();
+		Hashtable properties = this.project.getProperties(); 
+		for (int i = 0; i < apis.length; i++) {
+			String api = apis[i];
+			String path = (String) this.apiPaths.get( api );
+			if (path != null) {
+				classPath.append( ':' )
+						 .append( path );
+			} else {
+				path = (String) properties.get( "polish.api." + api );
+				if (path == null) {
+					//TODO use system specific path-seperator(if needed by Path):
+					path = this.apiDir + "/" + api + ".jar:" + this.apiDir + "/" + api + ".zip";
+				}  
+				//TODO use system specific path-seperator (if needed by Path):
+				classPath.append(':')
+						 .append( path );
+				this.apiPaths.put( api, path );
+			}
+		}
+		if (apis.length > 0) {
+			javac.setClasspath( new Path(this.project, classPath.toString().substring(1) ) );
+			System.out.println( "using classpath [" + classPath.toString().substring(1) + "]." );
+		}
+		
+		// start compile:
+		try {
+			javac.execute();
+		} catch (BuildException e) {
+			e.printStackTrace();
+			throw new BuildException( "Unable to compile source code for device [" + device.getIdentifier() + "]: " + e.getMessage() );
+		}
 		
 	}
 

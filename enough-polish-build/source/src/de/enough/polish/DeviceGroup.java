@@ -28,8 +28,7 @@ import org.jdom.Element;
 public class DeviceGroup extends PolishComponent {
 
 
-	private String name;
-	private String parentName;
+	private String parentIdentifier;
 
 	/**
 	 * Creates a new device group.
@@ -40,27 +39,20 @@ public class DeviceGroup extends PolishComponent {
 	public DeviceGroup( Element definition ) 
 	throws InvalidComponentException 
 	{
-		super("polish.group", null );
-		this.name = definition.getChildTextTrim( "name" );
-		if (this.name == null) {
+		this.identifier = definition.getChildTextTrim( "name" );
+		//System.out.println("\ninitialising group " + this.identifier );
+		if (this.identifier == null) {
 			throw new InvalidComponentException("A group needs to have the element <name> defined. Please check your [groups.xml] file.");
 		}
-		this.parentName  = definition.getChildTextTrim( "parent" );
-		loadCapabilities(definition, this.name, "groups.xml");
-	}
-	
-	/**
-	 * @return Returns the name of this group.
-	 */
-	public String getName() {
-		return this.name;
+		this.parentIdentifier  = definition.getChildTextTrim( "parent" );
+		loadCapabilities(definition, this.identifier, "groups.xml");
 	}
 	
 	/**
 	 * @return The name of the parent of this group.
 	 */
-	public String getParentName() {
-		return this.parentName;
+	public String getParentIdentifier() {
+		return this.parentIdentifier;
 	}
 
 }

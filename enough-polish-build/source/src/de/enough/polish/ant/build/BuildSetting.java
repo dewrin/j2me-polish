@@ -24,15 +24,15 @@ import java.io.File;
  */
 public class BuildSetting {
 	
-	public final static int IMG_LOAD_BACKGROUND = 1;
-	public final static int IMG_LOAD_FOREGROUND = 2;
+	public final static String IMG_LOAD_BACKGROUND = "images.backgroundLoad";
+	public final static String IMG_LOAD_FOREGROUND = "images.directLoad";
 	
 	private DebugSetting debugSetting;
 	private MidletSetting midletSetting; 
 	private String version;
 	private File targetDir;
 	private String symbols;
-	private int imageLoadStrategy;
+	private String imageLoadStrategy;
 	private FullScreenSetting fullScreenSetting;
 	private File devices;
 	private File vendors;
@@ -40,6 +40,8 @@ public class BuildSetting {
 	private Capability[] variables;
 	private Source source;
 	private boolean usePolishGui;
+	private String midp1Path;
+	private String midp2Path;
 	
 	/**
 	 * Creates a new build setting.
@@ -49,6 +51,7 @@ public class BuildSetting {
 		this.devices = new File("./devices.xml");
 		this.vendors = new File("./vendors.xml");
 		this.groups = new File("./groups.xml");
+		this.imageLoadStrategy = IMG_LOAD_FOREGROUND;
 	}
 	
 	public void addConfiguredMidlets( MidletSetting setting ) {
@@ -128,6 +131,17 @@ public class BuildSetting {
 			throw new BuildException("The build-attribute [imageLoadStrategy] needs to be either [background] or [foreground]. "
 					+ "The strategy [" + strategy + "] is not supported.");
 		}
+	}
+	
+	/**
+	 * Retrieves the strategy by which images should be loaded.
+	 * 
+	 * @return either IMG_LOAD_BACKGROUND or IMG_LOAD_FOREGROUND
+	 * @see #IMG_LOAD_BACKGROUND
+	 * @see #IMG_LOAD_FOREGROUND
+	 */
+	public String getImageLoadStrategy() {
+		return this.imageLoadStrategy;
 	}
 	
 	public void setFullscreen( String setting ) {
@@ -236,4 +250,55 @@ public class BuildSetting {
 		this.vendors = vendors;
 	}
 
+	/**
+	 * Gets the path to the MIDP/1.0-api-file
+	 * 
+	 * @return The path to the api-file of the MIDP/1.0 environment 
+	 */
+	public String getMidp1Path() {
+		return this.midp1Path;
+	}
+	
+	/**
+	 * Sets the path to the api-file of the MIDP/1.0 environment
+	 *  
+	 * @param midp1Path The path to the MIDP/1.0-api-file
+	 */
+	public void setMidp1Path( String midp1Path ) {
+		File zipFile = new File( midp1Path );
+		if (!zipFile.exists()) {
+			throw new BuildException("Invalid path to the MIDP/1.0-API: [" + midp1Path + "] (File not found).");
+		}
+		this.midp1Path = midp1Path;
+	}
+
+	/**
+	 * Gets the path to the MIDP/2.0-jar
+	 * 
+	 * @return The path to the api-file of the MIDP/2.0 environment 
+	 */
+	public String getMidp2Path() {
+		return this.midp2Path;
+	}
+	
+	/**
+	 * Sets the path to the api-file of the MIDP/2.0 environment
+	 *  
+	 * @param midp2Path The path to the MIDP/2.0-api-file
+	 */
+	public void setMidp2Path( String midp2Path ) {
+		File zipFile = new File( midp2Path );
+		if (!zipFile.exists()) {
+			throw new BuildException("Invalid path to the MIDP/2.0-API: [" + midp2Path + "] (File not found).");
+		}
+		this.midp2Path = midp2Path;
+	}
+
+	/**
+	 * @return The user-defined symbols
+	 */
+	public String getSymbols() {
+		return this.symbols;
+	}
+	
 }

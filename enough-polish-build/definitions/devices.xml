@@ -35,9 +35,8 @@ SonyEricsson T68i  SonyEricssonT68
 		<identifier>
 		    Motorola/i50sx
 		</identifier>
-		<user-agent>MOTi50sx</user-agent>
-		<groups>Series60</groups>
 		<!-- other identifiers: , Motorola/i55sr, Motorola/i85s -->
+		<user-agent>MOTi50sx</user-agent>
 		<capability name="SoftwarePlatform.JavaPlatform"
 					   value="MIDP/1.0" />
 		<capability name="HardwarePlatform.ScreenSize"
@@ -56,13 +55,13 @@ SonyEricsson T68i  SonyEricssonT68
 	<device>
 		<identifier>Nokia/3650</identifier>
 		<groups>Series60</groups>
-		<apis>mmapi</apis>
+		<capability name="JavaPackage" value="mmapi, bluetooth, wmapi" />
 	</device>
 
 	<device>
 		<identifier>Nokia/6600</identifier>
 		<groups>Series60</groups>
-		<apis>mmapi,bluetooth,wmapi</apis>
+		<capability name="JavaPackage" value="mmapi, bluetooth, wmapi" />
 		<capability name="JavaPlatform" value="MIDP/2.0" />
 	</device>
 

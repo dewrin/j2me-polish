@@ -25,22 +25,25 @@ import org.jdom.Element;
  */
 public class Device extends PolishComponent {
 	
-	public static final String IDENTIFIER = "Identifier";
-	public static final String VENDOR = "Vendor";
-	public static final String NAME = "Name";
-	public static final String SCREEN_SIZE = "ScreenSize";
-	public static final String SCREEN_WIDTH = "ScreenWidth";
-	public static final String SCREEN_HEIGHT = "ScreenHeigth";
-	public static final String CANVAS_SIZE = "CanvasSize";
-	public static final String CANVAS_WIDTH = "CanvasWidth";
-	public static final String CANVAS_HEIGHT = "CanvasHeigth";
-	public static final String BITS_PER_PIXEL = "BitsPerPixel";
-	public static final String JAVA_PLATFORM = "JavaPlatform";
-	public static final String JAVA_PROTOCOL = "JavaProtocol";
-	public static final String JAVA_PACKAGE= "JavaPackage";
-	public static final String HEAP_SIZE = "HeapSize";
-	public static final String USER_AGENT = "UserAgent";
-	public static final String SUPPORTS_POLISH_GUI = "supportsPolishGui";
+	public static final String IDENTIFIER = "polish.Identifier";
+	public static final String VENDOR = "polish.Vendor";
+	public static final String NAME = "polish.Name";
+	public static final String SCREEN_SIZE = "polish.ScreenSize";
+	public static final String SCREEN_WIDTH = "polish.ScreenWidth";
+	public static final String SCREEN_HEIGHT = "polish.ScreenHeigth";
+	public static final String CANVAS_SIZE = "polish.CanvasSize";
+	public static final String CANVAS_WIDTH = "polish.CanvasWidth";
+	public static final String CANVAS_HEIGHT = "polish.CanvasHeigth";
+	public static final String BITS_PER_PIXEL = "polish.BitsPerPixel";
+	public static final String JAVA_PLATFORM = "polish.JavaPlatform";
+	public static final String JAVA_PROTOCOL = "polish.JavaProtocol";
+	public static final String JAVA_PACKAGE= "polish.JavaPackage";
+	public static final String HEAP_SIZE = "polish.HeapSize";
+	public static final String USER_AGENT = "polish.UserAgent";
+	public static final String SUPPORTS_POLISH_GUI = "polish.supportsPolishGui";
+	
+	public static final int MIDP_1 = 1;
+	public static final int MIDP_2 = 2;
 	
 	private static final int POLISH_GUI_MIN_BITS_PER_PIXEL = 8;
 	private static final MemoryMatcher POLISH_GUI_MIN_HEAP_SIZE = new MemoryMatcher("500+kb");
@@ -48,17 +51,9 @@ public class Device extends PolishComponent {
 	private boolean supportsPolishGui;
 	private String name;
 	private String vendorName;
-	private String identifier;
+	private int midpVersion;
+	private String[] supportedApis;
 	
-
-	/**
-	 * Creates a new device.
-	 * 
-	 * @param parent the manufacturer of this device.
-	 */
-	public Device(Vendor parent) {
-		super("polish.device", parent);
-	}
 
 	/**
 	 * Creates a new device.
@@ -70,11 +65,11 @@ public class Device extends PolishComponent {
 	 */
 	public Device(Element  definition,  VendorManager vendorManager, DeviceGroupManager groupManager ) 
 	throws InvalidComponentException {
-		super( "device.polish", null );
 		this.identifier = definition.getChildTextTrim( "identifier");
 		if (this.identifier == null) {
 			throw new InvalidComponentException("Unable to initialise device. Every device needs to define either its [identifier] or its [name] and [vendor]. Check your [devices.xml].");
 		}
+		//System.out.println("\ninitialising device " + this.identifier);
 		String[] chunks = TextUtil.split( this.identifier, '/');
 		if (chunks.length != 2) {
 			//TODO there could be several device definitions in one xml-block
@@ -109,24 +104,28 @@ public class Device extends PolishComponent {
 		
 		// set specific features:
 		// set api-support:
-		String supportedApisStr = getCapability( "polish." + JAVA_PACKAGE );
+		String supportedApisStr = getCapability( JAVA_PACKAGE );
 		if (supportedApisStr != null) {
-			String[] supportedApis = TextUtil.splitAndTrim( supportedApisStr, ',' );
-			for (int i = 0; i < supportedApis.length; i++) {
-				String api = supportedApis[i].toLowerCase();
+			System.out.println(this.identifier +  " found apis: [" + supportedApisStr + "].");
+			String[] apis = TextUtil.splitAndTrim( supportedApisStr, ',' );
+			for (int i = 0; i < apis.length; i++) {
+				String api = apis[i].toLowerCase();
 				addFeature( "api." + api );
 			}
+			this.supportedApis = apis;
 		}
 		// set midp-version:
-		String midp = getCapability( "polish." + JAVA_PLATFORM );
+		String midp = getCapability( JAVA_PLATFORM );
 		if (midp == null) {
 			throw new InvalidComponentException("The device [" + this.identifier + "] does not define the needed element [" + JAVA_PLATFORM + "].");
 		}
 		midp = midp.toUpperCase();
 		if (midp.startsWith("MIDP/1.")) {
 			addFeature( "midp1");
+			this.midpVersion = MIDP_1;
 		} else if (midp.startsWith("MIDP/2.")) {
 			addFeature( "midp2");
+			this.midpVersion = MIDP_2;
 		}
 		String supportsPolishGuiText = definition.getAttributeValue("supportsPolishGui");
 		if (supportsPolishGuiText != null) {
@@ -173,6 +172,42 @@ public class Device extends PolishComponent {
 	 */
 	public String getIdentifier() {
 		return this.identifier;
+	}
+	
+	/**
+	 * Retrieves the major version of the MIDP implementation of this device.
+	 * 
+	 * @return the major MIDP-version, currently either 1 (MIDP_1) or 2 (MIDP_2)
+	 */
+	public int getMidpVersion() {
+		return this.midpVersion;
+	}
+	
+	/**
+	 * Determines whether this device supports the MIDP/1.0 API.
+	 * 
+	 * @return true when this device supports the MIDP/1.0 API.
+	 */
+	public boolean isMidp1() {
+		return (this.midpVersion == MIDP_1);
+	}
+
+	/**
+	 * Determines whether this device supports the MIDP/2.0 API.
+	 * 
+	 * @return true when this device supports the MIDP/2.0 API.
+	 */
+	public boolean isMidp2() {
+		return (this.midpVersion == MIDP_2);
+	}
+	
+	/**
+	 * Retrieves all APIs which this device supports.
+	 * 
+	 * @return a String array containing all APIs which are supported by this device.
+	 */
+	public String[] getSupportedApis() {
+		return this.supportedApis;
 	}
 
 }

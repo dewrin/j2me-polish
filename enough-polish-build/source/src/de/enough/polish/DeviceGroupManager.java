@@ -67,16 +67,17 @@ public class DeviceGroupManager {
 		for (Iterator iter = xmlList.iterator(); iter.hasNext();) {
 			Element deviceElement = (Element) iter.next();
 			DeviceGroup group = new DeviceGroup( deviceElement );
-			this.groups.put( group.getName(), group );
+			this.groups.put( group.getIdentifier(), group );
 		}
 		DeviceGroup[] groupArray = (DeviceGroup[]) this.groups.values().toArray( new DeviceGroup[ this.groups.size() ] );
 		for (int i = 0; i < groupArray.length; i++) {
 			DeviceGroup group = groupArray[i];
-			String parentName = group.getParentName();
+			String parentName = group.getParentIdentifier();
 			if (parentName != null) {
+				//System.out.println("\nsetting " + parentName + " as parent for group " + group.getIdentifier());
 				DeviceGroup parent = getGroup( parentName );
 				if (parent == null) {
-					throw new InvalidComponentException("The group [" + group.getName() + "] has the non-existing parent [" + parentName + "]. Check your [groups.xml]");
+					throw new InvalidComponentException("The group [" + group.getIdentifier() + "] has the non-existing parent [" + parentName + "]. Check your [groups.xml]");
 				}
 				group.addComponent( parent );
 			}

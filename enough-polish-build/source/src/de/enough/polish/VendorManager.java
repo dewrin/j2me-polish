@@ -67,7 +67,7 @@ public class VendorManager {
 		for (Iterator iter = xmlList.iterator(); iter.hasNext();) {
 			Element deviceElement = (Element) iter.next();
 			Vendor vendor = new Vendor( project, deviceElement );
-			this.vendors.put( vendor.getName(), vendor );
+			this.vendors.put( vendor.getIdentifier(), vendor );
 		}
 	}
 
