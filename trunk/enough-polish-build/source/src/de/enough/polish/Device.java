@@ -1,7 +1,7 @@
 /*
  * Created on 15-Jan-2004 at 16:10:59.
  *
- * Copyright (c) 2004 Robert Virkus / enough software
+ * Copyright (c) 2004 Robert Virkus / Enough Software
  *
  * This file is part of J2ME Polish.
  *
@@ -21,7 +21,7 @@
  * 
  * Commercial licenses are also available, please
  * refer to the accompanying LICENSE.txt or visit
- * www.enough.de/j2mepolish for details.
+ * http://www.j2mepolish.org for details.
  */
 package de.enough.polish;
 
@@ -39,7 +39,7 @@ import java.util.ArrayList;
 /**
  * <p>Represents a J2ME device.</p>
  *
- * <p>copyright enough software 2004</p>
+ * <p>copyright Enough Software 2004</p>
  * <pre>
  * history
  *        15-Jan-2004 - rob creation
@@ -73,7 +73,6 @@ public class Device extends PolishComponent {
 	private static final int POLISH_GUI_MIN_BITS_PER_PIXEL = 8;
 	private static final MemoryMatcher POLISH_GUI_MIN_HEAP_SIZE = new MemoryMatcher("500+kb");
 	
-	private boolean supportsPolishGui;
 	private String name;
 	private String vendorName;
 	private int midpVersion;
@@ -121,7 +120,7 @@ public class Device extends PolishComponent {
 		ArrayList groupNamesList = new ArrayList();
 		ArrayList groupsList = new ArrayList();
 		String groupsDefinition = definition.getChildTextTrim( "groups");
-		if (groupsDefinition != null) {
+		if (groupsDefinition != null && groupsDefinition.length() > 0) {
 			String[] tempGroupNames = TextUtil.splitAndTrim(groupsDefinition, ',');			
 			for (int i = 0; i < tempGroupNames.length; i++) {
 				String groupName = tempGroupNames[i];
@@ -184,8 +183,12 @@ public class Device extends PolishComponent {
 			// it needs to have at least 8 bits per pixel (= 2^8 == 256 colors)
 			String bitsPerPixelDef = getCapability( BITS_PER_PIXEL );
 			if (bitsPerPixelDef != null) {
-				int bitsPerPixel = Integer.parseInt( bitsPerPixelDef );
-				this.supportsPolishGui = (bitsPerPixel >= POLISH_GUI_MIN_BITS_PER_PIXEL);
+				try {
+					int bitsPerPixel = Integer.parseInt( bitsPerPixelDef );
+					this.supportsPolishGui = (bitsPerPixel >= POLISH_GUI_MIN_BITS_PER_PIXEL);
+				} catch (NumberFormatException e) {
+					throw new InvalidComponentException("The device [" + this.identifier + "] contains the invalid BitsPerPixel-value [" + bitsPerPixelDef + "]: only integer values are allowed. Please correct this settings in the file [devices.xml].");
+				}
 			}
 			// when the device has the heap size defined,
 			// it needs to have a minimum heap size of 500 kb:
@@ -216,6 +219,10 @@ public class Device extends PolishComponent {
 				groupNamesList.add( "BitsPerPixel.16+" );
 				groupsList.add( groupManager.getGroup( "BitsPerPixel.16+", true ) ); 
 			}
+			if (bitsPerPixel >= 18) {
+				groupNamesList.add( "BitsPerPixel.18+" );
+				groupsList.add( groupManager.getGroup( "BitsPerPixel.18+", true ) ); 
+			}
 			if (bitsPerPixel >= 24) {
 				groupNamesList.add( "BitsPerPixel.24+" );
 				groupsList.add( groupManager.getGroup( "BitsPerPixel.24+", true ) ); 
@@ -228,18 +235,6 @@ public class Device extends PolishComponent {
 		this.groups = (DeviceGroup[]) groupsList.toArray( new DeviceGroup[groupsList.size() ] );
 	}
 	
-	/**
-	 * Determines whether this device supports the polish-gui-framework.
-	 * Usually this is the case when the device meets some capabilities like
-	 * the bits per pixel and the possible size of the heap.
-	 * Devices can also define this directly by setting the attribute [supportsPolishGui]. 
-	 * 
-	 * @return true when this device supports the polish-gui.
-	 */
-	public boolean supportsPolishGui() {
-		return this.supportsPolishGui;
-	}
-
 	/**
 	 * @return the identifier of this device in the form [vendor]/[model], e.g. Nokia/6600
 	 */

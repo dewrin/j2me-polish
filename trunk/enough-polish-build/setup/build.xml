@@ -8,8 +8,9 @@
 <!-- of the <build>-element of the J2ME Polish task.          -->
 <!--                                                          -->
 <!-- When you call Ant from the command-line, you can         -->
-<!-- call "ant notest j2mepolish" to obfuscate the example    -->
-<!-- as well. The default just builds the example.            -->
+<!-- call "ant test j2mepolish" to skip the obfuscation       -->
+<!-- and to build the example for fewer handsets.             -->
+<!-- The default target builds and obfuscates the example.    -->
 <!--                                                          -->
 <!-- The full documentation can be found at                   -->
 <!-- http://www.j2mepolish.org                                -->
@@ -30,12 +31,12 @@
 <!-- build targets, each target can be called via "ant [name]", 
 	 e.g. "ant clean", "ant notest j2mepolish" or just "ant" for calling the default-target -->
 
-<target name="notest" >
-	<property name="test" value="false" />
+<target name="test" >
+	<property name="test" value="true" />
 </target>
 		
 <target name="init">
-  	<property name="test" value="true" />
+  	<property name="test" value="false" />
 </target>
  
 <!-- In this target the J2ME Polish task is used.             -->
@@ -65,15 +66,20 @@
 		    deleteConfirm="Do you really want to kill me?" 
 			/>
 		<!-- selection of supported devices -->
-		<!-- Normally the application is build only for the Nokia/3650 and the 6600 phones, -->
-		<!-- but when the test-property is set to true, the second deviceRequirements -->
-		<!-- will be used instead. -->
+		<!-- In the test mode the application is build only for the  -->
+		<!-- Nokia/3650 and the 6600 phones, but when the test-property is set to false, -->
+		<!-- the second deviceRequirements will be used instead. -->
 		<deviceRequirements if="test">
 			<requirement name="Identifier" value="Nokia/3650, Nokia/6600" />
 		</deviceRequirements>
 		<deviceRequirements unless="test">
-			<requirement name="JavaPackage" value="nokia-ui" />
-			<requirement name="BitsPerPixel" value="12+" />
+			<or>
+				<requirement name="Identifier" value="Nokia/3650" />
+				<and>
+					<requirement name="JavaPackage" value="nokia-ui" />
+					<requirement name="BitsPerPixel" value="16+" />
+				</and>
+			</or>
 		</deviceRequirements>
 	    <!-- build settings -->
 		<!-- Here you can set the resDir attribute to "resources2" 

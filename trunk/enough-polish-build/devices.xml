@@ -1,80 +1,209 @@
-<!-- here are the definitions of all supported J2ME devices -->
-<!-- the format is not totally clear so far, it might be that the 
-      xml format used in the J2EE client provisioning mechanism
-      is a more flexible approach, even though it is not really
-      human readable anymore (everything is just a capability) 
-      -->
-<devices>
-<!-- some user agents:
-Ericsson T68 SonyEricssonT68
-Motorola T720 MOT-T720
-Nokia 3100 Nokia3100
-Nokia 3200 Nokia3200
-Nokia 3650 Nokia3650
-Nokia 5100 Nokia5100
-Nokia 6100 Nokia6100
-Nokia 6610 Nokia6610
-Nokia 6800 Nokia6800
-Nokia 7210 Nokia7210
-Nokia 7250 Nokia7250
-Nokia 7650 Nokia7650
-Nokia 3510i Nokia3510i
-Samsung V200 SEC-SGHV200
-Siemens M55 SIE-M55
-Siemens S55 SIE-S55
-Siemens SL55 SIE-SL55
-Siemens SX1 SIE-SX1
-SonyEricsso   P800 SonyEricssonP800
-SonyEricsson P900 SonyEricssonP900
-SonyEricsson T300 SonyEricssonT300
-SonyEricsson T610 SonyEricssonT610
-SonyEricsson T68i  SonyEricssonT68
+<!-- 
+	devices.xml defines all known devices. 
+	You can add or change the existing specifications and
+	use the changed settings in the code.
+
+    Copyright (c) 2004 Robert Virkus / Enough Software
+
+    This file is part of J2ME Polish.
+
+    J2ME Polish is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    J2ME Polish is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Foobar; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+    Commercial licenses are also available, please
+    refer to the accompanying LICENSE.txt or visit
+    http://www.j2mepolish.org for details.
+
 -->
+<devices>
+
 <!-- Standard devices -->
 	<device>
 		<identifier>
 		    Generic/midp1
 		</identifier>
-		<capability name="SoftwarePlatform.JavaPlatform"
-					   value="MIDP/1.0" />
-		<capability name="HardwarePlatform.ScreenSize"
-					    value="111x100" />
-		<capability name="HardwarePlatform.BitsPerPixel"
-				       value="2" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="ScreenSize" value="111x100" />
+		<capability name="BitsPerPixel" value="2" />
 	</device>
 
 	<device>
 		<identifier>
 		    Generic/midp2
 		</identifier>
-		<capability name="SoftwarePlatform.JavaPlatform"
-					   value="MIDP/2.0" />
-		<capability name="HardwarePlatform.ScreenSize"
-					    value="111x100" />
-		<capability name="HardwarePlatform.BitsPerPixel"
-				       value="8" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="ScreenSize" value="111x100" />
+		<capability name="BitsPerPixel" value="12" />
 	</device>
 	
-<!-- Motorola devices -->
+<!-- Sony-Ericsson devices -->
 	<device>
-		<identifier>
-			Motorola/V300
-		</identifier>
-		<user-agent>MOTv300</user-agent>
-		<capability name="SoftwarePlatform.JavaPlatform"
-					   value="MIDP/1.0" />
-		<capability name="HardwarePlatform.ScreenSize"
-					    value="176x220" />
-		<capability name="HardwarePlatform.BitsPerPixel"
-				       value="16" />
-		<capability name="HardwarePlatform.CameraResolution"
-				       value="300x200" />
+		<identifier>Sony-Ericsson/T610, Sony-Ericsson/T618</identifier>
+		<groups></groups>
+		<features>hasCamera</features>
+		<capability name="ScreenSize" value="128x160"/>
+		<capability name="BitsPerPixel" value="16"/>
+		<capability name="JavaPackage" value="mmapi" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="iMelody, iMelody 1.2, midi, midi32, amr" />
+		<capability name="HeapSize" value="2 MB" />
+		<capability name="DRM" value="OMA-Forward Lock" />
 	</device>
+	
+	<device>
+		<identifier>Sony-Ericsson/T616</identifier>
+		<groups></groups>
+		<features>hasCamera</features>
+		<capability name="ScreenSize" value="128x160"/>
+		<capability name="BitsPerPixel" value="16"/>
+		<capability name="JavaPackage" value="mmapi, wmapi" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="iMelody, iMelody 1.2, midi, midi32, amr" />
+		<capability name="HeapSize" value="2 MB" />
+		<capability name="DRM" value="OMA-Forward Lock" />
+	</device>
+	
+		<device>
+		<identifier>Sony-Ericsson/T628, Sony-Ericsson/T630</identifier>
+		<groups></groups>
+		<features>hasCamera</features>
+		<capability name="ScreenSize" value="128x160"/>
+		<capability name="BitsPerPixel" value="16"/>
+		<capability name="JavaPackage" value="mmapi" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="iMelody, iMelody 1.2, midi, midi32, amr" />
+		<capability name="HeapSize" value="2 MB" />
+		<capability name="DRM" value="OMA-Forward Lock" />
+	</device>
+
+	<device>
+		<identifier>Sony-Ericsson/T637</identifier>
+		<groups></groups>
+		<features>hasCamera</features>
+		<capability name="ScreenSize" value="128x160"/>
+		<capability name="BitsPerPixel" value="16"/>
+		<capability name="JavaPackage" value="mmapi, wmapi" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="iMelody, iMelody 1.2, midi, midi32, amr" />
+		<capability name="HeapSize" value="2 MB" />
+		<capability name="DRM" value="OMA-Forward Lock" />
+	</device>
+	
+	<device>
+		<identifier>Sony-Ericsson/Z600, Sony-Ericsson/Z608</identifier>
+		<groups></groups>
+		<features>hasCamera</features>
+		<capability name="ScreenSize" value="128x160"/>
+		<capability name="BitsPerPixel" value="16"/>
+		<capability name="JavaPackage" value="mmapi" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="iMelody, iMelody 1.2, midi, midi32, amr" />
+		<capability name="HeapSize" value="2 MB" />
+		<capability name="DRM" value="OMA-Forward Lock" />
+	</device>
+	
+	<device>
+		<identifier>Sony-Ericsson/Z1010</identifier>
+		<groups></groups>
+		<features>hasCamera, hasVideo</features>
+		<capability name="ScreenSize" value="176x220"/>
+		<capability name="BitsPerPixel" value="16"/>
+		<capability name="JavaPackage" value="mmapi, wmapi" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="SoundFormat" value="iMelody, iMelody 1.2, midi, midi40, amr, mp3, mp4, 3gp" />
+		<capability name="HeapSize" value="8 MB" />
+		<capability name="DRM" value="OMA Phase 1" />
+	</device>
+	
+	<device>
+		<identifier>Sony-Ericsson/P800, Sony-Ericsson/P802</identifier>
+		<groups></groups>
+		<features>hasCamera, hasPointerEvents, hasPointerMotionEvents</features>
+		<capability name="ScreenSize" value="208x320"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="iMelody, iMelody 1.2, midi, midi24, amr, mp3, rmf, mp4, 3gp" />
+		<capability name="HeapSize" value="12 MB" />
+	</device>
+	
+	<device>
+		<identifier>Sony-Ericsson/P900, Sony-Ericsson/P908</identifier>
+		<groups></groups>
+		<features>hasCamera, hasVideo, hasPointerEvents, hasPointerMotionEvents</features>
+		<capability name="ScreenSize" value="208x320"/>
+        <capability name="CanvasSize" value="208x253"/>
+		<capability name="BitsPerPixel" value="16"/>
+		<capability name="JavaPackage" value="mmapi, wmapi, btapi" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+        <capability name="JavaProtocol" value="http, socket, https, ssl, datagram"/>
+		<capability name="SoundFormat" value="iMelody, iMelody 1.2, midi, midi40, amr, mp3, rmf, mp4, 3gp" />
+		<capability name="HeapSize" value="16 MB" />
+		<capability name="DRM" value="OMA-Forward Lock" />
+	</device>
+	
+	<device>
+		<identifier>Sony-Ericsson/K700i, Sony-Ericsson/K700c</identifier>
+		<groups></groups>
+		<features>hasCamera, hasVideo</features>
+		<capability name="ScreenSize" value="176x220"/>
+		<capability name="BitsPerPixel" value="16"/>
+		<capability name="JavaPackage" value="mmapi, wmapi, 3d-api" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="SoundFormat" value="iMelody, iMelody 1.2, midi, midi40, amr, mp3, mp4, 3gp" />
+		<capability name="HeapSize" value="32 MB" />
+		<capability name="DRM" value="OMA Phase 1" />
+		<capability name="CameraZoom" value="4" />
+	</device>
+	
+	<device>
+		<identifier>Sony-Ericsson/Z500</identifier>
+		<groups></groups>
+		<features>hasCamera, hasVideo</features>
+		<capability name="ScreenSize" value="128x160"/>
+		<capability name="BitsPerPixel" value="16"/>
+		<capability name="JavaPackage" value="mmapi, wmapi, 3d-api" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="SoundFormat" value="iMelody, iMelody 1.2, midi, midi40, amr, mp3, mp4, 3gp" />
+		<capability name="HeapSize" value="6 MB" />
+		<capability name="DRM" value="OMA Phase 1" />
+		<capability name="CameraZoom" value="4" />
+	</device>
+		
+	<device>
+		<identifier>Sony-Ericsson/S700</identifier>
+		<groups></groups>
+		<features>hasCamera, hasVideo</features>
+		<capability name="ScreenSize" value="240x320"/>
+		<capability name="BitsPerPixel" value="18"/>
+		<capability name="JavaPackage" value="mmapi, wmapi, 3d-api" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="SoundFormat" value="iMelody, iMelody 1.2, midi, midi40, amr, mp3, mp4, 3gp" />
+		<capability name="HeapSize" value="32 MB" />
+		<capability name="DRM" value="OMA Phase 1" />
+		<capability name="CameraZoom" value="8" />
+		<capability name="CameraResolution" value="1.3 MP" />
+	</device>
+	
+	
+	
+<!-- Motorola devices -->
 	<device>
 		<identifier>
 			Motorola/i730
 		</identifier>
 		<user-agent>MOTi730</user-agent>
+		<features>hasCamera</features>
 		<capability name="SoftwarePlatform.JavaPlatform"
 					   value="MIDP/2.0" />
 		<capability name="HardwarePlatform.ScreenSize"
@@ -86,17 +215,23 @@ SonyEricsson T68i  SonyEricssonT68
 		<capability name="SoftwarePlatform.JavaProtocol"
 				       value="UDP, TCP, SSL, HTTP, HTTPS, Serial" />
 		<capability name="SoftwarePlatform.JavaPackage"
-				       value="wmapi, mmapi, motorola-lwt, location-api" />
+				       value="wmapi, mmapi, motorola-lwt, location-api, Look And Feel, Polyphonic MIDI, WAV, AU, Vibrator, Lighting, Location API, Phonebook, Datebook, External display, Call Receive and Initiation, Recent calls, File I/O, Serial port, Crypto, Digital Camera, Java Menu MIDlet icon, RF enabling, Alpha blending, Secure file connection, Voicenote, 3D" />
 		<capability name="SoftwarePlatform.HeapSize"
 				       value="1.15 MB" />
+		<capability name="StorageSize" value="2 MB" />
 		<capability name="SoftwarePlatform.MaxJarSize"
 				       value="500 kb" />
+		<capability name="MaxSockets.tcp" value="16" />
+		<capability name="MaxSockets.http" value="8" />
+		<capability name="MaxSockets.udp" value="24" />
 	</device>
+	
 	<device>
 		<identifier>
 		    Motorola/i50sx, Motorola/i55sr, Motorola/i85s
 		</identifier>
 		<user-agent>MOTi50sx</user-agent>
+		<features>hasCamera</features>
 		<capability name="SoftwarePlatform.JavaPlatform"
 					   value="MIDP/1.0" />
 		<capability name="HardwarePlatform.ScreenSize"
@@ -108,9 +243,470 @@ SonyEricsson T68i  SonyEricssonT68
 		<capability name="SoftwarePlatform.JavaProtocol"
 				       value="comm, socket, https, ssl, datagram" />
 		<capability name="SoftwarePlatform.JavaPackage"
-				       value="mmapi" />
+				       value="serial" />
+		<capability name="MaxSockets.tcp" value="2" />
+		<capability name="MaxSockets.http" value="2" />
+		<capability name="MaxSockets.udp" value="3" />
 	</device>
 
+	<device>
+		<identifier>Motorola/i80s</identifier>
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="ScreenSize" value="119x64" />
+		<capability name="BitsPerPixel" value="1" />
+		<capability name="HeapSize" value="256 kb" />
+		<capability name="StorageSize" value="384 kb" />
+		<capability name="MaxJarSize" value="50 kb" />
+		<capability name="JavaProtocol" value="udp, tcp, ssl, http, https, serial" />
+		<capability name="MaxSockets.tcp" value="2" />
+		<capability name="MaxSockets.http" value="2" />
+		<capability name="MaxSockets.udp" value="3" />
+		<capability name="JavaPackage" value="serial" />
+	</device>
+	
+	<device>
+		<identifier>Motorola/i88s</identifier>
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="ScreenSize" value="111x100" />
+		<capability name="BitsPerPixel" value="2" />
+		<capability name="HeapSize" value="256 kb" />
+		<capability name="StorageSize" value="384 kb" />
+		<capability name="MaxJarSize" value="50 kb" />
+		<capability name="JavaProtocol" value="udp, tcp, ssl, http, https, serial" />
+		<capability name="MaxSockets.tcp" value="2" />
+		<capability name="MaxSockets.http" value="2" />
+		<capability name="MaxSockets.udp" value="11" />
+		<capability name="JavaPackage" value="Location API, File I/O, serial" />
+	</device>
+	
+	<device>
+		<identifier>Motorola/i90c</identifier>
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="ScreenSize" value="111x100" />
+		<capability name="BitsPerPixel" value="2" />
+		<capability name="HeapSize" value="256 kb" />
+		<capability name="StorageSize" value="384 kb" />
+		<capability name="MaxJarSize" value="50 kb" />
+		<capability name="JavaProtocol" value="udp, tcp, ssl, http, https, serial" />
+		<capability name="MaxSockets.tcp" value="2" />
+		<capability name="MaxSockets.http" value="2" />
+		<capability name="MaxSockets.udp" value="3" />
+		<capability name="JavaPackage" value="PolyphonicMIDI, serial" />
+	</device>
+	
+	<device>
+		<identifier>Motorola/i95cl</identifier>
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="ScreenSize" value="120x160" />
+		<capability name="BitsPerPixel" value="8" />
+		<capability name="HeapSize" value="640 kb" />
+		<capability name="StorageSize" value="1.5M" />
+		<capability name="MaxJarSize" value="160 kb" />
+		<capability name="JavaProtocol" value="udp, tcp, ssl, http, https, serial" />
+		<capability name="MaxSockets.tcp" value="7" />
+		<capability name="MaxSockets.http" value="4" />
+		<capability name="MaxSockets.udp" value="12" />
+		<capability name="JavaPackage" value="Motorola LWT, Look And Feel, PolyphonicMIDI, File I/O, Call Initiation, Crypto, Lighting, Vibrator, Digital Camera" />
+	</device>
+	
+	<device>
+		<identifier>Motorola/C650</identifier>
+		<features>doubleBuffering</features>
+		<capability name="OS" value="Motorola" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="ScreenSize" value="128x128" />
+		<capability name="BitsPerPixel" value="16" />
+		<capability name="HeapSize" value="800 kb" />
+		<capability name="StorageSize" value="1.8MB" />
+		<capability name="MaxJarSize" value="100 kb" />
+		<capability name="MaxRecordStoreSize" value="64 kb" />
+		<capability name="JavaProtocol" value="udp, tcp, http, serial" />
+		<capability name="MaxSockets" value="4" />
+		<capability name="MaxSockets.tcp" value="4" />
+		<capability name="MaxSockets.http" value="4" />
+		<capability name="MaxSockets.udp" value="4" />
+		<capability name="JavaPackage" value="wmapi, mmapi, Phonebook" />
+		<capability name="ImageFormat" value="png, jpeg" />
+		<capability name="SoundFormat" value="midi, wav, amr" />
+	</device>
+	
+	<device>
+		<identifier>Motorola/E680</identifier>
+		<features>doubleBuffering</features>
+		<capability name="OS" value="Motorola" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="ScreenSize" value="240x320" />
+		<capability name="BitsPerPixel" value="16" />
+		<capability name="HeapSize" value="2 mb" />
+		<capability name="StorageSize" value="50MB" />
+		<capability name="MaxJarSize" value="1 mb" />
+		<capability name="MaxRecordStoreSize" value="100 kb" />
+		<capability name="JavaProtocol" value="udp, http, serial, socket" />
+		<capability name="MaxSockets" value="10" />
+		<capability name="MaxSockets.tcp" value="10" />
+		<capability name="MaxSockets.http" value="10" />
+		<capability name="MaxSockets.udp" value="10" />
+		<capability name="JavaPackage" value="wmapi, mmapi, 3d-api" />
+		<capability name="ImageFormat" value="png, jpeg, gif" />
+		<capability name="SoundFormat" value="midi, mp3, wav, amr, TONE Sequence" />
+		<capability name="VideoFormat" value="mp4, 3gpp" />
+	</device>
+	
+	<device>
+		<identifier>Motorola/V180</identifier>
+		<features>doubleBuffering</features>
+		<capability name="OS" value="Motorola" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="ScreenSize" value="128x128" />
+		<capability name="BitsPerPixel" value="16" />
+		<capability name="HeapSize" value="800 kb" />
+		<capability name="StorageSize" value="1.8 MB" />
+		<capability name="MaxJarSize" value="100 kb" />
+		<capability name="MaxRecordStoreSize" value="64 kb" />
+		<capability name="JavaProtocol" value="udp, http, serial, socket" />
+		<capability name="MaxSockets" value="4" />
+		<capability name="MaxSockets.tcp" value="4" />
+		<capability name="MaxSockets.http" value="4" />
+		<capability name="MaxSockets.udp" value="4" />
+		<capability name="JavaPackage" value="wmapi, mmapi, Phonebook" />
+		<capability name="ImageFormat" value="png, jpeg" />
+	</device>
+	
+	<device>
+		<identifier>Motorola/V220</identifier>
+		<features>doubleBuffering, hasCamera</features>
+		<capability name="OS" value="Motorola" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="ScreenSize" value="128x128" />
+		<capability name="BitsPerPixel" value="16" />
+		<capability name="HeapSize" value="800 kb" />
+		<capability name="StorageSize" value="1.8 MB" />
+		<capability name="MaxJarSize" value="100 kb" />
+		<capability name="MaxRecordStoreSize" value="64 kb" />
+		<capability name="JavaProtocol" value="udp, http, serial, socket" />
+		<capability name="MaxSockets" value="4" />
+		<capability name="MaxSockets.tcp" value="4" />
+		<capability name="MaxSockets.http" value="4" />
+		<capability name="MaxSockets.udp" value="4" />
+		<capability name="JavaPackage" value="wmapi, mmapi, Phonebook" />
+		<capability name="ImageFormat" value="png, jpeg" />
+		<capability name="SoundFormat" value="midi, wav, amr" />
+		<capability name="CameraResolution" value="vga" />
+		<capability name="CameraZoom" value="0" />
+	</device>
+
+	<device>
+		<identifier>Motorola/V80</identifier>
+		<features>doubleBuffering, hasCamera</features>
+		<capability name="OS" value="Motorola" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="ScreenSize" value="176x220" />
+		<capability name="BitsPerPixel" value="16" />
+		<capability name="HeapSize" value="800 kb" />
+		<capability name="StorageSize" value="5 MB" />
+		<capability name="MaxJarSize" value="100 kb" />
+		<capability name="MaxRecordStoreSize" value="64 kb" />
+		<capability name="JavaProtocol" value="udp, http, serial, socket" />
+		<capability name="MaxSockets" value="4" />
+		<capability name="MaxSockets.tcp" value="4" />
+		<capability name="MaxSockets.http" value="4" />
+		<capability name="MaxSockets.udp" value="4" />
+		<capability name="JavaPackage" value="wmapi, mmapi, Phonebook" />
+		<capability name="ImageFormat" value="png, jpeg" />
+		<capability name="SoundFormat" value="midi, wav, amr, mp3" />
+		<capability name="CameraResolution" value="vga" />
+		<capability name="CameraZoom" value="0" />
+	</device>
+		
+	<device>
+		<identifier>Motorola/C370, Motorola/C450</identifier>
+		<features>doubleBuffering</features>
+		<capability name="OS" value="Motorola" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="ScreenSize" value="96x65" />
+		<capability name="BitsPerPixel" value="12" />
+		<capability name="HeapSize" value="1 mb" />
+		<capability name="StorageSize" value="1 MB" />
+		<capability name="MaxJarSize" value="100 kb" />
+		<capability name="MaxRecordStoreSize" value="64 kb" />
+		<capability name="JavaProtocol" value="udp, http, serial, socket" />
+		<capability name="MaxSockets" value="4" />
+		<capability name="MaxSockets.tcp" value="4" />
+		<capability name="MaxSockets.http" value="4" />
+		<capability name="MaxSockets.udp" value="4" />
+		<capability name="JavaPackage" value="Gaming, sms" />
+		<capability name="ImageFormat" value="png, jpeg" />
+	</device>
+	
+	<device>
+		<identifier>Motorola/C550</identifier>
+		<features>doubleBuffering, hasCamera</features>
+		<capability name="OS" value="Motorola" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="ScreenSize" value="96x65" />
+		<capability name="BitsPerPixel" value="12" />
+		<capability name="HeapSize" value="1 mb" />
+		<capability name="StorageSize" value="1 MB" />
+		<capability name="MaxJarSize" value="100 kb" />
+		<capability name="MaxRecordStoreSize" value="64 kb" />
+		<capability name="JavaProtocol" value="udp, http, serial, socket" />
+		<capability name="MaxSockets" value="4" />
+		<capability name="MaxSockets.tcp" value="4" />
+		<capability name="MaxSockets.http" value="4" />
+		<capability name="MaxSockets.udp" value="4" />
+		<capability name="JavaPackage" value="Gaming, sms" />
+		<capability name="ImageFormat" value="png, jpeg" />
+		<capability name="CameraResolution" value="vga" />
+		<capability name="CameraZoom" value="0" />
+	</device>
+	
+	<device>
+		<identifier>Motorola/E380</identifier>
+		<features>doubleBuffering</features>
+		<capability name="OS" value="Motorola" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="ScreenSize" value="96x65" />
+		<capability name="BitsPerPixel" value="12" />
+		<capability name="HeapSize" value="1 mb" />
+		<capability name="StorageSize" value="1 MB" />
+		<capability name="MaxJarSize" value="100 kb" />
+		<capability name="MaxRecordStoreSize" value="64 kb" />
+		<capability name="JavaProtocol" value="udp, http, serial, socket" />
+		<capability name="MaxSockets" value="4" />
+		<capability name="MaxSockets.tcp" value="4" />
+		<capability name="MaxSockets.http" value="4" />
+		<capability name="MaxSockets.udp" value="4" />
+		<capability name="JavaPackage" value="Gaming, sms" />
+		<capability name="ImageFormat" value="png, jpeg" />
+	</device>
+	
+	<device>
+		<identifier>Motorola/T725</identifier>
+		<features>doubleBuffering</features>
+		<capability name="OS" value="Motorola" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="ScreenSize" value="120x160" />
+		<capability name="BitsPerPixel" value="12" />
+		<capability name="HeapSize" value="800 kb" />
+		<capability name="StorageSize" value="5 MB" />
+		<capability name="MaxJarSize" value="100 kb" />
+		<capability name="MaxRecordStoreSize" value="64 kb" />
+		<capability name="JavaProtocol" value="udp, http, serial, socket" />
+		<capability name="MaxSockets" value="4" />
+		<capability name="MaxSockets.tcp" value="4" />
+		<capability name="MaxSockets.http" value="4" />
+		<capability name="MaxSockets.udp" value="4" />
+		<capability name="JavaPackage" value="wmapi, mmapi, Phonebook" />
+		<capability name="ImageFormat" value="png, jpeg" />
+		<capability name="SoundFormat" value="midi, wav, amr" />
+	</device>
+	
+	<device>
+		<identifier>Motorola/V300, Motorola/V303</identifier>
+		<features>doubleBuffering, hasCamera</features>
+		<capability name="OS" value="Motorola" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="ScreenSize" value="176x220" />
+		<capability name="BitsPerPixel" value="16" />
+		<capability name="HeapSize" value="800 kb" />
+		<capability name="StorageSize" value="5 MB" />
+		<capability name="MaxJarSize" value="100 kb" />
+		<capability name="MaxRecordStoreSize" value="64 kb" />
+		<capability name="JavaProtocol" value="udp, http, serial, socket" />
+		<capability name="MaxSockets" value="4" />
+		<capability name="MaxSockets.tcp" value="4" />
+		<capability name="MaxSockets.http" value="4" />
+		<capability name="MaxSockets.udp" value="4" />
+		<capability name="JavaPackage" value="wmapi, mmapi, Phonebook" />
+		<capability name="ImageFormat" value="png, jpeg" />
+		<capability name="SoundFormat" value="midi, wav, amr, mp3" />
+		<capability name="CameraResolution" value="vga" />
+		<capability name="CameraZoom" value="0" />
+	</device>
+	
+	<device>
+		<identifier>Motorola/V400</identifier>
+		<features>doubleBuffering, hasCamera</features>
+		<capability name="OS" value="Motorola" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="ScreenSize" value="176x220" />
+		<capability name="BitsPerPixel" value="16" />
+		<capability name="HeapSize" value="800 kb" />
+		<capability name="StorageSize" value="5 MB" />
+		<capability name="MaxJarSize" value="100 kb" />
+		<capability name="MaxRecordStoreSize" value="64 kb" />
+		<capability name="JavaProtocol" value="udp, http, serial, socket" />
+		<capability name="MaxSockets" value="4" />
+		<capability name="MaxSockets.tcp" value="4" />
+		<capability name="MaxSockets.http" value="4" />
+		<capability name="MaxSockets.udp" value="4" />
+		<capability name="JavaPackage" value="wmapi, mmapi, Phonebook" />
+		<capability name="ImageFormat" value="png, jpeg" />
+		<capability name="SoundFormat" value="midi, wav, amr" />
+		<capability name="CameraResolution" value="vga" />
+		<capability name="CameraZoom" value="0" />
+	</device>
+	
+	<device>
+		<identifier>Motorola/V500, Motorola/V525</identifier>
+		<features>doubleBuffering, hasCamera</features>
+		<capability name="OS" value="Motorola" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="ScreenSize" value="176x220" />
+		<capability name="BitsPerPixel" value="16" />
+		<capability name="HeapSize" value="800 kb" />
+		<capability name="StorageSize" value="5 MB" />
+		<capability name="MaxJarSize" value="100 kb" />
+		<capability name="MaxRecordStoreSize" value="64 kb" />
+		<capability name="JavaProtocol" value="udp, http, serial, socket" />
+		<capability name="MaxSockets" value="4" />
+		<capability name="MaxSockets.tcp" value="4" />
+		<capability name="MaxSockets.http" value="4" />
+		<capability name="MaxSockets.udp" value="4" />
+		<capability name="JavaPackage" value="wmapi, mmapi, Phonebook" />
+		<capability name="ImageFormat" value="png, jpeg" />
+		<capability name="SoundFormat" value="midi, wav, amr, mp3" />
+		<capability name="CameraResolution" value="vga" />
+		<capability name="CameraZoom" value="0" />
+	</device>
+	
+	<device>
+		<identifier>Motorola/V600</identifier>
+		<features>doubleBuffering, hasCamera</features>
+		<capability name="OS" value="Motorola" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="ScreenSize" value="176x220" />
+		<capability name="BitsPerPixel" value="16" />
+		<capability name="HeapSize" value="800 kb" />
+		<capability name="StorageSize" value="5 MB" />
+		<capability name="MaxJarSize" value="100 kb" />
+		<capability name="MaxRecordStoreSize" value="64 kb" />
+		<capability name="JavaProtocol" value="udp, http, serial, socket" />
+		<capability name="MaxSockets" value="4" />
+		<capability name="MaxSockets.tcp" value="4" />
+		<capability name="MaxSockets.http" value="4" />
+		<capability name="MaxSockets.udp" value="4" />
+		<capability name="JavaPackage" value="wmapi, mmapi, Phonebook" />
+		<capability name="ImageFormat" value="png, jpeg" />
+		<capability name="SoundFormat" value="midi, wav, amr, mp3" />
+		<capability name="CameraResolution" value="vga" />
+		<capability name="CameraZoom" value="0" />
+	</device>
+	
+	<device>
+		<identifier>Motorola/A388</identifier>
+		<features>doubleBuffering</features>
+		<capability name="OS" value="PPSM 3.2" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="ScreenSize" value="240x320" />
+		<capability name="BitsPerPixel" value="2" />
+		<capability name="HeapSize" value="646 kb" />
+		<capability name="StorageSize" value="1.8 MB" />
+		<capability name="MaxJarSize" value="600 kb" />
+		<capability name="MaxRecordStoreSize" value="dynamic" />
+		<capability name="JavaProtocol" value="udp, http, socket" />
+		<capability name="MaxSockets" value="3" />
+		<capability name="MaxSockets.tcp" value="3" />
+		<capability name="MaxSockets.http" value="3" />
+		<capability name="MaxSockets.udp" value="3" />
+		<capability name="ImageFormat" value="png" />
+	</device>
+	
+	<device>
+		<identifier>Motorola/A830</identifier>
+		<features>doubleBuffering</features>
+		<capability name="OS" value="Synergy" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="ScreenSize" value="176x220" />
+		<capability name="BitsPerPixel" value="12" />
+		<capability name="HeapSize" value="512 kb" />
+		<capability name="StorageSize" value="1 MB" />
+		<capability name="MaxJarSize" value="100 kb" />
+		<capability name="MaxRecordStoreSize" value="64 kb" />
+		<capability name="JavaProtocol" value="udp, https, serial, socket" />
+		<capability name="MaxSockets" value="3" />
+		<capability name="MaxSockets.tcp" value="3" />
+		<capability name="MaxSockets.http" value="3" />
+		<capability name="MaxSockets.udp" value="3" />
+		<capability name="ImageFormat" value="png" />
+	</device>
+	
+	<device>
+		<identifier>Motorola/T280i</identifier>
+		<features>doubleBuffering</features>
+		<capability name="OS" value="Synergy" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="ScreenSize" value="128x100" />
+		<capability name="BitsPerPixel" value="2" />
+		<capability name="HeapSize" value="350 kb" />
+		<capability name="StorageSize" value="1 MB" />
+		<capability name="MaxJarSize" value="64 kb" />
+		<capability name="MaxRecordStoreSize" value="63 kb" />
+		<capability name="JavaProtocol" value="http, socket" />
+		<capability name="MaxSockets" value="3" />
+		<capability name="MaxSockets.tcp" value="3" />
+		<capability name="MaxSockets.http" value="3" />
+		<capability name="MaxSockets.udp" value="3" />
+		<capability name="ImageFormat" value="png" />
+	</device>
+	
+	<device>
+		<identifier>Motorola/T720(GSM)</identifier>
+		<features>doubleBuffering</features>
+		<capability name="OS" value="Synergy" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="ScreenSize" value="120x160" />
+		<capability name="BitsPerPixel" value="12" />
+		<capability name="HeapSize" value="512 kb" />
+		<capability name="StorageSize" value="1 MB" />
+		<capability name="MaxJarSize" value="200 kb" />
+		<capability name="MaxRecordStoreSize" value="63 kb" />
+		<capability name="JavaProtocol" value="udp, http, socket" />
+		<capability name="MaxSockets" value="3" />
+		<capability name="MaxSockets.tcp" value="3" />
+		<capability name="MaxSockets.http" value="3" />
+		<capability name="MaxSockets.udp" value="3" />
+		<capability name="ImageFormat" value="png" />
+	</device>
+	
+	<device>
+		<identifier>Motorola/T720(CDMA)</identifier>
+		<features>doubleBuffering</features>
+		<capability name="OS" value="Motorola" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="ScreenSize" value="120x160" />
+		<capability name="BitsPerPixel" value="12" />
+		<capability name="HeapSize" value="1 mb" />
+		<capability name="StorageSize" value="1 MB" />
+		<capability name="MaxJarSize" value="100 kb" />
+		<capability name="MaxRecordStoreSize" value="64 kb" />
+		<capability name="JavaProtocol" value="udp, http, socket" />
+		<capability name="MaxSockets" value="3" />
+		<capability name="MaxSockets.tcp" value="3" />
+		<capability name="MaxSockets.http" value="3" />
+		<capability name="MaxSockets.udp" value="3" />
+		<capability name="ImageFormat" value="png" />
+	</device>
+	
+	<device>
+		<identifier>Motorola/T720i</identifier>
+		<features>doubleBuffering, hasCamera</features>
+		<capability name="OS" value="Synergy" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="ScreenSize" value="120x160" />
+		<capability name="BitsPerPixel" value="12" />
+		<capability name="HeapSize" value="512 kb" />
+		<capability name="MaxJarSize" value="200 kb" />
+		<capability name="MaxRecordStoreSize" value="63 kb" />
+		<capability name="JavaProtocol" value="udp, http, socket" />
+		<capability name="JavaPackage" value="LWT, Serial, Motorola-Camera, Motorola-MMS" />
+		<capability name="MaxSockets" value="4" />
+		<capability name="MaxSockets.tcp" value="3" />
+		<capability name="MaxSockets.http" value="3" />
+		<capability name="MaxSockets.udp" value="3" />
+		<capability name="ImageFormat" value="png" />
+	</device>
+	
 <!-- Nokia devices -->
 	
 	<device>
@@ -144,7 +740,7 @@ SonyEricsson T68i  SonyEricssonT68
 		<capability name="CameraZoom" value="4" />
 	</device>
 		
-		<device>
+	<device>
 		<identifier>Nokia/6620</identifier>
 		<groups>Series60</groups>
 		<features>hasCamera</features>
@@ -295,7 +891,7 @@ SonyEricsson T68i  SonyEricssonT68
 		<capability name="OS" value="Symbian OS 7.0s"/>
 		<capability name="ScreenSize" value="640x200"/>
 		<capability name="BitsPerPixel" value="16"/>
-		<capability name="JavaPackage" value="mmapi, wmapi, btapi,  Java Technology Wireless Industry rel. 1 (JSR-185),CDC (JSR-36), Personal Profile (JSR-62), Foundation Profile (JSR-46), FileConnection and PIM API (JSR-75)" />
+		<capability name="JavaPackage" value="mmapi, wmapi, btapi, pda-api" />
 		<capability name="JavaPlatform" value="MIDP/2.0" />
 		<capability name="VideoFormat" value="3GPP,  MPEG-4, RealVideo" />
 		<capability name="SoundFormat" value="midi, amr, wav, mp3, aac" />
@@ -311,7 +907,7 @@ SonyEricsson T68i  SonyEricssonT68
 		<features>hasCamera</features>
 		<capability name="ScreenSize" value="128x128"/>
 		<capability name="BitsPerPixel" value="12"/>
-		<capability name="JavaPackage" value="mmapi, wmapi,  Java Technology Wireless Industry rel. 1 (JSR-185)" />
+		<capability name="JavaPackage" value="mmapi, wmapi" />
 		<capability name="JavaPlatform" value="MIDP/2.0" />
 		<capability name="VideoFormat" value="3GPP" />
 		<capability name="SoundFormat" value="midi, amr" />
@@ -344,7 +940,7 @@ SonyEricsson T68i  SonyEricssonT68
 		<features>hasCamera</features>
 		<capability name="ScreenSize" value="128x128"/>
 		<capability name="BitsPerPixel" value="16"/>
-		<capability name="JavaPackage" value="mmapi, wmapi, btapi, Java Technology Wireless Industry rel. 1 (JSR-185)" />
+		<capability name="JavaPackage" value="mmapi, wmapi, btapi" />
 		<capability name="JavaPlatform" value="MIDP/2.0" />
 		<capability name="VideoFormat" value="3GPP" />
 		<capability name="SoundFormat" value="midi, amr, MP3, AAC" />
@@ -352,6 +948,363 @@ SonyEricsson T68i  SonyEricssonT68
 		<capability name="MaxJarSize" value="128kb" />
 		<capability name="CameraResolution" value="vga" />
 		<capability name="CameraZoom" value="0" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/3220</identifier>
+		<groups>Series40</groups>
+		<features>hasCamera</features>
+		<capability name="ScreenSize" value="128x128"/>
+		<capability name="BitsPerPixel" value="16"/>
+		<capability name="JavaPackage" value="Nokia-UI, WMAPI, MMAPI" />
+		<capability name="JavaPlatform" value="MIDP/2.0" />
+		<capability name="VideoFormat" value="3GPP" />
+		<capability name="SoundFormat" value="midi" />
+		<capability name="HeapSize" value="512kb" />
+		<capability name="MaxJarSize" value="128kb" />
+		<capability name="CameraResolution" value="vga" />
+		<capability name="CameraZoom" value="0" />
+	</device>
+
+	<device>
+		<identifier>Nokia/6610i</identifier>
+		<groups>Series40</groups>
+		<features>hasCamera</features>
+		<capability name="ScreenSize" value="128x128"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="midi" />
+		<capability name="HeapSize" value="200kb" />
+		<capability name="MaxJarSize" value="64kb" />
+		<capability name="CameraResolution" value="cif" />
+		<capability name="CameraZoom" value="0" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/3120</identifier>
+		<groups>Series40</groups>
+		<capability name="ScreenSize" value="128x128"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="midi" />
+		<capability name="HeapSize" value="210kb" />
+		<capability name="MaxJarSize" value="64kb" />
+	</device>
+		
+	<device>
+		<identifier>Nokia/3108</identifier>
+		<groups>Series40</groups>
+		<capability name="ScreenSize" value="128x128"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="midi" />
+		<capability name="HeapSize" value="540kb" />
+		<capability name="MaxJarSize" value="64kb" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/6010</identifier>
+		<groups>Series40</groups>
+		<capability name="ScreenSize" value="96x65"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI, WMAPI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="midi" />
+		<capability name="HeapSize" value="200kb" />
+		<capability name="MaxJarSize" value="64kb" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/6810</identifier>
+		<groups>Series40</groups>
+		<capability name="ScreenSize" value="128x128"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI, WMAPI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="midi, amr" />
+		<capability name="HeapSize" value="230kb" />
+		<capability name="MaxJarSize" value="64kb" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/7200</identifier>
+		<groups>Series40</groups>
+		<features>hasCamera</features>
+		<capability name="ScreenSize" value="128x128"/>
+		<capability name="BitsPerPixel" value="16"/>
+		<capability name="JavaPackage" value="Nokia-UI, WMAPI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="VideoFormat" value="3GPP, mpeg-4" />
+		<capability name="SoundFormat" value="midi, amr" />
+		<capability name="HeapSize" value="200kb" />
+		<capability name="MaxJarSize" value="64kb" />
+		<capability name="CameraResolution" value="vga" />
+		<capability name="CameraZoom" value="0" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/6820</identifier>
+		<groups>Series40</groups>
+		<features>hasCamera</features>
+		<capability name="ScreenSize" value="128x128"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI, WMAPI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="VideoFormat" value="3GPP" />
+		<capability name="SoundFormat" value="midi, amr" />
+		<capability name="HeapSize" value="230kb" />
+		<capability name="MaxJarSize" value="64kb" />
+		<capability name="CameraResolution" value="cif" />
+		<capability name="CameraZoom" value="0" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/7600</identifier>
+		<groups>Series40</groups>
+		<features>hasCamera</features>
+		<capability name="ScreenSize" value="128x160"/>
+		<capability name="BitsPerPixel" value="16"/>
+		<capability name="JavaPackage" value="Nokia-UI, WMAPI, MMAPI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="VideoFormat" value="3GPP" />
+		<capability name="SoundFormat" value="midi, amr, mp3, aac" />
+		<capability name="HeapSize" value="1MB" />
+		<capability name="MaxJarSize" value="348kb" />
+		<capability name="CameraResolution" value="vga" />
+		<capability name="CameraZoom" value="0" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/3200</identifier>
+		<groups>Series40</groups>
+		<features>hasCamera</features>
+		<capability name="ScreenSize" value="128x128"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI, WMAPI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="midi, amr" />
+		<capability name="HeapSize" value="210kb" />
+		<capability name="MaxJarSize" value="64kb" />
+		<capability name="CameraResolution" value="cif" />
+		<capability name="CameraZoom" value="0" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/3100</identifier>
+		<groups>Series40</groups>
+		<capability name="ScreenSize" value="128x128"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI, WMAPI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="midi" />
+		<capability name="HeapSize" value="210kb" />
+		<capability name="MaxJarSize" value="64kb" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/6108</identifier>
+		<groups>Series40</groups>
+		<capability name="ScreenSize" value="128x128"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="midi" />
+		<capability name="HeapSize" value="200kb" />
+		<capability name="MaxJarSize" value="64kb" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/7250i</identifier>
+		<groups>Series40</groups>
+		<features>hasCamera</features>
+		<capability name="ScreenSize" value="128x128"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI, WMAPI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="midi" />
+		<capability name="HeapSize" value="200kb" />
+		<capability name="MaxJarSize" value="64kb" />
+		<capability name="CameraResolution" value="cif" />
+		<capability name="CameraZoom" value="0" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/3300</identifier>
+		<groups>Series40</groups>
+		<capability name="ScreenSize" value="128x128"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI, WMAPI, MMAPI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="midi, true tones, mp3, aac" />
+		<capability name="HeapSize" value="370kb" />
+		<capability name="MaxJarSize" value="64kb" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/6220</identifier>
+		<groups>Series40</groups>
+		<features>hasCamera</features>
+		<capability name="ScreenSize" value="128x128"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI, WMAPI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="midi" />
+		<capability name="HeapSize" value="235kb" />
+		<capability name="MaxJarSize" value="64kb" />
+		<capability name="CameraResolution" value="cif" />
+		<capability name="CameraZoom" value="0" />
+	</device>	
+	
+	<device>
+		<identifier>Nokia/3595</identifier>
+		<groups>Series40</groups>
+		<capability name="ScreenSize" value="96x65"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI, WMAPI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="midi" />
+		<capability name="HeapSize" value="200kb" />
+		<capability name="MaxJarSize" value="64kb" />
+	</device>
+
+	<device>
+		<identifier>Nokia/6800</identifier>
+		<groups>Series40</groups>
+		<capability name="ScreenSize" value="128x128"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI, WMAPI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="midi" />
+		<capability name="HeapSize" value="200kb" />
+		<capability name="MaxJarSize" value="64kb" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/6200</identifier>
+		<groups>Series40</groups>
+		<capability name="ScreenSize" value="128x128"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="midi" />
+		<capability name="HeapSize" value="200kb" />
+		<capability name="MaxJarSize" value="64kb" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/6100</identifier>
+		<groups>Series40</groups>
+		<capability name="ScreenSize" value="128x160"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="midi" />
+		<capability name="HeapSize" value="200kb" />
+		<capability name="MaxJarSize" value="64kb" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/8910i</identifier>
+		<groups>Series40</groups>
+		<capability name="ScreenSize" value="96x65"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="HeapSize" value="200kb" />
+		<capability name="MaxJarSize" value="64kb" />
+	</device>	
+	
+	<device>
+		<identifier>Nokia/7250</identifier>
+		<groups>Series40</groups>
+		<features>hasCamera</features>
+		<capability name="ScreenSize" value="128x160"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="midi" />
+		<capability name="HeapSize" value="200kb" />
+		<capability name="MaxJarSize" value="64kb" />
+		<capability name="CameraResolution" value="cif" />
+		<capability name="CameraZoom" value="0" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/5100</identifier>
+		<groups>Series40</groups>
+		<capability name="ScreenSize" value="128x160"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="midi" />
+		<capability name="HeapSize" value="200kb" />
+		<capability name="MaxJarSize" value="64kb" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/6650</identifier>
+		<groups>Series40</groups>
+		<features>hasCamera</features>
+		<capability name="ScreenSize" value="128x160"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="midi" />
+		<capability name="HeapSize" value="819kb" />
+		<capability name="MaxJarSize" value="64kb" />
+		<capability name="CameraResolution" value="vga" />
+		<capability name="CameraZoom" value="0" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/3530</identifier>
+		<groups>Series40</groups>
+		<capability name="ScreenSize" value="96x65"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="midi" />
+		<capability name="HeapSize" value="200kb" />
+		<capability name="MaxJarSize" value="64kb" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/3510i</identifier>
+		<groups>Series40</groups>
+		<capability name="ScreenSize" value="96x65"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="midi" />
+		<capability name="HeapSize" value="200kb" />
+		<capability name="MaxJarSize" value="64kb" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/6610</identifier>
+		<groups>Series40</groups>
+		<capability name="ScreenSize" value="128x128"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="midi" />
+		<capability name="HeapSize" value="200kb" />
+		<capability name="MaxJarSize" value="64kb" />
+	</device>
+	
+	<device>
+		<identifier>Nokia/7210</identifier>
+		<groups>Series40</groups>
+		<capability name="ScreenSize" value="128x128"/>
+		<capability name="BitsPerPixel" value="12"/>
+		<capability name="JavaPackage" value="Nokia-UI" />
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="SoundFormat" value="midi" />
+		<capability name="HeapSize" value="200kb" />
+		<capability name="MaxJarSize" value="64kb" />
 	</device>
 	
 <!-- Siemens devices -->

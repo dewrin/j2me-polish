@@ -1,7 +1,7 @@
 /*
  * Created on 09-Feb-2004 at 13:40:12.
  *
- * Copyright (c) 2004 Robert Virkus / enough software
+ * Copyright (c) 2004 Robert Virkus / Enough Software
  *
  * This file is part of J2ME Polish.
  *
@@ -21,7 +21,7 @@
  * 
  * Commercial licenses are also available, please
  * refer to the accompanying LICENSE.txt or visit
- * www.enough.de/j2mepolish for details.
+ * http://www.j2mepolish.org for details.
  */
 package de.enough.polish.ant.requirements;
 
@@ -31,7 +31,7 @@ import de.enough.polish.util.TextUtil;
 /**
  * <p>Selects a device by one of several of its features.</p>
  *
- * <p>copyright enough software 2004</p>
+ * <p>copyright Enough Software 2004</p>
  * <pre>
  * history
  *        09-Feb-2004 - rob creation
@@ -45,7 +45,7 @@ public class FeatureRequirement extends Requirement {
 	/**
 	 * Creates a new requirement for a device feature.
 	 * 
-	 * @param value the feature(s) which needs to be defined, e.g. "hardware.camera".
+	 * @param value the feature(s) which needs to be defined, e.g. "hasCamera".
 	 *              When there are several features needed, they need to be seperated by commas.
 	 */
 	public FeatureRequirement(String value ) {

@@ -1,7 +1,7 @@
 /*
  * Created on 15-Jan-2004 at 15:00:29.
  *
- * Copyright (c) 2004 Robert Virkus / enough software
+ * Copyright (c) 2004 Robert Virkus / Enough Software
  *
  * This file is part of J2ME Polish.
  *
@@ -21,7 +21,7 @@
  * 
  * Commercial licenses are also available, please
  * refer to the accompanying LICENSE.txt or visit
- * www.enough.de/j2mepolish for details.
+ * http://www.j2mepolish.org for details.
  */
 package de.enough.polish;
 
@@ -37,7 +37,7 @@ import java.util.*;
 /**
  * <p>Provides common functionalities for PolishProject, Vendor, DeviceGroup and Device.</p>
  *
- * <p>copyright enough software 2004</p>
+ * <p>copyright Enough Software 2004</p>
  * <pre>
  * history
  *        15-Jan-2004 - rob creation
@@ -48,10 +48,9 @@ public class PolishComponent {
 	
 	protected String identifier;
 	protected PolishComponent parent;
+	protected boolean supportsPolishGui;
 	private HashMap features;
-	//private ArrayList featuresList;
 	private HashMap capabilities;
-	//private ArrayList capabilitiesList;
 	private StyleSheet styleSheet;
 	
 	/**
@@ -319,9 +318,24 @@ public class PolishComponent {
 	 * @return true when this feature is defined.
 	 */
 	public boolean hasFeature(String feature) {
+		if ("supportsPolishGui".equals(feature)) {
+			return this.supportsPolishGui;
+		}
 		return (this.features.get(feature) != null);
 	}
 
+	/**
+	 * Determines whether this device supports the polish-gui-framework.
+	 * Usually this is the case when the device meets some capabilities like
+	 * the bits per pixel and the possible size of the heap.
+	 * Devices can also define this directly by setting the attribute [supportsPolishGui]. 
+	 * 
+	 * @return true when this device supports the polish-gui.
+	 */
+	public boolean supportsPolishGui() {
+		return this.supportsPolishGui;
+	}
+	
 	/**
 	 * Retrieves a specific capability of this component.
 	 * 

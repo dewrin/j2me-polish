@@ -1,7 +1,7 @@
 /*
  * Created on 22-Feb-2004 at 12:49:27.
  *
- * Copyright (c) 2004 Robert Virkus / enough software
+ * Copyright (c) 2004 Robert Virkus / Enough Software
  *
  * This file is part of J2ME Polish.
  *
@@ -21,7 +21,7 @@
  * 
  * Commercial licenses are also available, please
  * refer to the accompanying LICENSE.txt or visit
- * www.enough.de/j2mepolish for details.
+ * http://www.j2mepolish.org for details.
  */
 package de.enough.polish.obfuscate;
 
@@ -44,7 +44,7 @@ import proguard.classfile.ClassConstants;
  * <p>Is used to obfuscate code with the ProGuard obfuscator.</p>
  * <p>For details of ProGuard, please refer to http://proguard.sourceforge.net/.</p>
  *
- * <p>copyright enough software 2004</p>
+ * <p>copyright Enough Software 2004</p>
  * <pre>
  * history
  *        22-Feb-2004 - rob creation

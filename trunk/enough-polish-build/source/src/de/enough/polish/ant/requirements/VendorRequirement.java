@@ -1,7 +1,7 @@
 /*
  * Created on 24-Jan-2004 at 18:17:46.
  *
- * Copyright (c) 2004 Robert Virkus / enough software
+ * Copyright (c) 2004 Robert Virkus / Enough Software
  *
  * This file is part of J2ME Polish.
  *
@@ -21,7 +21,7 @@
  * 
  * Commercial licenses are also available, please
  * refer to the accompanying LICENSE.txt or visit
- * www.enough.de/j2mepolish for details.
+ * http://www.j2mepolish.org for details.
  */
 package de.enough.polish.ant.requirements;
 
@@ -31,7 +31,7 @@ import de.enough.polish.util.TextUtil;
 /**
  * <p>Selects devices by their vendor.</p>
  *
- * <p>copyright enough software 2004</p>
+ * <p>copyright Enough Software 2004</p>
  * <pre>
  * history
  *        24-Jan-2004 - rob creation

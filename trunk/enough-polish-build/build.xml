@@ -3,8 +3,8 @@
 	default="bin-dist">
 
 <!-- global properties -->
-	  <property name="Version" value="0.9.2" />
-	  <property name="VersionMessage" value="Welcome to J2ME Polish Version 0.9.2!" />
+	  <property name="Version" value="1.0-RC1" />
+	  <property name="VersionMessage" value="Welcome to the first Release Candidate of J2ME Polish 1.0!" />
 	  <property name="izpack.dir" value="/home/enough/dev/IzPack" />
 
   <path id="thirdparty">
@@ -193,7 +193,7 @@
 	<zip destfile="dist/j2mepolish-${Version}.zip">
 		<fileset dir="dist" includes="enough-j2mepolish-client.jar,enough-j2mepolish-build.jar,setup/Update.txt,LICENSE.txt" />
 		<fileset dir="setup" includes="Update.txt" />
-		<fileset dir="." includes="LICENSE.txt" />
+		<fileset dir="." includes="LICENSE.txt,apis.xml,vendors.xml,groups.xml,devices.xml" />
 	</zip>
 </target>
 	

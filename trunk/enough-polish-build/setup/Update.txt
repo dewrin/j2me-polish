@@ -1,7 +1,6 @@
 Please copy the jar-files into the "import"-folder of your J2ME projects.
 
 If you have installed the device database-files, you
-might want to extract the device-database files from the
-enough-j2mepolish-build.jar file as well. Alternatively you can
-just delete the files devices.xml, vendors.xml, groups.xml and apis.xml 
-from your project folder.
+might want to copy the relevant files (devices.xml, vendors.xml, 
+groups.xml and apis.xml) to your project-root.
+
