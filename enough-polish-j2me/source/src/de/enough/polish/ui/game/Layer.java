@@ -26,11 +26,11 @@ import javax.microedition.lcdui.Graphics;
 public abstract class Layer extends Object
 {
 	//following variables are implicitely defined by getter- or setter-methods:
-	private int x;
-	private int y;
-	private int width;
-	private int height;
-	private boolean visible;
+	protected int x;
+	protected int y;
+	protected int width;
+	protected int height;
+	protected boolean visible;
 
 	/**
 	 * Sets this Layer's position such that its upper-left corner
@@ -44,7 +44,8 @@ public abstract class Layer extends Object
 	 */
 	public void setPosition(int x, int y)
 	{
-		//TODO implement setPosition
+		this.x = x;
+		this.y = y;
 	}
 
 	/**
@@ -60,7 +61,8 @@ public abstract class Layer extends Object
 	 */
 	public void move(int dx, int dy)
 	{
-		//TODO implement move
+		this.x += dx;
+		this.y += dy;
 	}
 
 	/**
