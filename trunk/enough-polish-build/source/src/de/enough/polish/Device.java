@@ -141,6 +141,8 @@ public class Device extends PolishComponent {
 			this.midpVersion = MIDP_2;
 			groupNamesList.add( "midp2" );
 			groupsList.add( groupManager.getGroup( "midp2", true ) );
+		} else {
+			System.out.println("Warning: device [" + this.identifier + "] supports unknown JavaPlatform [" + midp + "].");
 		}
 		String supportsPolishGuiText = definition.getAttributeValue("supportsPolishGui");
 		if (supportsPolishGuiText != null) {
@@ -179,9 +181,18 @@ public class Device extends PolishComponent {
 				groupsList.add( groupManager.getGroup( "BitsPerPixel.8", true ) ); 
 				groupNamesList.add( "BitsPerPixel.4+" );
 				groupsList.add( groupManager.getGroup( "BitsPerPixel.4+", true ) ); 
+			} else if ("12".equals( bitsPerPixel)) {
+				groupNamesList.add( "BitsPerPixel.12" );
+				groupsList.add( groupManager.getGroup( "BitsPerPixel.12", true ) ); 
+				groupNamesList.add( "BitsPerPixel.8+" );
+				groupsList.add( groupManager.getGroup( "BitsPerPixel.8+", true ) ); 
+				groupNamesList.add( "BitsPerPixel.4+" );
+				groupsList.add( groupManager.getGroup( "BitsPerPixel.4+", true ) ); 
 			} else if ("16".equals( bitsPerPixel)) {
 				groupNamesList.add( "BitsPerPixel.16" );
 				groupsList.add( groupManager.getGroup( "BitsPerPixel.16", true ) ); 
+				groupNamesList.add( "BitsPerPixel.12+" );
+				groupsList.add( groupManager.getGroup( "BitsPerPixel.12+", true ) ); 
 				groupNamesList.add( "BitsPerPixel.8+" );
 				groupsList.add( groupManager.getGroup( "BitsPerPixel.8+", true ) ); 
 				groupNamesList.add( "BitsPerPixel.4+" );
@@ -191,6 +202,8 @@ public class Device extends PolishComponent {
 				groupsList.add( groupManager.getGroup( "BitsPerPixel.24", true ) ); 
 				groupNamesList.add( "BitsPerPixel.16+" );
 				groupsList.add( groupManager.getGroup( "BitsPerPixel.16+", true ) ); 
+				groupNamesList.add( "BitsPerPixel.12+" );
+				groupsList.add( groupManager.getGroup( "BitsPerPixel.12+", true ) ); 
 				groupNamesList.add( "BitsPerPixel.8+" );
 				groupsList.add( groupManager.getGroup( "BitsPerPixel.8+", true ) ); 
 				groupNamesList.add( "BitsPerPixel.4+" );
