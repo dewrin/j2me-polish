@@ -343,6 +343,11 @@ import javax.microedition.lcdui.Graphics;
  */
 public abstract class Item extends Object
 {
+	/**
+	 * A J2ME Polish constant defining a transparent/invisible color.
+	 * TRANSPARENT has the value -1.
+	 */
+	public static final int TRANSPARENT = -1;
 
 	/**
 	 * A layout directive indicating that this <code>Item</code>

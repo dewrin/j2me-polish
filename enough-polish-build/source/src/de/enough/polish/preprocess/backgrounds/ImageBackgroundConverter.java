@@ -24,6 +24,15 @@ import java.util.HashMap;
  */
 public class ImageBackgroundConverter extends BackgroundConverter {
 	
+	private static final HashMap REPEAT_TYPES = new HashMap();
+	static {
+		REPEAT_TYPES.put("repeat", BACKGROUNDS_PACKAGE + "ImageBackground.REPEAT");
+		REPEAT_TYPES.put("no-repeat", BACKGROUNDS_PACKAGE + "ImageBackground.NO_REPEAT");
+		REPEAT_TYPES.put("none", BACKGROUNDS_PACKAGE + "ImageBackground.NO_REPEAT");
+		REPEAT_TYPES.put("repeat-x", BACKGROUNDS_PACKAGE + "ImageBackground.REPEAT_X");
+		REPEAT_TYPES.put("repeat-y", BACKGROUNDS_PACKAGE + "ImageBackground.REPEAT_Y");
+	}
+	
 	/**
 	 * Creates a new creator
 	 */
@@ -39,16 +48,19 @@ public class ImageBackgroundConverter extends BackgroundConverter {
 		//TODO rob also allow other CSS settings:
 		// background-attachment,
 		// background-position ???,
-		// background-repeat
 		String imageUrl = (String) background.get("image");
 		imageUrl = getUrl( imageUrl );
-		if (this.hasBorder) {
-			return "new " + BACKGROUNDS_PACKAGE + "BorderedImageBackground( "  
-					+ this.color + ", " + imageUrl +  ", " 
-					+ this.borderColor + ", " + this.borderWidth + ")";
+		String repeat = (String) background.get("repeat");
+		if (repeat == null) {
+			repeat = BACKGROUNDS_PACKAGE + "ImageBackground.NO_REPEAT";
 		} else {
-			return "new " + BACKGROUNDS_PACKAGE + "ImageBackground( " 
-					+ this.color + ", \"" + imageUrl + "\")";
+			String rep = (String) REPEAT_TYPES.get( repeat );
+			if (rep == null) {
+				throw new BuildException("Invalid CSS: the repeat-type [" + repeat +"] is not supported by the image background.");
+			}
+			repeat = rep;
 		}
+		return "new " + BACKGROUNDS_PACKAGE + "ImageBackground( " 
+				+ this.color + ", \"" + imageUrl + "\", " + repeat + " )";
 	}
 }

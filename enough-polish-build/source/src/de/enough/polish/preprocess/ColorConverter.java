@@ -71,19 +71,26 @@ public class ColorConverter {
 	 * Parses the given color definition and returns the appropriate hex-definition.
 	 * 
 	 * @param definition the value of the color, e.g. "black", "#00ff00", "rgb( 340, 0, 0)"
-	 * @return the hexadecimal color-value, e.g. "0x000000" 
+	 * @return the hexadecimal color-value, e.g. "0x000000" or
+	 * 		   "Item.TRANSPARENT" when the definition equals "transparent".
 	 */
 	public String parseColor( String definition ) {
-		// the definition could be a standard VGA color:
-		String value = (String) COLORS.get( definition );
-		if (value != null) {
-			return value;
+		if ("transparent".equals(definition)) {
+			return "Item.TRANSPARENT";
 		}
+		
 		// the definition could be a color which has been defined earlier:
-		value = (String) this.tempColors.get( definition );
+		String value = (String) this.tempColors.get( definition );
 		if (value != null) {
 			return value;
 		}
+		
+		// the definition could be a standard VGA color:
+		value = (String) COLORS.get( definition );
+		if (value != null) {
+			return value;
+		}
+		
 		// the definition could be a normal hexadecimal value.
 		// In CSS hex-values start with '#':
 		if (definition.startsWith("#")) {
