@@ -7,6 +7,8 @@
  */
 package de.enough.polish.ui;
 
+import de.enough.polish.util.TextUtil;
+
 import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.Graphics;
 
@@ -24,6 +26,7 @@ import javax.microedition.lcdui.Graphics;
 public class StringItem extends Item
 {
 	private String text;
+	private String[] textLines;
 	private int textColor;
 	private Font font;
 
@@ -211,10 +214,28 @@ public class StringItem extends Item
 	 */
 	public void paintContent(int x, int y, int leftBorder, int rightBorder, Graphics g) {
 		if (this.text != null) {
+			int lineHeight = this.font.getHeight() + this.paddingVertical; 
 			g.setFont( this.font );
 			g.setColor( this.textColor );
-			//TODO rob check layout
-			g.drawString( this.text, x, y, Graphics.TOP | Graphics.LEFT );
+			int centerX = (rightBorder - leftBorder) / 2;
+			for (int i = 0; i < this.textLines.length; i++) {
+				String line = this.textLines[i];
+				//TODO rob check layout when i != 0
+				if (i ==0) {
+					g.drawString( line, x, y, Graphics.TOP | Graphics.LEFT );
+				} else {
+					// needs to be checked:
+					if (this.isLayoutRight) {
+						g.drawString( line, rightBorder, y, Graphics.TOP | Graphics.RIGHT );
+					} else if (this.isLayoutCenter) {
+						g.drawString( line, centerX, y, Graphics.TOP | Graphics.HCENTER );
+					} else {
+						// left layout
+						g.drawString( line, leftBorder, y, Graphics.TOP | Graphics.LEFT );
+					}
+				}
+				y += lineHeight;
+			}
 		}
 	}
 
@@ -225,8 +246,25 @@ public class StringItem extends Item
 		if (this.text != null && this.font == null) {
 			this.font = Font.getDefaultFont();
 		}
-		this.contentHeight = this.font.getHeight();
-		this.contentWidth = this.font.stringWidth(this.text);
+		if (this.text == null) {
+			this.contentHeight = 0;
+			this.contentWidth = 0;
+			return;
+		}
+		String[] lines = TextUtil.split(this.text, this.font, firstLineWidth, lineWidth);
+		int fontHeight = this.font.getHeight();
+		this.contentHeight = (lines.length * fontHeight)
+						   + ((lines.length -1) * this.paddingVertical);
+		int maxWidth = 0;
+		for (int i = 0; i < lines.length; i++) {
+			String line = lines[i];
+			int width = this.font.stringWidth(line);
+			if (width > maxWidth) {
+				maxWidth = width;
+			}
+		}
+		this.contentWidth = maxWidth;
+		this.textLines = lines;
 	}
 
 	/* (non-Javadoc)

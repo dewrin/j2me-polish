@@ -85,21 +85,25 @@ implements ImageConsumer
 	 * @see de.enough.polish.ui.Item#initItem()
 	 */
 	protected void initContent(int firstLineWidth, int lineWidth) {
-		super.initContent(firstLineWidth, lineWidth);
-		if (this.image != null) {
-			if (this.imageAlign == Graphics.LEFT || this.imageAlign == Graphics.RIGHT ) {
-				this.contentWidth += this.imageWidth;
-				if (this.imageHeight > this.contentHeight) {
-					this.yAdjust = (this.imageHeight - this.contentHeight) / 2;
-					this.contentHeight = this.imageHeight;
-				} else {
-					this.yAdjust = 0;
-				}
+		if (this.image == null) {
+			super.initContent(firstLineWidth, lineWidth);
+			return;
+		} 
+		if (this.imageAlign == Graphics.LEFT || this.imageAlign == Graphics.RIGHT ) {
+			firstLineWidth -= this.imageWidth;
+			lineWidth -= this.imageWidth;
+			super.initContent(firstLineWidth, lineWidth);
+			this.contentWidth += this.imageWidth;
+			if (this.imageHeight > this.contentHeight) {
+				this.yAdjust = (this.imageHeight - this.contentHeight) / 2;
+				this.contentHeight = this.imageHeight;
 			} else {
-				this.contentHeight += this.imageHeight;   
-				if (this.imageWidth > this.contentWidth) {
-					this.contentWidth = this.imageWidth;
-				}
+				this.yAdjust = 0;
+			}
+		} else {
+			this.contentHeight += this.imageHeight;   
+			if (this.imageWidth > this.contentWidth) {
+				this.contentWidth = this.imageWidth;
 			}
 		}
 	}
@@ -112,6 +116,7 @@ implements ImageConsumer
 		if (this.image != null) {
 			g.drawImage(this.image, x, y, Graphics.TOP | Graphics.LEFT );
 			x += this.imageWidth;
+			leftBorder += this.imageWidth;
 			y += this.yAdjust;
 		}
 		super.paintContent(x, y, leftBorder, rightBorder, g);

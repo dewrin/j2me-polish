@@ -12,16 +12,16 @@ import de.enough.polish.util.Debug;
 /**
  * <p>Is used to animate Backgrounds, Borders and Items.</p>
  * <p>
- * 	In either devices.xml, vendors.xml, groups.xml or settings.xml
+ * 	In either devices.xml, vendors.xml, groups.xml, device.xml or settings.xml
  *  the animation-interval can be specified.
  *  Example:
  *  <pre>
  *  <variables>
- *		<variable name="polish.animationInterval" value="100" />
+ *		<variable name="polish.animationInterval" value="200" />
  *	</variables>
  * 	</pre> 
- *  sets the interval to 100 ms. When not specified, the default interval
- *  of 200 ms will be used. 
+ *  sets the interval to 200 ms. When not specified, the default interval
+ *  of 100 ms will be used. 
  * </p>
  * <p>copyright enough software 2004</p>
  * <pre>
@@ -35,25 +35,28 @@ public class AnimationThread extends Thread {
 	//#ifdef polish.animationInterval:defined
 	//#=public final static int ANIMATION_INTERVAL = ${polish.animationInterval};
 	//#else
-	public final static int ANIMATION_INTERVAL = 200;
+	public final static int ANIMATION_INTERVAL = 100;
 	//#endif
 	
 	/**
-	 * 
+	 * Creates a new animation thread.
 	 */
 	public AnimationThread() {
 		super();
 	}
 	
+	/**
+	 * Animates the current screen.
+	 */
 	public void run() {
-		long sleeptime = 200;
+		long sleeptime = ANIMATION_INTERVAL;
 		int animationCounter = 0;
 		while ( true ) {
 			try {
 				Thread.sleep(sleeptime);
 				if (StyleSheet.currentScreen != null) {
 					if (StyleSheet.currentScreen.animate()) {
-						sleeptime = 200;
+						sleeptime = ANIMATION_INTERVAL;
 						animationCounter = 0;
 					} else {
 						animationCounter++;
