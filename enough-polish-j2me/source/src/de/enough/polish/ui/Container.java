@@ -468,7 +468,8 @@ public class Container extends Item {
 			
 		}
 		boolean processed = false;
-		if ( gameAction == Canvas.RIGHT || gameAction == Canvas.DOWN ) {
+		if ( (gameAction == Canvas.RIGHT  && keyCode != Canvas.KEY_NUM6) 
+				|| (gameAction == Canvas.DOWN  && keyCode != Canvas.KEY_NUM8)) {
 			if (gameAction == Canvas.DOWN && this.columnsSetting != NO_COLUMNS) {
 				int currentRow = this.focusedIndex / this.numberOfColumns;
 				if (currentRow < this.numberOfRows - 1) {
@@ -485,7 +486,8 @@ public class Container extends Item {
 				processed = true;
 				//System.out.println("yBottomPos: " + this.yBottomPos + "  yBottom: " + this.yBottom );
 			}
-		} else if ( gameAction == Canvas.LEFT || gameAction == Canvas.UP ) {
+		} else if ( (gameAction == Canvas.LEFT  && keyCode != Canvas.KEY_NUM4) 
+				|| (gameAction == Canvas.UP && keyCode != Canvas.KEY_NUM2) ) {
 			if (gameAction == Canvas.UP && this.columnsSetting != NO_COLUMNS) {
 				int currentRow = this.focusedIndex / this.numberOfColumns;
 				if (currentRow > 0) {
