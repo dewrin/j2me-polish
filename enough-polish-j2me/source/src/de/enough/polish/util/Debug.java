@@ -74,23 +74,22 @@ public final class Debug {
 	 * @param exception the exception
 	 */
 	public static final void debug( String message, Throwable exception ) {
-		//#ifndef polish.useDebugGui
 		System.out.println( message );
 		if (exception != null) {
 			exception.printStackTrace();
 		}
-		//#else
-		// add message to list:
-		if (exception != null) {
-			message += ": " + exception.toString();
-			if (exception.getMessage() != null) {
-				message += ": " + exception.getMessage();
+		//#ifdef polish.useDebugGui
+			// add message to list:
+			if (exception != null) {
+				message += ": " + exception.toString();
+				if (exception.getMessage() != null) {
+					message += ": " + exception.getMessage();
+				}
 			}
-		}
-		MESSAGES.add( message );
-		if (MESSAGES.size() > 98) {
-			MESSAGES.remove( 0 );
-		}
+			MESSAGES.add( message );
+			if (MESSAGES.size() > 98) {
+				MESSAGES.remove( 0 );
+			}
 		//#endif
 	}
 		

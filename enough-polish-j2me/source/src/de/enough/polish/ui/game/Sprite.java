@@ -30,8 +30,10 @@ package de.enough.polish.ui.game;
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 
-import com.nokia.mid.ui.DirectGraphics;
-import com.nokia.mid.ui.DirectUtils;
+//#ifdef polish.api.nokia-ui
+	import com.nokia.mid.ui.DirectGraphics;
+	import com.nokia.mid.ui.DirectUtils;
+//#endif
 
 /**
  * A Sprite is a basic visual element that can be rendered with one of
