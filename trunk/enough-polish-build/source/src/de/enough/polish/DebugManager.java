@@ -109,6 +109,7 @@ public class DebugManager {
 		Filter[] filters = setting.getFilters();
 		for (int i = 0; i < filters.length; i++) {
 			Filter filter = filters[i];
+			System.out.println("adding filter: " + filter.getPattern() + "=" + filter.getLevel() );
 			addDebugSetting( filter.getPattern(), filter.getLevel() );
 		}
 		// TODO take isVisual into account!

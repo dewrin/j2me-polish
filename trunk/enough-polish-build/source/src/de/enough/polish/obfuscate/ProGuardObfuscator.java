@@ -45,7 +45,7 @@ public class ProGuardObfuscator extends Obfuscator {
 	/* (non-Javadoc)
 	 * @see de.enough.polish.obfuscate.Obfuscator#obfuscate(de.enough.polish.Device, java.io.File, java.lang.String[], org.apache.tools.ant.types.Path)
 	 */
-	public void obfuscate(Device device, File jar, String[] preserve, Path bootClassPath) 
+	public void obfuscate(Device device, File sourceFile, File targetFile, String[] preserve, Path bootClassPath) 
 	throws BuildException 
 	{
 		Configuration cfg = new Configuration();
@@ -59,8 +59,8 @@ public class ProGuardObfuscator extends Obfuscator {
 			}
 		}
 		
-        cfg.inJars = getPath( jar );
-        cfg.outJars = getPath( device.getJarFile() );
+        cfg.inJars = getPath( sourceFile );
+        cfg.outJars = getPath( targetFile );
 
         // do not obfuscate the <keep> classes and the defined midlets:
         cfg.keepClassFileOptions = new ArrayList( preserve.length );

@@ -37,13 +37,14 @@ public abstract class Obfuscator {
 	 * Obfuscates a jar-file for the given device.
 	 * 
 	 * @param device The J2ME device
-	 * @param jar The jar-file containing the projects classes
+	 * @param sourceFile The jar-file containing the projects classes
+	 * @param targetFile The file to which the obfuscated classes should be copied to 
 	 * @param preserve All names of classes which should be preserved,
 	 *                 that means not renamed or removed.
 	 * @param bootClassPath A path to the library containing either the MIDP1.0 or MIDP2.0 environment.
 	 * @throws BuildException when the obfuscation failed
 	 */
-	public abstract void obfuscate( Device device, File jar, String[] preserve, Path bootClassPath )
+	public abstract void obfuscate( Device device, File sourceFile, File targetFile, String[] preserve, Path bootClassPath )
 	throws BuildException;
 	
 	/**

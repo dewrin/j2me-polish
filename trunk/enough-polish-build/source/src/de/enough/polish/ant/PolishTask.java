@@ -109,11 +109,11 @@ public class PolishTask extends ConditionalTask {
 			Device device = this.devices[i];
 			preprocess( device );
 			compile( device );
-			jar( device );
 			if (obfuscate) {
 				obfuscate( device );
 			}
 			preverify( device );
+			jar( device );
 			jad( device );
 		}
 		test();
@@ -396,6 +396,106 @@ public class PolishTask extends ConditionalTask {
 	}
 	 */
 
+
+	/**
+	 * Obfuscates the compiled source code.
+	 *  
+	 * @param device The device for which the obfuscation should be done.
+	 */
+	private void obfuscate( Device device ) {
+		System.out.println("obfuscating for device [" + device.getIdentifier() + "].");
+		Path bootPath;
+		if (device.isMidp1()) {
+			bootPath = this.midp1BootClassPath;
+		} else {
+			bootPath = this.midp2BootClassPath;
+		}
+		File sourceFile = new File( this.buildSetting.getWorkDir().getAbsolutePath()
+				+ File.separatorChar + "source.jar");
+		//jar classes dir:
+		long time = System.currentTimeMillis();
+		try {
+			JarUtil.jar( new File( device.getClassesDir()), sourceFile, false );
+		} catch (IOException e) {
+			throw new BuildException("Unable to prepare the obfuscation-jar: " + e.getMessage(), e );
+		}
+		System.out.println("Jaring took " + ( System.currentTimeMillis() - time) + " ms.");
+		File destFile = new File( this.buildSetting.getWorkDir().getAbsolutePath()
+				+ File.separatorChar + "dest.jar");
+		this.obfuscator.obfuscate(device, sourceFile, destFile, this.preserveClasses, bootPath );
+		//unjar destFile to build/obfuscated:
+		time = System.currentTimeMillis();
+		try {
+			String targetDir = device.getBaseDir() + File.separatorChar + "obfuscated";
+			device.setClassesDir(targetDir);
+			JarUtil.unjar( destFile, new File( targetDir )   );
+		} catch (IOException e) {
+			throw new BuildException("Unable to prepare the obfuscation-jar: " + e.getMessage(), e );
+		}
+	}
+
+	/**
+	 * Preverifies the compiled and a\obfuscated code.
+	 *  
+	 * @param device The device for which the preverification should be done.
+	 */
+	private void preverify( Device device ) {
+		System.out.println("preverifying for device [" + device.getIdentifier() + "].");
+		String preverify = this.buildSetting.getPreverify();
+		if (preverify == null ) {
+			//TODO try to call preverify directly when no property has been defined
+			throw new BuildException("You need to define the property ${polish.preverify} in your build.xml."
+				+ " It needs to point to the preverify-command of your wirless toolkit." ); 
+
+		}
+		String classPath;
+		if (device.isMidp1()) {
+			classPath = this.midp1BootClassPath.toString();
+		} else {
+			classPath = this.midp2BootClassPath.toString();
+		}
+		classPath += File.pathSeparatorChar + device.getClassPath();
+		/* File preverfyDir = new File( this.buildSetting.getWorkDir().getAbsolutePath()
+				+ File.separatorChar + "preverfied" );
+		device.setPreverifyDir( preverifyDir ); 
+		*/
+		String[] commands = new String[] {
+			preverify, 
+			"-classpath", classPath,
+			"-d", device.getClassesDir(), // destination-dir - default is ./output
+			"-cldc",
+			device.getClassesDir()
+		};
+		StringBuffer commandBuffer = new StringBuffer();
+		for (int i = 0; i < commands.length; i++) {
+			commandBuffer.append( commands[i] ).append(' ');
+		}
+		
+		try {
+			Process preverifyProc = Runtime.getRuntime().exec( commands, null );
+			InputStream in = preverifyProc.getErrorStream();
+			int ch;
+			StringBuffer message = new StringBuffer();
+			while ( (ch = in.read()) != -1) {
+				message.append((char) ch );
+			}
+			int exitValue = preverifyProc.waitFor();
+			if (exitValue != 0) {
+				throw new BuildException("Unable to preverify: " + message.toString()  
+					+ " - The exit-status is [" + exitValue + "]\n"
+					+ " The call was: [" + commandBuffer.toString() + "]."
+				);
+			}
+		} catch (IOException e ) {
+			throw new BuildException("Unable to preverify: " + e.getMessage()
+					+ "\n The call was: [" + commandBuffer.toString() + "].", e);
+		} catch (InterruptedException e) {
+			throw new BuildException("Unable to preverify: " + e.getMessage()
+					+ "\n The call was: [" + commandBuffer.toString() + "].", e);
+		}
+		
+	}
+
 	/**
 	 * Jars the code.
 	 * 
@@ -453,7 +553,8 @@ public class PolishTask extends ConditionalTask {
 		String jarName = this.infoSetting.getJarName();
 		jarName = PropertyUtil.writeProperties(jarName, infoProperties);
 		infoProperties.put( "polish.jarName", jarName );
-		File jarFile = new File( this.buildSetting.getDestDir().getAbsolutePath() + File.separatorChar + jarName );
+		File jarFile = new File( this.buildSetting.getDestDir().getAbsolutePath() 
+						+ File.separatorChar + jarName );
 		if (!jarFile.getParentFile().exists()) {
 			jarFile.getParentFile().mkdirs();
 		}
@@ -492,93 +593,6 @@ public class PolishTask extends ConditionalTask {
 			throw new BuildException("Unable to create manifest: " + e.getMessage(), e );
 		}
 		jarTask.execute();
-		
-	}
-
-	/**
-	 * Obfuscates the compiled source code.
-	 *  
-	 * @param device The device for which the obfuscation should be done.
-	 */
-	private void obfuscate( Device device ) {
-		/**
-		 * <obfuscator enable="yes" name="ProGuard" or class="de.enough,,," >
-		 * 		<preserve>de.enough.example.DynaClass</preserve>
-		 * </obfuscator>
-		 */
-		System.out.println("obfuscating for device [" + device.getIdentifier() + "].");
-		Path bootPath;
-		if (device.isMidp1()) {
-			bootPath = this.midp1BootClassPath;
-		} else {
-			bootPath = this.midp2BootClassPath;
-		}
-		File tmpJar = new File( this.buildSetting.getWorkDir().getAbsolutePath() 
-						+ File.separatorChar + "tmp.jar");
-		//File originalJar = new File( device.getJarFile().getAbsolutePath() );
-		device.getJarFile().renameTo( tmpJar );
-		//device.setJarFile( originalJar );
-		this.obfuscator.obfuscate(device, tmpJar, this.preserveClasses, bootPath );
-	}
-
-	/**
-	 * Preverifies the compiled and a\obfuscated code.
-	 *  
-	 * @param device The device for which the preverification should be done.
-	 */
-	private void preverify( Device device ) {
-		System.out.println("preverifying for device [" + device.getIdentifier() + "].");
-		String preverify = this.buildSetting.getPreverify();
-		if (preverify == null ) {
-			throw new BuildException("You need to define the property ${polish.preverify} in your build.xml."
-				+ " It needs to point to the preverify-command of your wirless toolkit." ); 
-
-		}
-		if (preverify.indexOf(" ") != -1) {
-			preverify = '"' + preverify + '"';
-		}
-		String classPath;
-		if (device.isMidp1()) {
-			classPath = this.midp1BootClassPath.toString();
-		} else {
-			classPath = this.midp2BootClassPath.toString();
-		}
-		classPath += File.pathSeparatorChar + device.getClassPath();
-		
-		String[] commands = new String[] {
-			preverify, 
-			"-classpath", classPath,
-			"-d",   device.getClassesDir() , // destination-dir - default is ./output
-			"-cldc",
-			device.getClassesDir()
-		};
-		StringBuffer commandBuffer = new StringBuffer();
-		for (int i = 0; i < commands.length; i++) {
-			commandBuffer.append( commands[i] ).append(' ');
-		}
-		
-		try {
-			Process preverifyProc = Runtime.getRuntime().exec( commands, null );
-			InputStream in = preverifyProc.getErrorStream();
-			int ch;
-			StringBuffer message = new StringBuffer();
-			while ( (ch = in.read()) != -1) {
-				message.append((char) ch );
-			}
-			int exitValue = preverifyProc.waitFor();
-			if (exitValue != 0) {
-				throw new BuildException("Unable to preverify: " + message.toString()  
-					+ " - The exit-status is [" + exitValue + "]\n"
-					+ " The call was: [" + commandBuffer.toString() + "]."
-				);
-			}
-		} catch (IOException e ) {
-			throw new BuildException("Unable to preverify: " + e.getMessage()
-					+ "\n The call was: [" + commandBuffer.toString() + "].", e);
-		} catch (InterruptedException e) {
-			throw new BuildException("Unable to preverify: " + e.getMessage()
-					+ "\n The call was: [" + commandBuffer.toString() + "].", e);
-		}
 		
 	}
 	
