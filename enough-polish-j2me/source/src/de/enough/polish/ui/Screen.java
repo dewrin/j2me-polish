@@ -25,7 +25,7 @@
 package de.enough.polish.ui;
 
 //#if polish.useFullScreen && polish.api.nokia-ui 
-import com.nokia.mid.ui.FullCanvas;
+	import com.nokia.mid.ui.FullCanvas;
 //#endif
 import de.enough.polish.util.ArrayList;
 import de.enough.polish.util.Debug;
