@@ -330,8 +330,8 @@ extends Canvas
 			if (keyCode == FullCanvas.KEY_SOFTKEY2 ) {
 				this.menuOpened = false;
 			} else  if ( gameAction == Canvas.FIRE ) {
-				int focussedIndex = this.menuContainer.getFocussedIndex();
-				Command cmd = (Command) this.menuCommands.get( focussedIndex );
+				int focusedIndex = this.menuContainer.getFocussedIndex();
+				Command cmd = (Command) this.menuCommands.get( focusedIndex );
 				this.menuOpened = false;
 				callCommandListener( cmd );
 			} else { 
