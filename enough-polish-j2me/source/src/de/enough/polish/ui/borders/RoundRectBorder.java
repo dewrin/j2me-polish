@@ -1,3 +1,4 @@
+//#condition polish.usePolishGui
 /*
  * Created on 06-Jan-2004 at 22:43:23.
  * This source code is published under the GNU General Public Licence and
@@ -29,17 +30,6 @@ public class RoundRectBorder extends Border {
 	/**
 	 * Creates a new round rectangle border.
 	 * 
-	 * @param color the color of the border
-	 * @param borderWidth the width of the border
-	 * @param arc the diameter of the arc at the four corners
-	 */
-	public RoundRectBorder( int color, int borderWidth, int arc  ) {
-		this( color, borderWidth, arc, arc );
-	}
-
-	/**
-	 * Creates a new round rectangle border.
-	 * 
 	 * @param color the color of the background
 	 * @param borderWidth the width of the border
 	 * @param arcWidth the horizontal diameter of the arc at the four corners
@@ -61,7 +51,7 @@ public class RoundRectBorder extends Border {
 		if (this.borderWidth > 1) {
 			int border = this.borderWidth - 1;
 			while ( border > 0) {
-				g.drawRoundRect( x+border, y+border, width - border, height - border, this.arcWidth, this.arcHeight );
+				g.drawRoundRect( x+border, y+border, width - 2*border, height - 2*border, this.arcWidth, this.arcHeight );
 				border--;
 			}
 		}

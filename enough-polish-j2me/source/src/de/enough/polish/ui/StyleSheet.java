@@ -8,7 +8,7 @@ package de.enough.polish.ui;
 
 import de.enough.polish.ui.tasks.ImageTask;
 
-import javax.microedition.lcdui.Image;
+import javax.microedition.lcdui.*;
 
 import java.io.IOException;
 import java.util.Hashtable;
@@ -26,83 +26,28 @@ import java.util.Timer;
  */
 public final class StyleSheet {
 	
-	private static Hashtable stylesByName;
-	private static Hashtable backgroundsByName;
-	private static Hashtable bordersByName;
 	private static Hashtable imagesByName;
 	//#ifdef polish.images.backgroundLoad
 	private static Hashtable scheduledImagesByName;
 	private static final Boolean TRUE = new Boolean( true );
 	private static Timer timer;
 	//#endif
-	private static Style defaultStyle;
+	//#ifdef false
+	public static final Style defaultStyle = null;
+	public static Style focussedStyle = null;
+	//#endif
+	//#ifdef polish.useDynamicStyles
+	private static Hashtable stylesByName = new Hashtable();
+	//#endif
 	
-	static {
-		// do not change the following line!
-		//$$IncludeStyleSheetDefinitionHere$$//
-	}
 	
-	/**
-	 * Retrieves a the style with the given name.
-	 * If that style is not defined, the default-style will be returned.
-	 *  
-	 * @param name the name of the style
-	 * @return the style with the given name or the default-style
-	 * @throws NullPointerException when the name is null
-	 */
-	public static Style getStyle( String name ) {
-		//TODO set the style as the current style?
-		if (stylesByName==null) {
-			return defaultStyle;
-		}
-		Style style = (Style) stylesByName.get( name );
-		if (style == null) {
-			return defaultStyle;
-		} else {
-			return style;
-		}
-	}
-	
-	/**
-	 * Retrieves a the background with the given name.
-	 * If that background is not defined, the default-background will be returned.
-	 *  
-	 * @param name the name of the background
-	 * @return the background with the given name or the default-background
-	 * @throws NullPointerException when the name is null
-	 */
-	public static Background getBackground( String name ) {
-		if (backgroundsByName == null) {
-			return defaultStyle.background;
-		}
-		Background background = (Background) backgroundsByName.get( name );
-		if (background == null) {
-			return defaultStyle.background;
-		} else {
-			return background;
-		}
-	}
+	// do not change the following line!
+//$$IncludeStyleSheetDefinitionHere$$//
+		
+	public static Style currentStyle = defaultStyle;
+	public static Screen currentScreen;	
+	public static AnimationThread animationThread;
 
-	/**
-	 * Retrieves a the border with the given name.
-	 * If that border is not defined, the default-border will be returned.
-	 *  
-	 * @param name the name of the border
-	 * @return the border with the given name or the default-border
-	 * @throws NullPointerException when the name is null
-	 */
-	public static Border getBorder( String name ) {
-		if (bordersByName == null) {
-			return defaultStyle.border;
-		}
-		Border border = (Border) bordersByName.get( name );
-		if (border == null) {
-			return defaultStyle.border;
-		} else {
-			return border;
-		}
-	}
-	
 	/**
 	 * Retrieves the image with the given name.
 	 * When the image has been cached before, it will be returned immediately.
@@ -111,7 +56,9 @@ public final class StyleSheet {
 	 * <a href="../../../../definitions/polish_xml.html">polish.xml</a> file.
 	 * 
 	 * @param name the name of the Image
-	 * @param parent the object which needs the image
+	 * @param parent the object which needs the image, when the image should be loaded
+	 * 		   		in the background, the parent need to implement
+	 * 				the ImageConsumer interface.
 	 * @param cache true when the image should be cached for later retrieval.
 	 *              This costs RAM obviously, so you should decide carefully if
 	 *              large images should be cached.
@@ -121,7 +68,7 @@ public final class StyleSheet {
 	 * @throws IOException when the image could not be loaded directly
 	 * @see ImageConsumer#setImage(String, Image)
 	 */
-	public static Image getImage( String name, ImageConsumer parent, boolean cache )
+	public static Image getImage( String name, Object parent, boolean cache )
 	throws IOException 
 	{
 		// check if the image has been cached before:
@@ -143,6 +90,12 @@ public final class StyleSheet {
 		//# return image;
 		//#else
 		// when images should be loaded in the background, tell the background-thread to do so now:
+		
+		if ( ! (parent instanceof ImageConsumer)) {
+			//#debug error
+			System.out.println("StyleSheet.getImage(..) needs an ImageConsumer when images are loaded in the background!");
+			return null;
+		}
 		if (cache) {
 			if ( (scheduledImagesByName != null) && (scheduledImagesByName.get(name) != null) ) {
 				// this image is already scheduled to load:
@@ -159,10 +112,110 @@ public final class StyleSheet {
 		if (timer == null) {
 			timer = new Timer();
 		}
-		ImageTask task = new ImageTask( name, parent, imagesByName, cache );
+		ImageTask task = new ImageTask( name, (ImageConsumer) parent, imagesByName, cache );
 		timer.schedule( task, 10 );
 		return null;
 		//#endif
 	}
 	
+	//#ifdef polish.useDynamicStyles
+	/**
+	 * Retrieves the style for the given item.
+	 * This function is only available when the &lt;buildSetting&gt;-attribute
+	 * [useDynamicStyles] is enabled.
+	 * This function allows to set styles without actually using the preprocessing-
+	 * directive //#style. Beware that this dynamic style retrieval is not as performant
+	 * as the direct-style-setting with the //#style preprocessing directive.
+	 *  
+	 * @param item the item for which the style should be retrieved
+	 * @return the appropriate style. When no specific style is found,
+	 *         the default style is returned.
+	 */
+	public static Style getStyle( Item item ) {
+		String itemCssSelector = item.cssSelector;
+		String screenCssSelector = item.screen.cssSelector;
+		Style style = null;
+		String fullStyleName;
+		StringBuffer buffer = new StringBuffer();
+		buffer.append( screenCssSelector );
+		if (item.parent == null) {
+			//#debug
+			System.out.println("item.parent == null");
+			buffer.append('>').append( itemCssSelector );
+			fullStyleName = buffer.toString();
+			style = (Style) stylesByName.get( fullStyleName );
+			if (style != null) {
+				return style;
+			}
+			style = (Style) stylesByName.get( screenCssSelector + " " + itemCssSelector );
+		} else if (item.parent.parent == null) {
+			// this item is propably in a form or list,
+			// typical hierarchy is for example "form>containter>p"                                                 
+			Item parent = item.parent;
+			String parentCssSelector = parent.cssSelector;
+			buffer.append('>').append( parentCssSelector )
+				  .append('>').append( itemCssSelector );
+			fullStyleName = buffer.toString();
+			//#debug
+			System.out.println("trying " + fullStyleName);
+			style = (Style) stylesByName.get( fullStyleName );
+			if (style != null) {
+				return style;
+			}
+			// 1. try: "screen item":
+			String styleName = screenCssSelector + " " + itemCssSelector;
+			//#debug
+			System.out.println("trying " + styleName);
+			style = (Style) stylesByName.get( styleName );
+			if (style == null) {
+				// 2. try: "screen*item":
+				styleName = screenCssSelector + "*" + itemCssSelector;
+				//#debug
+				System.out.println("trying " + styleName);
+				style = (Style) stylesByName.get( styleName );
+				if (style == null) {
+					// 3. try: "parent>item"
+					styleName = parentCssSelector + ">" + itemCssSelector;
+					//#debug
+					System.out.println("trying " + styleName);
+					style = (Style) stylesByName.get( styleName );
+					if (style == null) {
+						// 4. try: "parent item"
+						styleName = parentCssSelector + " " + itemCssSelector;
+						//#debug
+						System.out.println("trying " + styleName);
+						style = (Style) stylesByName.get( styleName );
+					}
+				}
+			}
+			//#debug
+			System.out.println("found style: " + (style != null));
+		} else {
+			System.out.println("so far unable to set style: complex item setup");
+			// this is a tiny bit more complicated....
+			fullStyleName = null;
+		}
+		if (style == null) {
+			// try just the item:
+			style = (Style) stylesByName.get( itemCssSelector );
+			if (style == null) {
+				style = defaultStyle;
+			}
+		}
+		stylesByName.put( fullStyleName, style );
+		return style;
+	}
+	//#endif
+
+	//#ifdef polish.useDynamicStyles
+	/**
+	 * Retrieves a dynamic style for the given screen.
+	 * 
+	 * @param screen the screen for which a style should be retrieved
+	 * @return
+	 */
+	public static Style getStyle(Screen screen) {
+		return (Style) stylesByName.get( screen.cssSelector );
+	}		
+	//#endif
 }

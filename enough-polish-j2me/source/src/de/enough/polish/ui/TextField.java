@@ -1,3 +1,9 @@
+//#condition polish.usePolishGui
+/*
+ * This source code is published under the GNU General Public Licence and
+ * the enough-software-licence for commercial use.
+ * Please refer to accompanying LICENSE.txt or visit www.enough.de for details.
+ */
 package de.enough.polish.ui;
 
 import javax.microedition.lcdui.Graphics;
@@ -54,14 +60,9 @@ import javax.microedition.lcdui.Graphics;
  * constraint might display as
  * follows:</p>
  * 
- * <TABLE BORDER="2">
- * <TR>
- * <TD ROWSPAN="1" COLSPAN="1">
  * <pre><code>
- * (408) 555-1212    </code></pre>
- * </TD>
- * </TR>
- * </TABLE>
+ * (408) 555-1212    
+ * </code></pre>
  * 
  * <p>but the actual contents of the object visible to the application
  * through the APIs would be the string
@@ -279,7 +280,7 @@ import javax.microedition.lcdui.Graphics;
  * has requested is actually a valid subset.
  * <HR>
  * 
- * 
+ * @author Robert Virkus, robert@enough.de
  * @since MIDP 1.0
  */
 public class TextField extends Item
@@ -871,9 +872,27 @@ public class TextField extends Item
 	/* (non-Javadoc)
 	 * @see de.enough.polish.ui.Item#paint(int, int, javax.microedition.lcdui.Graphics)
 	 */
-	public void paint(int x, int y, Graphics g) {
+	public void paintContent(int x, int y, int leftBorder, int rightBorder, Graphics g) {
 		// TODO Auto-generated method stub
 		
 	}
+
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#initItem()
+	 */
+	protected void initContent(int firstLineWidth, int lineWidth) {
+		// TODO enough implement initItem
+		
+	}
+
+	//#ifdef polish.useDynamicStyles
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#getCssSelector()
+	 */
+	protected String createCssSelector() {
+		// TODO enough implement getCssSelector
+		return null;
+	}
+	//#endif
 
 }

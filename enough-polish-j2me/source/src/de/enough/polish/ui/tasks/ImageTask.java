@@ -1,3 +1,4 @@
+//#condition polish.usePolishGui
 /*
  * Created on 05-Jan-2004 at 22:27:59.
  * This source code is published under the GNU General Public Licence and
@@ -7,6 +8,11 @@
 package de.enough.polish.ui.tasks;
 
 import de.enough.polish.ui.ImageConsumer;
+//#ifdef polish.usePolishGui
+import de.enough.polish.ui.StyleSheet;
+import de.enough.polish.ui.Screen;
+//#endif
+import de.enough.polish.util.Debug;
 
 import javax.microedition.lcdui.Image;
 
@@ -56,12 +62,15 @@ public class ImageTask extends TimerTask {
 				this.imageCache.put( this.name, image );
 			}
 			this.imageConsumer.setImage( this.name, image );
-		} catch (IOException e) {
-			// ignore normally
-			//#ifdef debug
-			System.err.println( "ImageTask: unable to load image [" + this.name + "].");
-			e.printStackTrace();
+			//#ifdef polish.usePolishGui
+			Screen currentScreen = StyleSheet.currentScreen;
+			if (currentScreen != null) {
+				currentScreen.repaint();
+			}
 			//#endif
+		} catch (IOException e) {
+			//#debug error
+			Debug.debug( "ImageTask: unable to load image [" + this.name + "].", e);
 		}
 
 	}

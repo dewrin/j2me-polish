@@ -1,3 +1,4 @@
+//#condition polish.usePolishGui
 /*
  * Created on 06-Jan-2004 at 22:36:37.
  * This source code is published under the GNU General Public Licence and
@@ -44,7 +45,7 @@ public class SimpleBorder extends Border {
 		if (this.borderWidth > 1) {
 			int border = this.borderWidth - 1;
 			while ( border > 0) {
-				g.drawRect( x+border, y+border, width - border, height - border );
+				g.drawRect( x+border, y+border, width - 2*border, height - 2*border );
 				border--;
 			}
 		}

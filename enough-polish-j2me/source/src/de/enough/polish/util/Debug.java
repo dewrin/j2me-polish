@@ -40,10 +40,14 @@ public final class Debug {
 	 * Prints a message.
 	 * 
 	 * @param message the message.
+	 * @param exception the exception
 	 */
-	public static final void debug( String message ) {
+	public static final void debug( String message, Throwable exception ) {
 		//#ifndef polish.debug.visual
 		System.out.println( message );
+		if (exception != null) {
+			exception.printStackTrace();
+		}
 		//#else
 		// add message to list:
 		MESSAGES.add( message );
@@ -51,6 +55,15 @@ public final class Debug {
 			MESSAGES.remove( 0 );
 		}
 		//#endif
+	}
+	
+	/**
+	 * Prints a message.
+	 * 
+	 * @param message the message.
+	 */
+	public static final void debug( String message ) {
+		debug( message, null );
 	}
 	
 	//#ifdef polish.debug.visual

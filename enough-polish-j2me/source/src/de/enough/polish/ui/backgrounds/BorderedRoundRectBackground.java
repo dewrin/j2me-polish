@@ -1,3 +1,4 @@
+//#condition polish.usePolishGui
 /*
  * Created on 06-Jan-2004 at 22:29:46.
  * This source code is published under the GNU General Public Licence and
@@ -33,18 +34,6 @@ public class BorderedRoundRectBackground extends Background {
 	 * Creates a new round rectangle background with a border.
 	 * 
 	 * @param color the color of the background
-	 * @param arc the diameter of the arc at the four corners
-	 * @param borderColor the color of the border
-	 * @param borderWidth the width of the border
-	 */
-	public BorderedRoundRectBackground( int color, int arc,  int borderColor, int borderWidth ) {
-		this( color, arc, arc, borderColor, borderWidth );
-	}
-
-	/**
-	 * Creates a new round rectangle background with a border.
-	 * 
-	 * @param color the color of the background
 	 * @param arcWidth the horizontal diameter of the arc at the four corners
 	 * @param arcHeight the vertical diameter of the arc at the four corners
 	 * @param borderColor the color of the border
@@ -63,13 +52,13 @@ public class BorderedRoundRectBackground extends Background {
 	 */
 	public void paint(int x, int y, int width, int height, Graphics g) {
 		g.setColor( this.color );
-		g.fillRoundRect( x, y, width, height, this.arcWidth, this.arcHeight );
+		g.fillRoundRect( x, y, width + 1, height + 1, this.arcWidth, this.arcHeight );
 		g.setColor( this.borderColor );
-		g.drawRoundRect( x, y, width -1, height -1, this.arcWidth, this.arcHeight );
+		g.drawRoundRect( x, y, width, height, this.arcWidth, this.arcHeight );
 		if (this.borderWidth > 1) {
 			int border = this.borderWidth - 1;
 			while ( border > 0) {
-				g.drawRoundRect( x+border, y+border, width - border -1, height - border -1, this.arcWidth, this.arcHeight );
+				g.drawRoundRect( x+border, y+border, width - 2*border, height - 2*border, this.arcWidth, this.arcHeight );
 				border--;
 			}
 		}

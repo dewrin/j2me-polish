@@ -1,3 +1,4 @@
+//#condition polish.usePolishGui
 /*
  * Created on 04-Jan-2004 at 18:48:09.
  * This source code is published under the GNU General Public Licence and
@@ -31,6 +32,10 @@ public abstract class Background {
 	 */
 	public Background() {
 		this.borderWidth = 0;
+	}
+	
+	public boolean animate() {
+		return false;
 	}
 	
 	/**
