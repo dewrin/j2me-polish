@@ -1,0 +1,94 @@
+<%define inDocumentationSection %>
+<%define inDocumentationSection.build %>
+<%set title = J2ME Polish: Documentation %>
+<%set basedir = ../ %>
+<%include start.txt %>
+	
+	<div id="content">
+	<h1 id="top">The Info section</h1>
+	<p>
+	In the info-section general information about the project is defined:
+	<pre>
+  &lt;j2mepolish&gt;
+      &lt;!-- general settings --&gt;
+      &lt;info
+         license=&quot;GPL&quot;
+         name=&quot;SimpleMenu&quot;
+         version=&quot;1.3.4&quot;
+         description=&quot;A test project&quot;
+         vendorName=&quot;enough software&quot;
+         infoUrl=&quot;http://www.enough.de/j2mepolish&quot;
+         icon=&quot;dot.png&quot;
+         jarName=&quot;${polish.vendor}-${polish.name}-example.jar&quot; 
+         jarUrl=&quot;${polish.jarName}&quot;
+         copyright=&quot;Copyright 2004 enough software.&quot;
+         deleteConfirm=&quot;Do you really want to kill me?&quot; 
+      /&gt;
+      [...]
+	</pre>
+	</p>
+	<h2 id="attributes">Supported Attributes</h2>
+	<p>Following attributes are supported by the info section:
+	</p>
+	<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>info-Attribute&nbsp;&nbsp;</th><th>Required&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>license</td>
+ 	 <td>Yes</td>
+	 <td>The license for this project. Either <code>&quot;GPL&quot;</code> when the source code of the application is published under the GNU General Public License, or the commercial license key, which can be obtained at www.j2mepolish.org</td>
+	</tr>
+	<tr><td>name</td>
+ 	 <td>Yes</td>
+	 <td>The name of the project</td>
+	</tr>
+	<tr><td>version</td>
+ 	 <td>Yes</td>
+	 <td>The version of the project in the format [major].[minor].[build]. Example: <code>version="2.1.10".</code></td>
+	</tr>
+	<tr><td>description</td>
+ 	 <td>Yes</td>
+	 <td>The description of the project. A brief explanation about what this application does should be given here.</td>
+	</tr>
+	<tr><td>vendorName</td>
+ 	 <td>Yes</td>
+	 <td>The name of the vendor of this application. </td>
+	</tr>
+	<tr><td>jarName</td>
+ 	 <td>Yes</td>
+	 <td>The name of the jar-files which will be created. You can use following variables:
+	 <br/><code>${polish.vendor}</code>: The vendor of the device, e.g. Samsung or Motorola
+	 <br/><code>${polish.name}</code>: The name of the device
+	 <br/><code>${polish.identifier}</code>: Vendor and device name, e.g.  &quot;Nokia/6600&quot;
+	 <br/><code>${polish.version}</code>: The version of the project as defined above.
+	 <br/>Example: <code>jarName=&quot;Game-${polish.vendor}-${polish.name}.jar&quot;</code> results into &quot;Game-Nokia-6600.jar&quot; for an application which has been optimized for the Nokia/6600.
+	</td>
+	</tr>
+	<tr><td>jarUrl</td>
+ 	 <td>Yes</td>
+	 <td>The URL from which the jar file can be downloaded. This is either the HTTP address, or just the name of the jar-file, when it is loaded locally. Apart from the variables available for the jarName-attribute, you can use the name of the jar-file as defined above:
+ 	  <br/>
+	  <code>jarUrl=&quot;http://www.enough.de/midlets/Game/
+	  ${polish.vendor}/${polish.name}/${polish.jarName}&quot;</code>
+	 </td>
+	</tr>
+	<tr><td>copyright</td>
+ 	 <td>No</td>
+	 <td>Copyright notice.</td>
+	</tr>
+	<tr><td>deleteConfirm</td>
+ 	 <td>No</td>
+	 <td>The text which is presented to the user when he tries to delete the application.</td>
+	</tr>
+	<tr><td>installNotify</td>
+ 	 <td>No</td>
+	 <td>A HTTP-URL, which should be called after the successful installation of the application.. This can be useful for tracking how many applications are installed, for example. The user can prevent the install-notify, though. One can use the same variables as for the jarUrl-attribute.</td>
+	</tr>
+	<tr><td>deleteNotify</td>
+ 	 <td>No</td>
+	 <td>A HTTP-URL, which should be called after the application has been deleted from the device. See the explanation of installNotify.</td>
+	</tr>
+	<tr><td>dataSize</td>
+ 	 <td>No</td>
+	 <td>The minimum space which is needed on the device, e.g. <br/><code>dataSize=&quot;120kb&quot;</code>.</td>
+	</tr>
+	</table>
+<%include end.txt %>

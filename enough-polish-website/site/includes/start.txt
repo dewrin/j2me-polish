@@ -1,0 +1,143 @@
+<?xml  version="1.0"  encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+	<meta name="description" content="J2ME Polish is an advanced build tool and GUI for J2ME applications." />
+	<meta name="author" content="Robert Virkus" />
+	<meta name="keywords" content="midlet, ant, tool, enough, robert, virkus, software, j2me, java, programming, programmierer, freiberufler, Germany, Deutschland, Bremen, Europe" />
+	<%ifdef title:defined %>
+		<title><%= title %></title>
+	<%else %>
+		<title>J2ME Polish</title>
+	<%endif %>
+	<noscript>
+		<link href="<%= basedir %>enough.css" rel="stylesheet" type="text/css" />
+	</noscript>
+	<script type="text/javascript">
+		isMSIE = false;
+		if (navigator.appName == "Microsoft Internet Explorer") {
+			document.write('<link href="<%= basedir %>enough-ie.css" rel="stylesheet" type="text/css" />');
+			isMSIE = true;
+		} else {
+			document.write('<link href="<%= basedir %>enough.css" rel="stylesheet" type="text/css" />');
+		}
+	</script>
+</head>
+<body>
+	<!-- header -->
+	<div id="header"> 
+		<img src="<%= basedir %>images/header.png" alt="J2ME Polish" width="600" height="40"/>
+		<a class="imageLink" href="http://www.enough.de">
+			<img class="headerImage" src="<%= basedir %>images/logo-small.png" alt="enough software" width="69" height="40" /> 
+		</a>
+	</div> 
+	<!-- end of header -->
+	<!-- navigation area -->
+	<div id="navigation">
+		<h1>Contents</h1>
+		<%ifdef inOverviewSection %>
+			<div id="currentLink"><a href="<%= basedir %>index.html">Overview</a></div>
+		<%else %>
+			<a href="<%= basedir %>index.html">Overview</a><br />
+		<%endif %>
+		<%ifdef inNewsSection %>
+			<div id="currentLink"><a href="<%= basedir %>news.html">News</a></div>
+		<%else %>
+			<a href="<%= basedir %>news.html">News</a><br />
+		<%endif %>
+		
+		<%ifndef excludeDownload %>
+			<%ifdef inDownloadSection %>
+				<div id="currentLink"><a href="<%= basedir %>download.html">Download</a></div>
+			<%else %>
+				<a href="<%= basedir %>download.html">Download</a><br/>
+			<%endif %>
+					
+		<%endif %>
+		
+		<%ifdef inDocumentationSection %>
+			<div id="currentLink"><a href="<%= basedir %>documentation.html">Documentation</a></div>
+			<%ifdef inDocumentationSection.install %>
+				<div id="currentSecondLevelLink"><a href="<%= basedir %>docs/install.html">Installation</a></div>
+			<%else %>
+				<div class="secondLevelLink"><a href="<%= basedir %>docs/install.html">Installation</a></div>
+			<%endif %>
+			<%ifdef inDocumentationSection.optimization %>
+				<div id="currentSecondLevelLink"><a href="<%= basedir %>docs/optimization.html">Optimization</a></div>
+			<%else %>
+				<div class="secondLevelLink"><a href="<%= basedir %>docs/optimization.html">Optimization</a></div>
+			<%endif %>
+			<%ifdef inDocumentationSection.build %>
+				<div id="currentSecondLevelLink"><a href="<%= basedir %>docs/build.html">Build</a></div>
+				<p class="thirdLevel">
+				<a href="<%= basedir %>docs/build-taskdef.html">Task Definition</a><br/>
+				<a href="<%= basedir %>docs/build-info.html">Info Section</a><br/>
+				<a href="<%= basedir %>docs/build-deviceRequirements.html">Device Requirements Section</a><br/>
+				<a href="<%= basedir %>docs/build-build.html">Build Section</a><br/>
+				<a href="<%= basedir %>docs/build-example.html">Example</a>
+				</p>
+			<%else %>
+				<div class="secondLevelLink"><a href="<%= basedir %>docs/build.html">Build</a></div>
+			<%endif %>
+			<%ifdef inDocumentationSection.css %>
+				<div id="currentSecondLevelLink"><a href="<%= basedir %>docs/css.html">CSS</a></div>
+				<p class="thirdLevel">
+				<a href="<%= basedir %>docs/css-groups.html">Designing for Specific Devices or Device-Groups</a><br/>
+				<a href="<%= basedir %>docs/css-styles.html">Dynamic, Static and Predefined Styles</a><br/>
+				<a href="<%= basedir %>docs/css-extending.html">Extending Styles</a><br/>
+				<a href="<%= basedir %>docs/css-syntax.html">CSS Syntax</a><br/>
+				<a href="<%= basedir %>docs/css-common.html">Common Design Attributes</a><br/>
+				<a href="<%= basedir %>docs/css-specific.html">Specific Design Attributes</a>
+				</p>
+			<%else %>
+				<div class="secondLevelLink"><a href="<%= basedir %>docs/css.html">CSS</a></div>
+			<%endif %>
+			<%ifdef inDocumentationSection.preprocessing %>
+				<div id="currentSecondLevelLink"><a href="<%= basedir %>docs/preprocessing.html">Preprocessing</a></div>
+			<%else %>
+				<div class="secondLevelLink"><a href="<%= basedir %>docs/preprocessing.html">Preprocessing</a></div>
+			<%endif %>
+			<%ifdef inDocumentationSection.utilities %>
+				<div id="currentSecondLevelLink"><a href="<%= basedir %>docs/utilities.html">Utilities</a></div>
+			<%else %>
+				<div class="secondLevelLink"><a href="<%= basedir %>docs/utilities.html">Utilities</a></div>
+			<%endif %>
+			
+		<%else %>
+			<a href="<%= basedir %>documentation.html">Documentation</a><br/>
+		<%endif %>#
+		<%ifdef inFaqSection %>
+			<div id="currentLink"><a href="<%= basedir %>faq.html">FAQ</a></div>
+		<%else %>
+			<a href="<%= basedir %>faq.html">FAQ</a><br/>
+		<%endif %>
+		<%ifdef inScreenshotsSection %>
+			<div id="currentLink"><a href="<%= basedir %>screenshots.html">Screenshots</a></div>
+		<%else %>
+			<a href="<%= basedir %>screenshots.html">Screenshots</a><br/>
+		<%endif %>
+		<%ifdef inLicensingSection %>
+			<div id="currentLink"><a href="<%= basedir %>licenses.html">Licensing</a></div>
+		<%else %>
+			<a href="<%= basedir %>licenses.html">Licensing</a><br/>
+		<%endif %>
+		<%ifdef inRoadmapSection %>
+			<div id="currentLink"><a href="<%= basedir %>roadmap.html">Roadmap</a></div>
+		<%else %>
+			<a href="<%= basedir %>roadmap.html">Roadmap</a><br/>
+		<%endif %>
+		<%ifdef inContactSection %>
+			<div id="currentLink"><a href="<%= basedir %>contact.html">Contact</a></div>
+		<%else %>
+			<a href="<%= basedir %>contact.html">Contact</a><br/>
+		<%endif %>
+		<%ifdef inIndexSection %>
+			<div id="currentLink"><a href="<%= basedir %>atoz.html">Index</a></div>
+		<%else %>
+			<a href="<%= basedir %>atoz.html">Index</a><br/>
+		<%endif %>
+		
+		<a class="imageLink" href="<%= basedir %>index.html">
+		<img class="navigationImage" alt="j2mepolish" src="<%= basedir %>images/j2mepolish-logo.png" width="180" height="217"/>
+		</a>
+	</div> <!-- end of navigation -->

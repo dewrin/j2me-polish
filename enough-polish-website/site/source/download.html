@@ -1,0 +1,40 @@
+<%define inDownloadSection %>
+<%set title = J2ME Polish: Download %>
+<%include start.txt %>
+
+	<div id="content">
+	<h1 id="top">Download</h1>
+	<h2 id="binary">Full Installer</h2>
+	<p>
+	Download <a href="downloads/<%= LatestDownload %>">J2ME Polish <%= PolishVersion %></a> now!
+	The installer includes the binary distribution, the documentation and the source-code
+	of J2ME Polish. Any required settings will be done by the installer.
+	<br />
+	This current release is almost complete, the only real limitation is the lack
+	of support for the Ticker item.
+	</p>
+	<h2 id="documentation">Documentation</h2>
+	<p>
+		You can download the (not yet) 
+		<a href="downloads/Complete_Guide_to_J2ME_Polish.pdf">&quot;Complete Guide to J2ME Polish&quot;</a>.
+		This guide is also available in <a href="downloads/Complete_Guide_to_J2ME_Polish_letter.pdf">letter format</a>.
+		<br />
+		This documentation is included in the installer as well.
+		<br />
+		You now can also download a short German article describing J2ME Polish.
+		<a href="downloads/Artikel.pdf">Deutschen Artikel runterladen</a>.
+	</p>
+	<h2 id="source">Source Code</h2>
+	<p>
+		You can download the latest source code from the 
+		<a href="http://cvs.berlios.de/cgi-bin/viewcvs.cgi/polish/">CVS repository</a>.
+	</p>
+	<h2>Third Party Tools</h2>
+	<p>
+	J2ME Polish contains the 
+	<a href="http://proguard.sourceforge.net" target="_blank">ProGuard</a> obfuscator,
+	which is licensed under the GNU General Public License.
+	Thanks to Eric Lafortune for his permission to include ProGuard into the 
+	J2ME&nbsp;Polish distribution.
+	</p>
+<%include end.txt %>

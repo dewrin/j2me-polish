@@ -1,0 +1,68 @@
+
+<%ifdef news.showAll %>
+	<%index %>
+<%endif %>
+
+<h2 id="092release">J2ME Polish 0.9.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2004-06-09</h2>
+<p>
+<a href="downloads/j2mepolish-0.9.2.html">Version 0.9.2</a> now supports 
+ItemCommandListeners and Item-commands on MIDP/1.0 and MIDP/2.0 devices.
+<br />
+The new installer makes the installation process easier and includes the
+complete documentation as well as the source code of J2ME Polish.
+</p>
+
+<%ifdef news.showAll %>
+<h2 id="website">Website Relaunch&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2004-06-09</h2>
+<p>
+A major update for the www.j2mepolish.org website brings a better 
+structured site with indeces, keywords and new sections.
+</p>
+
+<h2 id="germanarticle">German Article&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2004-06-08</h2>
+<p>
+A German introduction to J2ME Polish is now available:
+<a href="downloads/Artikel.pdf">Deutschen Artikel runterladen</a>.
+</p>
+
+<h2 id="091release">J2ME Polish 0.9.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2004-05-28</h2>
+<p>
+J2ME Polish 0.9.1 has been released today. This release contains
+an extended device database with all Nokia Series 60 and MIDP/2.0 phones.
+Get it in the <a href="download/j2mepolish-0.9.1.html">download</a> section.
+</p>
+
+<h2 id="090release">J2ME Polish 0.9.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2004-05-24</h2>
+<p>
+<a href="downloads/j2mepolish-0.9.0.html">Version 0.9.0</a> now contains the ApiManager (uses apis.xml for all device-APIs), 
+ItemCommandListener, improved fullscreen-menu, improved Gauge, ChoiceGroup and TextField.
+</p>
+<h2 id="081release">J2ME Polish 0.8.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2004-05-19</h2>
+<p>
+<a href="downloads/j2mepolish-0.8.1.html">Version 0.8.1</a> is a bugfixing release,
+with bugfixes for weird behaviour of Nokia/6600 and the preprocessing tool.
+</p>
+<h2 id="080release">J2ME Polish 0.8.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2004-05-17</h2>
+<p>
+<a href="downloads/j2mepolish-0.8.0.html">Version 0.8.0</a> supports the MIDP items
+TextField, TextBox and DateField.
+</p>
+<h2 id="072release">J2ME Polish 0.7.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2004-05-13</h2>
+<p>
+The sample application of <a href="downloads/j2mepolish-0.7.2.html">version 0.7.2</a>
+now runs on the actual Nokia devices as well.
+</p>
+<h2 id="071release">J2ME Polish 0.7.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2004-05-12</h2>
+<p>
+<a href="downloads/j2mepolish-0.7.1.html"> Version 0.7.1</a> contains libraries
+for MIDP/1.0 and MIDP/2.0 devices.
+</p>
+<h2 id="070release">J2ME Polish 0.7.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2004-05-10</h2>
+<p>
+<a href="downloads/j2mepolish-0.7.0.html">J2ME Polish 0.7.0</a> is the initial
+public release. It contains a complete build solution with preprocessing, compiling,
+preverifying and packaging of J2ME applications. The additional GUI has still
+some limitations.
+</p>
+
+<%endif %>

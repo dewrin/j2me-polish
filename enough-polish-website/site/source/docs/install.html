@@ -1,0 +1,124 @@
+<%define inDocumentationSection %>
+<%define inDocumentationSection.install %>
+<%set title = J2ME Polish: Documentation %>
+<%set basedir = ../ %>
+<%include start.txt %>
+
+	<div id="content">
+	<h1 id="top">Installation</h1>
+	<p>For installing J2ME Polish <a href="../download.html">download</a> the
+	latest release and start the installation either by double-clicking the file or
+	by calling &quot;java -jar j2mepolish-<%= PolishVersion %>.jar&quot; from the command-line.
+	It is recommended to install J2ME Polish into a project-folder of your workspace,
+	e.g. &quot;$HOME/workspace/j2mepolish&quot;.
+	<br/>
+	The installer of J2ME Polish contains a sample MIDlet application with
+	two different designs. This application is optimized for Nokia Series
+	60 devices, so it is recommended to have such an emulator installed. The
+	Nokia emulator can be retrieved from <a href="http://forum.nokia.com">http://forum.nokia.com</a>.
+	<br/>
+	To build the sample application, run the included build.xml from your
+	favorite Java IDE or call &quot;ant&quot; from the command-line. Call
+	&quot;ant notest j2mepolish&quot; to build and obfuscate the sample
+	application.
+	</p>
+<h2 id="requirements">Requirements for Installing J2ME Polish</h2>
+<p>
+To use J2ME Polish, following components need to be installed:
+</p>
+<ul>
+	<li>Java 2 Standard Edition SDK 1.4  or higher, 
+	<a href="http://java.sun.com/j2se/">http://java.sun.com/j2se/</a>
+	</li>
+	<li>Java Wireless Toolkit, 
+	<a href="http://java.sun.com/products/j2mewtoolkit/index.html">http://java.sun.com/products/j2mewtoolkit/index.html</a>
+	</li>
+	<li>Favorite IDE, for example Eclipse 3.0, 
+	<a href="http://www.eclipse.org">http://www.eclipse.org</a>
+	</li>
+	<li>Ant 1.5 or higher, if not already integrated in the IDE, 
+	<a href="http://ant.apache.org">http://ant.apache.org</a>
+	</li>
+	<li>Optionally device emulators, e.g. the Nokia J2ME emulator, 
+	<a href="http://forum.nokia.com">http://forum.nokia.com</a>
+	</li>
+</ul>
+<h2 id="installation">Updating J2ME Polish</h2>
+<p>
+When you want to update an existing installation, you do not need
+to re-install the whole package. For saving bandwidth you can download
+just the update-package. This package just containts the two JAR-files
+enough-j2mepolish-build.jar and enough-j2mepolish-client.jar which need
+to be copied into the &quot;import&quot;-folder of your installation.
+</p>
+<h2 id="integration">Integrating J2ME Polish into Eclipse</h2>
+<p>
+To integrate J2ME Polish into Eclipse it is best to install J2ME Polish 
+(with the included sample application) into a new folder in your workspace 
+called &quot;myproject&quot; (or any other name). 
+Then start Eclipse and create a new project called &quot;myproject&quot;. 
+Eclipse then automatically integrates all source-files and sets the classpath. 
+</p><p>
+Optionally you can change the build-settings by
+modifying the file &quot;build.xml&quot; (which is located in the root of your project).
+<br/>For example you can change the deviceRequirements if you want to. 
+The example is optimized to Nokia Series 60 devices. 
+</p><p>
+You can now create the JAR and JAD files by right-clicking the build.xml file, selecting &quot;Run Ant&quot; and running Ant in the next dialog. 
+You will find the JAR and JAD files then in the &quot;dist&quot; folder of the project.
+If you want to access them from within Eclipse, you might need to refresh your project:
+<br/>Right-click the project and select &quot;Refresh&quot;.
+</p><p>
+After you have installed J2ME Polish, you will find following structure in your project (assuming that your project is called &quot;myproject&quot; and your workspace &quot;workspace&quot;):
+</p>
+<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Folder / File&nbsp;&nbsp;</th><th>Description&nbsp;&nbsp;</th></tr>
+	<tr>
+	 <td>workspace/myproject</td>
+	 <td>The applications project</td>
+	</tr>
+	<tr>
+	 <td>workspace/myproject/build.xml</td>
+	 <td>The controller of the build process</td>
+	</tr>
+	<tr>
+	 <td>workspace/myproject/devices.xml</td>
+	 <td>Definition of J2ME devices (only installed when you selected to install the external device database)</td>
+	</tr>
+	<tr>
+	 <td>workspace/myproject/vendors.xml</td>
+	 <td>Definition of J2ME device vendors (only installed when you selected to install the external device database)</td>
+	</tr>
+	<tr>
+	 <td>workspace/myproject/groups.xml</td>
+	 <td>Definition of device groups (only installed when you selected to install the external device database)</td>
+	</tr>
+	<tr>
+	 <td>workspace/myproject/apis.xml</td>
+	 <td>Definition of some common J2ME libraries (only installed when you selected to install the external device database)</td>
+	</tr>
+	<tr>
+	 <td>workspace/myproject/resources</td>
+	 <td>Folder for all resources and design descriptions of the project</td>
+	</tr>
+	<tr>
+	 <td>workspace/myproject/resources/polish.css</td>
+	 <td>Basic design description</td>
+	</tr>
+	<tr>
+	 <td>workspace/myproject/import</td>
+	 <td>Needed APIs</td>
+	</tr>
+	<tr>
+	 <td>workspace/myproject/build</td>
+	 <td>Temporary build folder, will be created automatically. Should not be shared in CVS and similar systems.</td>
+	</tr>
+	<tr>
+	 <td>workspace/myproject/dist</td>
+	 <td>Folder for the ready-to-deploy applications. It will be created automatically. Should not be shared in CVS and similar systems.</td>
+	</tr>
+</table>
+<p>
+Tip: You don't need the files &quot;devices.xml&quot;, &quot;vendors.xml&quot;, &quot;groups.xml&quot; and &quot;apis.xml&quot;, since they are also contained in the jar-file &quot;enough-j2mepolish-build.jar&quot;. If you don't want to change them, you can delete them.
+</p>
+<%include end.txt %>

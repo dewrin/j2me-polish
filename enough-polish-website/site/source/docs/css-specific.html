@@ -1,0 +1,763 @@
+<%define inDocumentationSection %>
+<%define inDocumentationSection.css %>
+<%set title = J2ME Polish: Documentation %>
+<%set basedir = ../ %>
+<%include start.txt %>
+
+	<div id="content">
+	<h1 id="top">Specific Design Attributes</h1>
+	<%index %>
+	<p>Many GUI items support specific CSS attributes. </p>
+<h2 id="backgrounds">Backgrounds</h2>
+<p>
+There are many different background-types which make use of specific CSS attributes. When another background than the default simple background or the image background should be used, the background-type attribute needs to be declared. 
+When no background at all should be used, the <code>background: none;</code> declaration can be used.
+
+<h3 id="simplebackground">Simple Background</h3>
+<p>
+The simple background just fills the background with one color. When no background type is specified, the simple background is used by default, unless the &quot;background-image&quot; attribute is set. In the later case the image background will be used.
+The simple background supports the color attribute:
+</p>
+	<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Attribute&nbsp;&nbsp;</th><th>Required&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>color</td>
+	 <td>Yes</td>
+	 <td>The color of the background, either the name of the color or a direct definition.</td>
+	</tr>
+	</table>
+<p>
+The following styles use a yellow background:
+<pre>
+.myStyle {
+	background-color: yellow;
+}
+.myOtherStyle {
+	background-color: rgb( 255, 255, 0 );
+}
+</pre></p>
+
+<h3 id="roundrectbackground">Round-Rect Background</h3>
+<p>
+The round-rect background paints a rectangular background with round edges. It supports following attributes:
+</p>
+	<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Attribute&nbsp;&nbsp;</th><th>Required&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>type</td>
+	 <td>Yes</td>
+	 <td>The type needs to be &quot;round-rect&quot; or &quot;roundrect&quot;</td>
+	</tr>
+	<tr><td>color</td>
+	 <td>No</td>
+	 <td>The color of the background, either the name of the color or a direct definition. The default color is white.</td>
+	</tr>
+	<tr><td>arc</td>
+	 <td>No</td>
+	 <td>The diameter of the arc at the four corners. Defaults to 10&nbsp;pixels, when none is specified.</td>
+	</tr>
+	<tr><td>arc-width</td>
+	 <td>No</td>
+	 <td>The horizontal diameter of the arc at the four corners. Defaults to the arc-value, when none is specified.</td>
+	</tr>
+	<tr><td>arc-height</td>
+	 <td>No</td>
+	 <td>The vertical diameter of the arc at the four corners. Defaults to the arc-value, when none is specified.</td>
+	</tr>
+	</table>
+<p>
+This example creates a purple background with an arc diameter of 6 pixels:
+<pre>
+.myStyle {
+	background {
+		type: round-rect;
+		color: purple;
+		arc: 6;
+	}
+}
+</pre></p><p>
+The following example uses a different horizontal arc diameter:
+<pre>
+.myStyle {
+	background-type: round-rect;
+	background-color: purple;
+	background-arc: 6;
+	background-arc-width: 10;
+}
+</pre></p>
+<h3 id="imagebackground">Image Background</h3>
+<p>
+The image background uses an image for painting the background. This background type is used by default when no type is set and the &quot;background-image&quot; attribute is set. The background supports  following attributes:
+</p>
+	<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Attribute&nbsp;&nbsp;</th><th>Required&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>type</td>
+	 <td>No</td>
+	 <td>When used needs to be &quot;image&quot;.</td>
+	</tr>
+	<tr><td>color</td>
+	 <td>No</td>
+	 <td>The color of the background, either the name of the color, a direct definition or &quot;transparent&quot;. The default color is white. This color can only be seen when the image is not big enough.</td>
+	</tr>
+	<tr><td>image</td>
+	 <td>Yes</td>
+	 <td>The URL of the image, e.g. &quot;url( background.png )&quot;</td>
+	</tr>
+	<tr><td>repeat</td>
+	 <td>No</td>
+	 <td>Either &quot;repeat&quot;, &quot;no-repeat&quot;, &quot;repeat-x&quot; or &quot;repeat-y&quot;. Determines whether the background should be repeated, repeated horizontally or repeated vertically. Default is no repeat.</td>
+	</tr>
+	</table>
+<p>
+A background image, which should not be repeated will be centered automatically. The following style uses the image &quot;bg.png&quot; as a background:
+<pre>
+.myStyle {
+	background-image: url( bg.png );
+}
+</pre></p><p>
+This style uses the image &quot;heart.png&quot; as a repeated background:
+<pre>
+.myStyle {
+	background-image: url( heart.png );
+	background-repeat: repeat;
+}
+</pre></p>
+<h3 id="pulsatingbackground">Pulsating Background</h3>
+<p>
+The pulsating background animates the color of the background. 
+The color is changing from a start-color to an end-color. It supports following attributes:
+</p>
+	<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Attribute&nbsp;&nbsp;</th><th>Required&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>type</td>
+	 <td>Yes</td>
+	 <td>The type needs to be &quot;pulsating&quot;.</td>
+	</tr>
+	<tr><td>start-color</td>
+	 <td>Yes</td>
+	 <td>The color of the background at the beginning of the animation sequence.</td>
+	</tr>
+	<tr><td>end-color</td>
+	 <td>Yes</td>
+	 <td>The color of the background at the end of the animation sequence.</td>
+	</tr>
+	<tr><td>steps</td>
+	 <td>Yes</td>
+	 <td>Defines how many color-shades between the start- and the end-color should be used.</td>
+	</tr>
+	<tr><td>repeat</td>
+	 <td>No</td>
+	 <td>Either &quot;yes&quot;/&quot;true&quot; or &quot;no&quot;/&quot;false&quot;. Determines whether the animation should be repeated. Defaults to &quot;yes&quot;.</td>
+	</tr>
+	<tr><td>back-and-forth</td>
+	 <td>No</td>
+	 <td>Either &quot;yes&quot;/&quot;true&quot; or &quot;no&quot;/&quot;false. Determines whether the animation sequence should be running backwards to the start-color again, after it reaches the end-color. When &quot;no&quot; is selected, the animation will jump from the end-color directly to the start-color (when repeat is enabled). Defaults to &quot;yes&quot;.</td>
+	</tr>
+	</table>
+<p>
+The following style starts with a white background and stops with a yellow background:
+<pre>
+.myStyle {
+	background {
+		type: pulsating;
+		start-color: white;
+		end-color: yellow;
+		steps: 15;
+		repeat: false;
+		back-and-forth: false;
+	}
+}
+</pre></p>
+
+<h2 id="borders">Borders</h2>
+<p>
+There are many different border-types which make use of specific CSS attributes. When another border than the default simple border should be used, the border-type attribute needs to be declared. 
+When no border at all should be used, the <code>border: none;</code> declaration can be used.
+</p>
+<h3 id="simpleborder">Simple Border</h3>
+<p>
+The simple border paints a rectangle border in one color. The type attribute does not need to be set for the simple border, since this is the default border. The only supported attributes are the color and the width of the border:
+</p>
+	<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Attribute&nbsp;&nbsp;</th><th>Required&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>color</td>
+	 <td>Yes</td>
+	 <td>The color of the border, either the name of the color or a direct definition.</td>
+	</tr>
+	<tr><td>width</td>
+	 <td>No</td>
+	 <td>The width of the border in pixels. Defaults to 1.</td>
+	</tr>
+	</table>
+<p>
+The following style uses a black border which is 2 pixels wide:
+<pre>
+.myStyle {
+	border-color: black;
+	border-width: 2;
+}
+</pre></p>
+
+<h3 id="roundrectborder">Round-Rect Border</h3>
+<p>
+The round-rect border paints a rectangular border with round edges. It supports following attributes:
+</p>
+	<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Attribute&nbsp;&nbsp;</th><th>Required&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>type</td>
+	 <td>Yes</td>
+	 <td>The type needs to be &quot;round-rect&quot; or &quot;roundrect&quot;</td>
+	</tr>
+	<tr><td>color</td>
+	 <td>Yes</td>
+	 <td>The color of the border, either the name of the color or a direct definition.</td>
+	</tr>
+	<tr><td>width</td>
+	 <td>No</td>
+	 <td>The width of the border in pixels. Defaults to 1.</td>
+	</tr>
+	<tr><td>arc</td>
+	 <td>No</td>
+	 <td>The diameter of the arc at the four corners. Defaults to 10&nbsp;pixels, when none is specified.</td>
+	</tr>
+	<tr><td>arc-width</td>
+	 <td>No</td>
+	 <td>The horizontal diameter of the arc at the four corners. Defaults to the arc-value, when none is specified.</td>
+	</tr>
+	<tr><td>arc-height</td>
+	 <td>No</td>
+	 <td>The vertical diameter of the arc at the four corners. Defaults to the arc-value, when none is specified.</td>
+	</tr>
+	</table>
+<p>
+This example creates a 2 pixels wide purple border with an arc diameter of 6 pixels:
+<pre>
+.myStyle {
+	border {
+		type: round-rect;
+		color: purple;
+		width: 2;
+		arc: 6;
+	}
+}
+</pre></p><p>
+The following example uses a different horizontal arc diameter:
+<pre>
+.myStyle {
+	border-type: round-rect;
+	border-color: purple;
+	border-width: 2;
+	border-arc: 6;
+	border-arc-width: 10;
+}
+</pre></p>
+
+<h3 id="shadowborder">Shadow Border</h3>
+<p>
+The shadow border paints a shadowy border. Following attributes are supported:
+</p>
+<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Attribute&nbsp;&nbsp;</th><th>Required&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>type</td>
+	 <td>Yes</td>
+	 <td>The type needs to be &quot;shadow&quot;, &quot;bottom-right-shadow&quot; or &quot;right-bottom-shadow&quot;.</td>
+	</tr>
+	<tr><td>color</td>
+	 <td>Yes</td>
+	 <td>The color of the border, either the name of the color or a direct definition.</td>
+	</tr>
+	<tr><td>width</td>
+	 <td>No</td>
+	 <td>The width of the border in pixels. Defaults to 1.</td>
+	</tr>
+	<tr><td>offset</td>
+	 <td>No</td>
+	 <td>The offset between the corner and the start of the shadow. Defaults to 1&nbsp;pixel, when none is specified.</td>
+	</tr>
+</table>
+<p>
+Currently only a &quot;bottom-right-shadow&quot; is supported, so the border is painted below the item and right of the item.
+The following example uses a green shadow border:
+<pre>
+.myStyle {
+	border-type: shadow;
+	border-color: purple;
+	border-width: 2;
+	border-offset: 2;
+}
+</pre></p>
+<h2 id="screens">Screens: List, Form and TextBox</h2>
+<h3>Predefined Styles for Lists, Forms and TextBoxes</h3>
+<p>
+All screens have a title and one or several embedded GUI items. In a Form or List one item is usually focused. Screens can also have a designable menu, when the application uses a full-screen-mode (on Nokia devices). Some of the used styles can also use additional attributes.
+</p>
+<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Style-Name&nbsp;&nbsp;</th><th>Add. Attributes&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>title</td>
+	 <td>-</td>
+	 <td>The title of a screen.</td>
+	</tr>
+	<tr><td>focused</td>
+	 <td>-</td>
+	 <td>The style of the currently focused item in the screen.</td>
+	</tr>
+	<tr><td>menu</td>
+	 <td>&nbsp;</td>
+	 <td>The style of the full-screen menu.</td>
+	</tr>
+	<tr><td></td>
+	 <td>focused-style</td>
+	 <td>The name of the style for the currently focused menu item.</td>
+	</tr>
+	<tr><td></td>
+	 <td>menubar-color</td>
+	 <td>The background color of the menu-bar. Either the name or the definition of a color or &quot;transparent&quot;. Defaults to &quot;white&quot;.</td>
+	</tr>
+	<tr><td></td>
+	 <td>label-color, label-face, label-size, label-style</td>
+	 <td>The font of the menu-commands (like &quot;Select&quot; or &quot;Cancel&quot;). Default color is &quot;black&quot;, default font is the system font in  a bold style and medium size.</td>
+	</tr>
+	<tr><td>menuItem</td>
+	 <td>-</td>
+	 <td>The style for the commands in the menu. When not defined, the menu-style will be used.</td>
+	</tr>
+</table>
+<h3 id="screenattributes">Additional Attributes for Screens</h3>
+<p>
+Each screen itself can have some additional attributes:</p>
+<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Attribute&nbsp;&nbsp;</th><th>Required&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>focused-style</td>
+	 <td>No</td>
+	 <td>The name of the style for the currently focused menu item. Defaults to the predefined &quot;focused&quot; style.</td>
+	</tr>
+	<tr><td>columns</td>
+	 <td>No</td>
+	 <td>The number of columns. This can be used to layout the items in a table. Defaults to 1 column. </td>
+	</tr>
+	<tr><td>columns-width</td>
+	 <td>No</td>
+	 <td>Either &quot;normal&quot;, &quot;equal&quot; or the width for each column in a comma separated list (e.g. &quot;columns-width: 60,60,100;&quot;).
+Defaults to &quot;normal&quot;, meaning that each column uses as much space as the widest item of that column needs.
+The &quot;equal&quot; width leads to columns which have all the same width.
+The explicit list of column-widths results in the usage of those widths.</td>
+	</tr>
+</table>
+<p>
+The following example uses these additional attributes:
+<pre>
+list {
+	background-image: url( bg.png );
+	columns: 2;
+	columns-width: equal;
+	focused-style: .listFocusStyle; /* this style needs to be defined, too */
+}
+</pre>
+</p>
+<h3 id="screenstyles">Dynamic Styles for Screens</h3>
+<p>
+Dynamic styles can be used when no styles are explicitly set in the application code (compare <a href="css-styles.html">CSS styles</a>).
+A list uses the dynamic selector &quot;list&quot; and always contains choice-items. The selector of these items depends on the type of the list. An implicit list contains a &quot;listitem&quot;, a multiple list contains a &quot;checkbox&quot; and an exclusive list contains a &quot;radiobox&quot;.
+<pre>
+list {
+	background-color: pink;
+}
+</pre></p><p>
+defines the background color for screens of the type &quot;List&quot;.
+<pre>
+listitem { /* you could also use &quot;list listitem&quot; */
+	font-style: bold;
+}
+</pre></p><p>
+defines the font style for the items in an implicit list.
+<br/><br/><br/>
+A form uses the dynamic selector &quot;form&quot; and can contain different GUI items.
+<pre>
+form {
+	background-color: pink;
+}
+</pre></p><p>
+defines the background color for screens of the type &quot;Form&quot;.
+<pre>
+form p {
+	font-style: bold;
+}
+</pre></p><p>
+defines the font style for normal text items in a &quot;Form&quot;.
+<br/><br/><br/>
+A TextBox uses the dynamic selector &quot;textbox&quot; and contains a single &quot;textfield&quot; item.
+</p>
+<h3 id="screenexample">Example</h3>
+<p>
+The following example designs the main menu of an application, which is implemented using a List.
+<pre>
+colors {
+	pink:  rgb(248,39,186);
+	darkpink:  rgb(185,26,138);
+}
+
+menu {
+	margin-left: 2;
+	padding: 2;
+	background {
+		type: round-rect;
+		color: white;
+		border-width: 2;
+		border-color: yellow;
+	}
+	focused-style: .menuFocused;
+	menubar-color: transparent;
+	menufont-color: white;
+}
+
+menuItem {
+	margin-top: 2;
+	padding: 2;
+	padding-left: 5;
+	font {
+		color: black;
+		size: medium;
+		style: bold;
+	}
+	layout: left;
+}
+
+.menuFocused extends .menuItem {
+	background-color: black;
+	font-color: white;
+	layout: left | horizontal-expand;
+	after: url(heart.png);
+}
+
+title {
+	padding: 2;
+	margin-top: 0;
+	margin-bottom: 5;
+	margin-left: 0;
+	margin-right: 0;
+	font-face: proportional;
+	font-size: large;
+	font-style: bold;
+	font-color: white;
+	background {
+		color: darkpink;
+	}
+	border: none;
+	layout: horizontal-center | horizontal-expand;
+}
+
+focused {
+	padding: 2;
+	padding-vertical: 3;
+	padding-left: 3;
+	padding-right: 3;
+	padding-top: 10;
+	padding-bottom: 10;
+	background-type: round-rect;
+	background-arc: 8;
+	background-color: pink;
+	border {
+		type: round-rect;
+		arc: 8;
+		color: yellow;
+		width: 2;
+	}
+	font {
+		style: bold;
+		color: black;
+		size: small;
+	}
+	layout: expand | center;
+}
+
+list {
+	padding-left: 5;
+	padding-right: 5;
+	padding-vertical: 10;
+	padding-horizontal: 10;
+	background {
+		color: pink;
+		image: url( heart.png );
+	}
+	columns: 2;
+	columns-width: equal;
+	layout: horizontal-expand | horizontal-center | vertical-center;
+}
+
+listitem {
+	margin: 2; /* for the border of the focused style */
+	padding: 2;
+	padding-vertical: 3;
+	padding-left: 3;
+	padding-right: 3;
+	padding-top: 10;
+	padding-bottom: 10;
+	background: none;
+	font-color: white;
+	font-style: bold;
+	font-size: small;
+	layout: center;
+	icon-image: url( %INDEX%icon.png );
+	icon-image-align: top;
+}
+</pre></p>
+<h2 id="stringitem">The StringItem: Text, Hyperlink or Button</h2>
+<p>
+Texts have no specific attributes, but the padding-vertical attribute has a special meaning:
+</p>
+<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Attribute&nbsp;&nbsp;</th><th>Required&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>padding-vertical</td>
+	 <td>No</td>
+	 <td>The space between the lines when there the text contains line-breaks.</td>
+	</tr>
+</table>
+<p>
+Depending on the appearance mode of the text, either the &quot;p&quot;, the &quot;a&quot; or the &quot;button&quot; selector is used for dynamic styles: 
+</p>
+<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Dynamic Selector&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>p</td>
+	 <td>The &quot;p&quot; selector is used for normal texts.</td>
+	</tr>
+	<tr><td>a</td>
+	 <td>The &quot;a&quot; selector is used for hyperlinks.</td>
+	</tr>
+	<tr><td>button</td>
+	 <td>The &quot;button&quot; selector is used for buttons.</td>
+	</tr>
+</table>
+<h2 id="iconitem">The IconItem</h2>
+<p>
+Icons can only be used directly. Icons support following additional attributes:
+</p>
+<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Attribute&nbsp;&nbsp;</th><th>Required&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>icon-image</td>
+	 <td>No</td>
+	 <td>The URL of the image, e.g. &quot;icon-image: url(icon.png);&quot;. The keyword %INDEX% can be used for adding the position of the icon to the name, e.g. 
+&quot;icon-image: url(icon%INDEX%.png);&quot;. The image used for the first icon will be &quot;icon0.png&quot;, the second icon will use the image &quot;icon1.png&quot; and so on.</td>
+	</tr>
+	<tr><td>icon-image-align</td>
+	 <td>No</td>
+	 <td>The position of the image relative to the text. Either &quot;top&quot;, &quot;bottom&quot;, &quot;left&quot; or &quot;right&quot;. Defaults to &quot;left&quot;, meaning that the image will be drawn left of the text.</td>
+	</tr>
+</table>
+<p>
+This example uses the attributes for designing all icons:
+<pre>
+icon {
+	background: none;
+	font-color: white;
+	font-style: bold;
+	icon-image: url( %INDEX%icon.png );
+	icon-image-align: top;
+}
+</pre></p><p>
+When the icon-item has a &quot;right&quot; image align and the layout is set 
+to &quot;horizontal-expand&quot;, the image will be drawn directly 
+at the right border of the item (with a gap specified by the padding-right
+attribute). Otherwise the image will be drawn right of the text with the 
+specified horizontal padding.
+</p>
+<h2 id="choiceitem">The ChoiceItem</h2>
+<p>
+The ChoiceItem is used in lists and in choice groups. It supports following additional attributes:
+</p>
+<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Attribute&nbsp;&nbsp;</th><th>Required&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>icon-image</td>
+	 <td>No</td>
+	 <td>The URL of the image, e.g. &quot;icon-image: url(icon.png);&quot;. The keyword %INDEX% can be used for adding the position of the icon to the name, e.g. 
+&quot;icon-image: url(icon%INDEX%.png);&quot;. The image used for the first icon will be &quot;icon0.png&quot;, the second icon will use the image &quot;icon1.png&quot; and so on.</td>
+	</tr>
+	<tr><td>icon-image-align</td>
+	 <td>No</td>
+	 <td>The position of the image relative to the text. Either &quot;top&quot;, &quot;bottom&quot;, &quot;left&quot; or &quot;right&quot;. Defaults to &quot;left&quot;, meaning that the image will be drawn left of the text.</td>
+	</tr>
+	<tr><td>choice-color</td>
+	 <td>No</td>
+	 <td>The color in which the check- or radio-box will be painted. Defaults to black.</td>
+	</tr>
+	<tr><td>checkbox-selected
+		<br/>radiobox-selected</td>
+	 <td>No</td>
+	 <td>The URL of the image for a selected item. This will be used only when the type of the list or of the choice group is either exclusive or multiple. Default is a simple image drawn in the defined choice-color.</td>
+	</tr>
+	<tr><td>checkbox-plain
+		<br/>radiobox-plain</td>
+	 <td>No</td>
+	 <td>The URL of the image for a not-selected item. This will be used only when the type of the list or of the choice group is either exclusive or multiple. Default is a simple image drawn in the defined choice-color. When &quot;none&quot; is given, no image will be drawn for not-selected items. Only the image for selected items will be drawn in that case.</td>
+	</tr>
+</table>
+<p>
+Depending on the type of the corresponding list or choice group, different dynamic selectors are used by a choice item:
+</p>
+<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Type of List or ChoiceGroup&nbsp;&nbsp;</th><th>Selector</th></tr>
+	<tr><td>implicit</td>
+	 <td>listitem</td>
+	</tr>
+	<tr><td>exclusive</td>
+	 <td>radiobox</td>
+	</tr>
+	<tr><td>multiple</td>
+	 <td>checkbox</td>
+	</tr>
+	<tr><td>popup</td>
+	 <td>popup</td>
+	</tr>
+</table>
+<h2 id="choicegroup">The ChoiceGroup</h2>
+<p>
+A choice group contains several choice items. It supports the &quot;focused-style&quot; attribute:
+</p>
+<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Attribute&nbsp;&nbsp;</th><th>Required&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>focused-style</td>
+	 <td>No</td>
+	 <td>The name of the style for the currently focused item.</td>
+	</tr>
+	<tr><td>columns</td>
+	 <td>No</td>
+	 <td>The number of columns. This can be used to layout the items in a table. Defaults to 1 column. </td>
+	</tr>
+	<tr><td>columns-width</td>
+	 <td>No</td>
+	 <td>Either &quot;normal&quot;, &quot;equal&quot; or the width for each column in a comma separated list (e.g. &quot;columns-width: 60,60,100;&quot;).
+Defaults to &quot;normal&quot;, meaning that each column uses as much space as the widest item of that column needs.
+The &quot;equal&quot; width leads to columns which have all the same width.
+The explicit list of column-widths results in the usage of those widths.</td>
+	</tr>
+</table>
+
+<h2 id="gaugeitem">The Gauge</h2>
+<p>
+A Gauge shows a progress indicator. It supports following additional attributes:
+</p>
+<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Attribute&nbsp;&nbsp;</th><th>Required&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>gauge-image</td>
+	 <td>No</td>
+	 <td>The URL of the image, e.g. &quot;gauge-image: url(progress.png);&quot;. When no gauge-width is defined, the width of this image will be used instead.</td>
+	</tr>
+	<tr><td>gauge-color</td>
+	 <td>No</td>
+	 <td>The color of the progress bar. Defaults to blue.</td>
+	</tr>
+	<tr><td>gauge-width</td>
+	 <td>No</td>
+	 <td>The width of the gauge element in pixels. When no width is defined, either the available width or the width of the provided image will be used.</td>
+	</tr>
+	<tr><td>gauge-height</td>
+	 <td>No</td>
+	 <td>The height of the gauge element in pixels. Defaults to 10. When an image is provided, the height of the image will be used.</td>
+	</tr>
+	<tr><td>gauge-mode</td>
+	 <td>No</td>
+	 <td>Either &quot;chunked&quot; or &quot;continuous&quot;. In the continuous mode only the gauge-color will be used, whereas the chunked mode intersects the indicator in chunks. The setting is ignored when an image is provided. Default value is &quot;chunked&quot;.</td>
+	</tr>
+	<tr><td>gauge-gap-color</td>
+	 <td>No</td>
+	 <td>The color of gaps between single chunks. Only used in the &quot;chunked&quot; gauge-mode or when a gauge with an indefinite range is used. In the latter case the provided color will be used to indicate the idle state. Default gap-color is white.</td>
+	</tr>
+	<tr><td>gauge-gap-width</td>
+	 <td>No</td>
+	 <td>The width of gaps in pixels between single chunks. Only used in the &quot;chunked&quot; gauge-mode. Defaults to 3.</td>
+	</tr>
+	<tr><td>gauge-chunk-width</td>
+	 <td>No</td>
+	 <td>The width of the single chunks in the &quot;chunked&quot; gauge-mode. </td>
+	</tr>
+	<tr><td>gauge-show-value</td>
+	 <td>No</td>
+	 <td>Either &quot;true&quot; or &quot;false&quot;. Determines whether the current value should be shown. This defaults to true for all definite gauge items.</td>
+	</tr>
+	<tr><td>gauge-value-align</td>
+	 <td>No</td>
+	 <td>Either &quot;left&quot; or &quot;right&quot;. Defines where the current value of the gauge should be displayed. Defaults to &quot;left&quot;, that is left of the actual gauge item.</td>
+	</tr>
+</table>
+<p>
+The following example shows the use of the gauge attributes:
+<pre>
+.gaugeStyle {
+	padding: 2;
+	border-color: white;
+	gauge-image: url( indicator.png ); 
+	gauge-color: rgb( 86, 165, 255 );
+	gauge-width: 60;
+	gauge-gap-color: rgb( 38, 95, 158 );
+	/* these setting are ignored, since an image is provided:
+	gauge-height: 8; 
+	gauge-mode: chunked;
+	gauge-gap-width: 5;
+	gauge-chunk-width: 10;
+	*/
+}
+</pre><p>
+When the Gauge item is used with an indefinite range, the gauge-gap-color will be used to indicate the idle state. When the &quot;continuous running&quot; state is entered and an image has been specified, the image will &quot;fly&quot; from the left to the right of the indicator.
+</p>
+<h2 id="textfield">The TextField</h2>
+<p>
+A TextField is used to get user input. Currently the input is done with the use of the native functions, so that special input modes can be used (like T9). The TextField supports following additional attributes:
+</p>
+<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Attribute&nbsp;&nbsp;</th><th>Required&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>textfield-width</td>
+	 <td>No</td>
+	 <td>The minimum width of the textfield-element in pixels.</td>
+	</tr>
+	<tr><td>textfield-height</td>
+	 <td>No</td>
+	 <td>The minimum height of the  textfield-element in pixels. Defaults to the height of the used font.</td>
+	</tr>
+</table>
+<p>
+The following example shows the use of the TextField attributes:
+<pre>
+.inputStyle {
+	padding: 2;
+	background-color: white;
+	border-color: black;
+	textfield-height: 15; 
+	textfield-width: 40;
+}
+</pre>
+</p>
+<h2 id="datefield">The DateField</h2>
+<p>
+A DateField is used to enter date or time information. Currently the input is done with the use of the native functions, so that special input modes can be used (like T9). The DateField supports following additional attributes:
+</p>
+<table class="borderedTable"  cellspacing="0" cellpadding="3" border="1">
+	<tr><th>Attribute&nbsp;&nbsp;</th><th>Required&nbsp;&nbsp;</th><th>Explanation</th></tr>
+	<tr><td>datefield-width</td>
+	 <td>No</td>
+	 <td>The minimum width of the datefield-element in pixels.</td>
+	</tr>
+	<tr><td>datefield-height</td>
+	 <td>No</td>
+	 <td>The minimum height of the  datefield-element in pixels. Defaults to the height of the used font.</td>
+	</tr>
+</table>
+<p>
+The following example shows the use of the DateField attributes:
+<pre>
+.inputStyle {
+	padding: 2;
+	background-color: white;
+	border-color: black;
+	datefield-height: 15; 
+	datefield-width: 40;
+}
+</pre>
+</p>
+<p>
+The appearance of the datefield can also be adjusted using the preprocessing variable 
+&quot;polish.DateFormat&quot;, which can be defined in the &lt;variables&gt; section 
+of the J2ME&nbsp;Polish task:
+</p>
+<ul>
+ <li><code>&lt;variable name=&quot;polish.DateFormat&quot; value=&quot;us&quot; /&gt;</code>: The US standard of MM-DD-YYYY is used, e.g. &quot;12-24-2004&quot;.</li>
+ <li><code>&lt;variable name=&quot;polish.DateFormat&quot; value=&quot;de&quot; /&gt;</code>: The German standard of DD.MM.YYYY is used, e.g. &quot;24.12.2004&quot;.</li>
+ <li>All other settings: The ISO 8601 standard of YYYY-MM-DD is used, e.g. &quot;2004-12-24&quot;.</li>
+</ul>
+<%include end.txt %>

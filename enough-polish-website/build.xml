@@ -1,0 +1,60 @@
+<project 
+	name="enough-webprocessor" 
+	default="website">
+
+<taskdef name="webprocessor" classname="de.enough.webprocessor.WebProcessorTask" classpath="../enough-webprocessor/bin/classes" />
+<!-- build targets, each target can be called via "ant [name]", e.g. "ant clean" -->
+
+<property name="Version" value="0.9.2" />
+	
+<target name="init">
+	<!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create distribution dirs -->
+	<mkdir dir="dist" />
+</target>
+
+<target name="javadoc" >
+	<javadoc 
+	    	destdir="dist/javadoc" 
+	    	access="public" 
+	    	use="true" 
+	    	notree="false" 
+	    	nonavbar="false" 
+	    	noindex="false" 
+	    	splitindex="true" 
+	    	author="true" 
+	    	version="true" 
+	    	nodeprecatedlist="false" 
+	    	nodeprecated="false" 
+	    	packagenames="de.enough.*" 
+	    	sourcepath="../enough-polish-j2me/source/src" 
+	    	classpath="../enough-polish-j2me/bin/classes:import/midp2.jar" 
+	    	doctitle="The J2ME Polish Client Framework, Version ${ Version }"
+	/>	
+</target>
+		
+<target name="webprocessor"	>
+	<webprocessor 
+		srcdir="site/source"
+	 	includedir="site/includes"
+		destdir="dist"
+		clean="false"
+		update="atoz.html, documentation.html, index.html, news.html, download.html, docs/install.html"
+		keywordsFile="keywords.txt"
+		>
+		<variable name="PolishVersion" value="${Version}" />
+		<variable name="LatestDownload" value="j2mepolish-${Version}.html" />
+		<variable name="Author" value="Robert Virkus" />
+		<variable name="basedir" value="" />
+		<variable name="index.h1" value="h1index" />
+		<variable name="index.h2" value="h2index" />
+		<variable name="index.h3" value="h3index" />
+	</webprocessor>
+</target>
+
+<target name="website" depends="javadoc, webprocessor"	>
+		<echo message="www.j2mepolish.org created." />
+</target>
+
+</project>
