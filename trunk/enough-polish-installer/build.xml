@@ -1,0 +1,57 @@
+<project 
+	name="enough-installer" 
+	default="bin-dist">
+
+<!-- global properties -->
+
+<!-- build targets, each target can be called via "ant [name]", e.g. "ant clean" -->
+
+<target name="init">
+	<!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create distribution dirs -->
+	<mkdir dir="dist" />
+</target>
+
+<!-- Creates the Source Code documentation -->
+<target name="javadoc">
+    <javadoc 
+    	destdir="doc" 
+    	access="public" 
+    	use="true" 
+    	notree="false" 
+    	nonavbar="false" 
+    	noindex="false" 
+    	splitindex="true" 
+    	author="true" 
+    	version="true" 
+    	nodeprecatedlist="false" 
+    	nodeprecated="false" 
+    	packagenames="*" 
+    	sourcepath="source/src" 
+    	classpath="bin/classes:import/ant.jar:import/junit.jar" 
+    />
+ </target>
+
+<target name="bin-dist" depends="init">
+	
+	<!-- create and move the build distribution -->
+	<jar destfile="/Applications/IzPack/bin/panels/ChooseLicensePanel.jar"
+	     basedir="bin/classes"
+		 includes="ChooseLicensePanel.java"
+		 index="false"
+	     >
+	</jar>
+	<!-- copy the single class -->
+	<copy file="bin/classes/com/izforge/izpack/panels/ChooseLicensePanel.class" 
+	      todir="/Applications/IzPack/bin/panels/ChooseLicensePanel"/>
+</target>
+			
+<target name="clean" depends="init">
+	<delete dir="build" />
+	<delete dir="dist" />
+	<delete dir="tmp" />
+</target>
+
+
+</project>
