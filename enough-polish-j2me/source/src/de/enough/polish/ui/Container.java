@@ -70,9 +70,9 @@ public class Container extends Item {
 	protected Item[] items;
 	protected boolean focusFirstElement;
 	protected Style focusedStyle;
-	private Style itemStyle;
-	private Item focusedItem;
-	private int focusedIndex = -1;
+	protected Style itemStyle;
+	protected Item focusedItem;
+	protected int focusedIndex = -1;
 	private int columnsSetting = NO_COLUMNS;
 	private int numberOfColumns;
 	private int[] columnsWidths;
@@ -89,7 +89,7 @@ public class Container extends Item {
 	 * @param focusFirstElement true when the first focussable element should be focused automatically.
 	 */
 	public Container( boolean focusFirstElement ) {
-		this( focusFirstElement, null, -1, -1 );
+		this( null, focusFirstElement, null, -1, -1 );
 	}
 	
 	/**
@@ -99,20 +99,21 @@ public class Container extends Item {
 	 * @param style the style for this container
 	 */
 	public Container(boolean focusFirstElement, Style style) {
-		this( focusFirstElement, style, -1, -1 );
+		this( null, focusFirstElement, style, -1, -1 );
 	}
 
 	/**
 	 * Creates a new empty container.
 	 * 
+	 * @param label the label of this container
 	 * @param focusFirstElement true when the first focussable element should be focused automatically.
 	 * @param style the style for this container
 	 * @param yTop the vertical start of the screen - used for scrolling. -1 when not set.
 	 * @param yBottom the vertical end of the scren - used for scrolling -1 when not set.
 	 * @see #setVerticalDimensions(int, int ) 
 	 */
-	public Container(boolean focusFirstElement, Style style, int yTop, int yBottom ) {
-		super( style );
+	public Container(String label, boolean focusFirstElement, Style style, int yTop, int yBottom ) {
+		super( label, LAYOUT_DEFAULT, INTERACTIVE, style );
 		this.itemsList = new ArrayList();
 		this.focusFirstElement = focusFirstElement;
 		if (this.focusedStyle == null) {
@@ -250,7 +251,7 @@ public class Container extends Item {
 	 *         be focusable.
 	 */
 	public boolean focus(int index) {
-		Item item = this.items[ index ];
+		Item item = (Item) this.itemsList.get(index );
 		if (item.appearanceMode != Item.PLAIN) {
 			focus( index, item );			
 			return true;
@@ -267,13 +268,12 @@ public class Container extends Item {
 	private void focus( int index, Item item ) {
 		// first defocus the last focused item:
 		if (this.focusedItem != null) {
-			this.focusedItem.setStyle(this.itemStyle);
+			this.focusedItem.defocus(this.itemStyle);
 		}
 		// save style of the to be focused item:
-		this.itemStyle = item.getStyle();
+		this.itemStyle = item.focus( this.focusedStyle );
 		this.focusedIndex = index;
 		this.focusedItem = item;
-		item.setStyle( this.focusedStyle );
 		if (this.enableScrolling && this.isInitialised) {
 			// this container has been painted already,
 			// so the dimensions are known.
@@ -297,20 +297,25 @@ public class Container extends Item {
 	 * @see de.enough.polish.ui.Item#initItem( int, int )
 	 */
 	protected void initContent(int firstLineWidth, int lineWidth) {
+		//System.out.println("intialising container");
 		Item[] myItems = (Item[]) this.itemsList.toArray( new Item[ this.itemsList.size() ]);
 		this.items = myItems;
-		//TODO rob: firstLineWidth/lineWidth ist nicht korrekt fuer die items!
-		// (border, margin und padding einrechnen)
 		if (this.columnsSetting == NO_COLUMNS) {
 			int myContentWidth = 0;
 			int myContentHeight = 0;
+			boolean hasFocusableItem = false;
 			for (int i = 0; i < myItems.length; i++) {
 				Item item = myItems[i];
+				//System.out.println("initalising " + item.getClass().getName() + ":" + i);
 				int width = item.getItemWidth( firstLineWidth, lineWidth );
 				int height = item.getItemHeight( firstLineWidth, lineWidth );
 				// now the item should have a style, so it can be safely focused
 				// without loosing the style information:
+				if (item.appearanceMode != PLAIN) {
+					hasFocusableItem = true;
+				}
 				if (this.focusFirstElement && (item.appearanceMode != Item.PLAIN)) {
+					//System.out.println("focusing item");
 					focus( i, item );
 					height = item.getItemHeight( firstLineWidth, lineWidth );
 					width = item.getItemWidth( firstLineWidth, lineWidth );
@@ -320,6 +325,11 @@ public class Container extends Item {
 					myContentWidth = width; 
 				}
 				myContentHeight += height + this.paddingVertical;
+			}
+			if (!hasFocusableItem) {
+				this.appearanceMode = PLAIN;
+			} else {
+				this.appearanceMode = INTERACTIVE;
 			}
 			this.contentHeight = myContentHeight;
 			this.contentWidth = myContentWidth;
@@ -543,7 +553,7 @@ public class Container extends Item {
 	 * 
 	 * @return the index of the focused item, -1 when none is focused.
 	 */
-	public int getFocussedIndex() {
+	public int getFocusedIndex() {
 		return this.focusedIndex;
 	}
 	
@@ -628,4 +638,46 @@ public class Container extends Item {
 		return url;
 	}
 
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#focus(de.enough.polish.ui.Style)
+	 */
+	protected Style focus(Style focusStyle) {
+		System.out.println( this.getClass().getName() + ": focusing container with style ");
+		if ( this.itemsList.size() == 0) {
+			return super.focus( this.focusedStyle );
+		} else {
+			if (this.focusedIndex == -1) {
+				// focus the first interactive item...
+				Item[] myItems = getItems();
+				for (int i = 0; i < myItems.length; i++) {
+					Item item = myItems[i];
+					if (item.appearanceMode != PLAIN) {
+						this.focusedIndex = i;
+						break;
+					}
+				}
+				if (this.focusedIndex == -1) {
+					// this container has only non-focusable items!
+					return super.focus( this.focusedStyle );
+				}
+			}
+			Item item = (Item) this.itemsList.get( this.focusedIndex );
+			focus( this.focusedIndex, item );
+			this.isFocused = true;
+			return item.style;
+		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#defocus(de.enough.polish.ui.Style)
+	 */
+	protected void defocus(Style originalStyle) {
+		if ( this.itemsList.size() == 0) {
+			super.defocus( originalStyle );
+		} else {
+			Item item = (Item) this.itemsList.get( this.focusedIndex );
+			item.defocus( this.itemStyle );
+			this.isFocused = false;
+		}
+	}
 }

@@ -22,8 +22,8 @@
  * ${see_to_overridden}
  */</codetemplate><codetemplate name="newtype" description="Newly created files" context="newtype_context" enabled="true">/*
  * Created on ${date} at ${time}.
- * This source code is published under the GNU General Public Licence and
- * the enough-software-licence for commercial use.
+ * This source code is published under the GNU General Public license and
+ * the enough-software-license for commercial use.
  * Please refer to accompanying LICENSE.txt or visit www.enough.de for details.
  */
 ${package_declaration}

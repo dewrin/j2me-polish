@@ -46,8 +46,8 @@ public class StringItem extends Item
 	private String text;
 	private String[] textLines;
 	private int textColor;
-	private Font font;
-	private boolean isSingleLine;
+	protected Font font;
+	//private boolean isSingleLine;
 
 	/**
 	 * Creates a new <code>StringItem</code> object.  Calling this
@@ -280,7 +280,7 @@ public class StringItem extends Item
 		}
 		this.contentWidth = maxWidth;
 		this.textLines = lines;
-		this.isSingleLine = (lines.length == 1);
+		//this.isSingleLine = (lines.length == 1);
 	}
 
 	/* (non-Javadoc)

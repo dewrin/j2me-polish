@@ -1,4 +1,4 @@
-Polish is dual licensed under the open source licence "GNU General Public License" as well as the 
+Polish is dual licensed under the open source license "GNU General Public License" as well as the 
 enough-commercial-license for commercial use.
 
 If you want to use Polish for commercial projects, you need to obtain a commercial license.

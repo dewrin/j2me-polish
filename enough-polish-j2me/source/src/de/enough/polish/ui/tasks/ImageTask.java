@@ -45,30 +45,35 @@ import java.util.TimerTask;
  * </pre>
  */
 public class ImageTask extends TimerTask {
-	private String name;
+	private String url;
 
 	/**
 	 * Creates a new ImageTask.
 	 * 
-	 * @param name the name of the image
+	 * @param url the URL of the image, e.g. "/background.png"
 	 */
-	public ImageTask(String name ) 
+	public ImageTask(String url ) 
 	{
-		this.name = name;
+		this.url = url;
 	}
 
 	/**
 	 * tries to load the image. 
 	 */
 	public void run() {
+		//#debug
+		Debug.debug( "ImageTask: loading image [" + this.url + "].");
 		try {
-			Image image = Image.createImage( this.name );
+			Image image = Image.createImage( this.url );
 			//#ifdef polish.images.backgroundLoad
-			StyleSheet.notifyImageConsumers(this.name, image);
+			StyleSheet.notifyImageConsumers(this.url, image);
 			//#endif
 		} catch (IOException e) {
 			//#debug error
-			Debug.debug( "ImageTask: unable to load image [" + this.name + "].", e);
+			Debug.debug( "ImageTask: unable to load image [" + this.url + "].", e);
+		} catch (Throwable e) {
+			//#debug fatal
+			//# Debug.debug( "ImageTask: unable to set image [" + this.url + "].", e);
 		}
 
 	}

@@ -48,7 +48,7 @@ public final class StyleSheet {
 	private static Hashtable imagesByName;
 	//#ifdef polish.images.backgroundLoad
 	private static Hashtable scheduledImagesByName;
-	private static final Boolean TRUE = new Boolean( true );
+	//private static final Boolean TRUE = new Boolean( true );
 	private static Timer timer;
 	//#endif
 	//#ifdef false
@@ -65,7 +65,7 @@ public final class StyleSheet {
 	public static Screen currentScreen;	
 	public static AnimationThread animationThread;
 	/** the gauge which is currently in CONTINUOUS_RUNNING mode */
-	public static Gauge gauge;
+	//public static Gauge gauge;
 
 	/**
 	 * Retrieves the image with the given name.
@@ -74,7 +74,7 @@ public final class StyleSheet {
 	 * or in a background thread. This behaviour is set in the 
 	 * <a href="../../../../definitions/polish_xml.html">polish.xml</a> file.
 	 * 
-	 * @param name the name of the Image
+	 * @param url the URL of the Image, e.g. "/background.png"
 	 * @param parent the object which needs the image, when the image should be loaded
 	 * 		   		in the background, the parent need to implement
 	 * 				the ImageConsumer interface when it wants to be notified when
@@ -88,24 +88,24 @@ public final class StyleSheet {
 	 * @throws IOException when the image could not be loaded directly
 	 * @see ImageConsumer#setImage(String, Image)
 	 */
-	public static Image getImage( String name, Object parent, boolean cache )
+	public static synchronized Image getImage( String url, Object parent, boolean cache )
 	throws IOException 
 	{
 		// check if the image has been cached before:
 		if ( imagesByName != null ) {
-			Image image = (Image) imagesByName.get( name );
+			Image image = (Image) imagesByName.get( url );
 			if (image != null) {
 				return image;
 			}
 		}
 		//#ifdef polish.images.directLoad
 		// when images should be loaded directly, try to do so now:
-		Image image = Image.createImage( name );
+		Image image = Image.createImage( url );
 		if (cache) {
 			if (imagesByName == null ) {
 				imagesByName = new Hashtable();
 			}
-			imagesByName.put( name, image );
+			imagesByName.put( url, image );
 		}
 		//# return image;
 		
@@ -120,20 +120,20 @@ public final class StyleSheet {
 		if (scheduledImagesByName == null ) {
 			scheduledImagesByName = new Hashtable();
 		}
-		ImageQueue queue = (ImageQueue) scheduledImagesByName.get(name);
+		ImageQueue queue = (ImageQueue) scheduledImagesByName.get(url);
 		if (queue != null) {
 			// this image is already scheduled to load:
 			queue.addConsumer((ImageConsumer) parent);
 			return null;
 		}
-		scheduledImagesByName.put( name, new ImageQueue( (ImageConsumer) parent, cache ) );
+		scheduledImagesByName.put( url, new ImageQueue( (ImageConsumer) parent, cache ) );
 		if (imagesByName == null ) {
 			imagesByName = new Hashtable();
 		}
 		if (timer == null) {
 			timer = new Timer();
 		}
-		ImageTask task = new ImageTask( name );
+		ImageTask task = new ImageTask( url );
 		timer.schedule( task, 10 );
 		return null;
 		//#endif

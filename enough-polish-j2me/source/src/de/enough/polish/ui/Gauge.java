@@ -28,8 +28,6 @@ package de.enough.polish.ui;
 import de.enough.polish.util.Debug;
 
 import javax.microedition.lcdui.*;
-import javax.microedition.lcdui.Graphics;
-import javax.microedition.lcdui.Image;
 
 import java.io.IOException;
 
@@ -275,7 +273,6 @@ implements ImageConsumer
 	private boolean isInteractive;
 	private int color = 0x0000FF; //default color is blue
 	private int mode = MODE_CHUNKED;
-	private int orientation = HORIZONTAL;
 	private int chunkWidth = 6;
 	private int gapWidth = 3;
 	private int gapColor = 0xFFFFFF; // default gap color is white
@@ -439,12 +436,12 @@ implements ImageConsumer
 			if (this.value == CONTINUOUS_RUNNING ) {
 				// when the value WAS continuous-running, remove this gauge from 
 				// the animations:
-				StyleSheet.gauge = null;
+				//StyleSheet.gauge = null;
 			}
 			if (value == CONTINUOUS_IDLE) {
 				this.indefinitePos = 0;
 			} else if (value == CONTINUOUS_RUNNING) {
-				StyleSheet.gauge = this;
+				//StyleSheet.gauge = this;
 			} else if ( value == INCREMENTAL_IDLE ) {
 				this.indefinitePos = 0;
 			} else if ( value == INCREMENTAL_UPDATING ) {
@@ -734,14 +731,6 @@ implements ImageConsumer
 	 */
 	public void setStyle(Style style) {
 		super.setStyle(style);
-		String orientationStr = style.getProperty("gauge-orientation");
-		if (orientationStr != null) {
-			if ("vertical".equals(orientationStr)) {
-				this.orientation = VERTICAL;
-			} else {
-				this.orientation = HORIZONTAL;
-			}
-		}
 		String colorStr = style.getProperty("gauge-color");
 		if (colorStr != null) {
 			this.color = Integer.parseInt( colorStr );

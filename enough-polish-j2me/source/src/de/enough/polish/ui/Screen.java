@@ -96,6 +96,7 @@ extends Canvas
 	protected CommandListener cmdListener;
 	protected Container container;
 	protected boolean isLayoutVCenter;
+	protected boolean isInitialised;
 	//#if polish.useMenuFullScreen && polish.classes.fullscreen:defined
 		//#define tmp.menuFullScreen
 		private Command menuSingleCommand;
@@ -129,17 +130,70 @@ extends Canvas
 	 */
 	public Screen( String title, Style style ) {
 		super();
+		// get the screen dimensions:
+		// this is a bit complicated, since Nokia's FullCanvas fucks
+		// up when calling super.getHeight()...
+		
 		//#ifdef tmp.menuFullScreen
-		this.fullScreenHeight = super.getHeight();
-		this.screenHeight = this.fullScreenHeight - this.menuBarHeight;
+			//#ifdef polish.ScreenHeight:defined
+				//#= this.fullScreenHeight = ${ polish.ScreenHeight };
+			//#else
+				this.fullScreenHeight = super.getHeight();
+			//#endif
+			this.screenHeight = this.fullScreenHeight - this.menuBarHeight;
 		//#else
-		this.screenHeight = super.getHeight();
+			//#ifdef polish.ScreenHeight:defined
+				//#= this.screenHeight = ${ polish.ScreenHeight };
+			//#else
+				this.screenHeight = super.getHeight();
+			//#endif
 		//#endif
-		this.screenWidth = getWidth();
+		//#ifdef polish.ScreenWidth:defined
+			//#= this.screenWidth = ${ polish.ScreenWidth };
+		//#else
+			this.screenWidth = getWidth();
+		//#endif
+			
+		// creating standard container:
 		this.container = new Container( true );
 		this.container.screen = this;
 		setTitle( title );
-		setStyle( style );
+		this.style = style;
+	}
+		
+	/**
+	 * Initialises this screen before it is painted for the first time.
+	 */
+	public void init() {
+		if (this.style != null) {
+			setStyle( this.style );
+		}
+		//StyleSheet.gauge = null;
+		if (StyleSheet.animationThread == null) {
+			StyleSheet.animationThread = new AnimationThread();
+			StyleSheet.animationThread.start();
+		}
+		// inform all root items that they belong to this screen:
+		if (this.container != null) {
+			this.container.screen = this;
+			this.container.setVerticalDimensions( 0,  this.screenHeight );
+		}
+		Item[] items = getRootItems();
+		for (int i = 0; i < items.length; i++) {
+			Item item = items[i];
+			item.screen = this;
+		}
+		//#ifdef polish.useDynamicStyles
+		// check if this screen has got a style:
+		if (this.style == null) {
+			this.cssSelector = createCssSelector();
+			setStyle( StyleSheet.getStyle( this ) );
+		} else {
+			this.cssSelector = this.style.name;
+		}
+		//#endif
+		this.isInitialised = true;
+		StyleSheet.currentScreen = this;
 	}
 
 	/**
@@ -188,32 +242,53 @@ extends Canvas
 	/* (non-Javadoc)
 	 * @see javax.microedition.lcdui.Canvas#paint(javax.microedition.lcdui.Graphics)
 	 */
-	protected void paint(Graphics g) {
+	public final void paint(Graphics g) {
+		try {
+			if (!this.isInitialised) {
+				init();
+			}
+			/*
+			g.setColor( 0xFF0000 );
+			g.fillRect( 0, 0, 176, 208 );
+			g.setFont( Font.getDefaultFont() );
+			g.setColor( 0 );
+			g.drawString("all fucked up", 10, 10, Graphics.TOP | Graphics.LEFT );
+			if (true) {
+				this.message = "returning from paint.";
+				return;
+			}
+			*/
 		// paint background:
 		if (this.background != null) {
 			//#ifdef tmp.menuFullScreen
-			this.background.paint(0, 0, this.screenWidth, this.fullScreenHeight, g);
+				this.background.paint(0, 0, this.screenWidth, this.fullScreenHeight, g);
 			//#else
-			this.background.paint(0, 0, this.screenWidth, this.screenHeight, g);
+				this.background.paint(0, 0, this.screenWidth, this.screenHeight, g);
+			//#endif
+		} else {
+			g.setColor( 0xFFFFFF );
+			//#ifdef tmp.menuFullScreen
+				g.fillRect( 0, 0, this.screenWidth, this.fullScreenHeight );
+			//#else
+				g.fillRect( 0, 0, this.screenWidth, this.screenHeight );
 			//#endif
 		}
 		// paint title:
 		if (this.title != null) {
 			this.title.paint(0, 0, 0, this.screenWidth, g);
 		}
-		
 		int y = this.titleHeight;
 		// protect the title and the full-screen-menu area:
 		g.setClip(0, y, this.screenWidth, this.screenHeight - y );
-		// paint content:
 		g.translate( 0, y );
+		// paint content:
 		paintScreen( g);
 		g.translate( 0, -y );
 		// allow painting outside of the screen again:
 		//#ifdef tmp.menuFullScreen
-		g.setClip(0, 0, this.screenWidth, this.fullScreenHeight );
+		 	g.setClip(0, 0, this.screenWidth, this.fullScreenHeight );
 		//#else
-		g.setClip(0, 0, this.screenWidth, this.screenHeight );
+		 	g.setClip(0, 0, this.screenWidth, this.screenHeight );
 		//#endif
 		
 		// paint border:
@@ -261,6 +336,17 @@ extends Canvas
 				}
 			}
 		//#endif
+		} catch (RuntimeException e) {
+			//#mdebug error
+			g.setColor( 0xFF0000 );
+			g.fillRect( 0, 0, this.screenWidth, this.screenHeight );
+			g.setColor( 0 );
+			String msg = e.toString();
+			g.drawString( msg, 10, 10, Graphics.TOP | Graphics.LEFT );
+			Debug.debug( "unable to paint screen: " + e.toString(), e );
+			//#enddebug
+			throw e;
+		}
 		//TODO rob paint the ticker
 	}
 	
@@ -317,7 +403,9 @@ extends Canvas
 			this.title = null;
 			this.titleHeight = 0;
 		}
-		this.container.setVerticalDimensions( 0,  this.screenHeight );
+		if (this.container != null && this.screenHeight > 0) {
+			this.container.setVerticalDimensions( 0,  this.screenHeight );
+		}
 		if (isShown()) {
 			repaint();
 		}
@@ -380,7 +468,7 @@ extends Canvas
 			if (keyCode == FullCanvas.KEY_SOFTKEY2 ) {
 				this.menuOpened = false;
 			} else  if ( gameAction == Canvas.FIRE ) {
-				int focusedIndex = this.menuContainer.getFocussedIndex();
+				int focusedIndex = this.menuContainer.getFocusedIndex();
 				Command cmd = (Command) this.menuCommands.get( focusedIndex );
 				this.menuOpened = false;
 				callCommandListener( cmd );
@@ -397,40 +485,14 @@ extends Canvas
 			// or Canvas.UP has been pressed. 
 			// It could use the StyleSheet.currentScreen variable
 			// for this purpose
+			//#debug
 			System.out.println("unable to handle key [" + keyCode + "].");
 		}
 		if (processed) {
 			repaint();
 		}
 	}
-	
-	/* (non-Javadoc)
-	 * @see javax.microedition.lcdui.Canvas#showNotify()
-	 */
-	protected void showNotify() {
-		StyleSheet.currentScreen = this;
-		StyleSheet.gauge = null;
-		if (StyleSheet.animationThread == null) {
-			StyleSheet.animationThread = new AnimationThread();
-			StyleSheet.animationThread.start();
-		}
-		// inform all root items that they belong to this screen:
-		Item[] items = getRootItems();
-		for (int i = 0; i < items.length; i++) {
-			Item item = items[i];
-			item.screen = this;
-		}
-		//#ifdef polish.useDynamicStyles
-		// check if this screen has got a style:
-		if (this.style == null) {
-			this.cssSelector = createCssSelector();
-			setStyle( StyleSheet.getStyle( this ) );
-		} else {
-			this.cssSelector = this.style.name;
-		}
-		//#endif
-	}
-	
+		
 	//#ifdef polish.useDynamicStyles	
 	/**
 	 * Retrieves the CSS selector for this item.
@@ -510,7 +572,13 @@ extends Canvas
 	 * @see javax.microedition.lcdui.Displayable#removeCommand(javax.microedition.lcdui.Command)
 	 */
 	public void removeCommand(Command cmd) {
-		// TODO enough implement Screen.removeCommand
+		this.menuCommands.remove( cmd );
+		if (this.menuSingleCommand == cmd ) {
+			this.menuSingleCommand = null;
+		}
+		if (isShown()) {
+			repaint();
+		}
 	}
 	//#endif
 	
@@ -530,10 +598,16 @@ extends Canvas
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see javax.microedition.lcdui.Canvas#getHeight()
+	/**
+	 * Retrieves the available height for this screen.
+	 * This is equivalent to the Canvas#getHeight() method.
+	 * This method cannot be overriden for Nokia's FullScreen though.
+	 * So this method is used insted.
+	 * 
+	 * @return the available height in pixels.
 	 */
-	public int getHeight() {
+	public int getAvailableHeight() {
 		return this.screenHeight - this.titleHeight;
 	}
+	 
 }

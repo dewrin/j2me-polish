@@ -36,7 +36,8 @@ import javax.microedition.lcdui.Image;
  * with strings and images.
  * 
  * <P>Each element of a <code>Choice</code> is composed of a text string part,
- * an <A HREF="../../../javax/microedition/lcdui/Image.html"><CODE>Image</CODE></A> part, and a font attribute that are all treated as a
+ * an <A HREF="../../../javax/microedition/lcdui/Image.html"><CODE>Image</CODE></A> part, 
+ * and a font attribute that are all treated as a
  * unit.  The font attribute applies to the text part and can be controlled by
  * the application.  The application may provide
  * <code>null</code> for the image if the element is not to have an image
@@ -427,11 +428,11 @@ public interface Choice
 	 * <code>[0..size()-1]</code>, inclusive.  The font attribute of
 	 * the element is left unchanged.
 	 * 
-	 * @param elementNum - the index of the element to be set
-	 * @param stringPart - the string part of the new element
-	 * @param imagePart - the image part of the element, or  null if there is no image part
-	 * @throws IndexOutOfBoundsException - if elementNum is invalid
-	 * @throws NullPointerException - if stringPart is null
+	 * @param elementNum the index of the element to be set
+	 * @param stringPart the string part of the new element
+	 * @param imagePart the image part of the element, or  null if there is no image part
+	 * @throws IndexOutOfBoundsException if elementNum is invalid
+	 * @throws NullPointerException if stringPart is null
 	 */
 	public void set(int elementNum, String stringPart, Image imagePart);
 
@@ -440,9 +441,9 @@ public interface Choice
 	 * The <code>elementNum</code> parameter must be within the range
 	 * <code>[0..size()-1]</code>, inclusive.
 	 * 
-	 * @param elementNum - the index of the element to be queried
+	 * @param elementNum the index of the element to be queried
 	 * @return selection state of the element
-	 * @throws IndexOutOfBoundsException - if elementNum is invalid
+	 * @throws IndexOutOfBoundsException if elementNum is invalid
 	 */
 	public boolean isSelected(int elementNum);
 

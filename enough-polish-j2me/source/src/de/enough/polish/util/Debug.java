@@ -26,6 +26,7 @@
 package de.enough.polish.util;
 
 //#ifdef polish.useDebugGui
+import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.Form;
 import javax.microedition.lcdui.StringItem;
@@ -48,7 +49,7 @@ public final class Debug {
 	//#endif
 	
 	/**
-	 * Prints a message with a time-stamp.
+	 * Prints the message or adds the message to the internal message list.
 	 * 
 	 * @param time the time in ms.
 	 * @param message the message
@@ -58,7 +59,7 @@ public final class Debug {
 	}
 	
 	/**
-	 * Prints a message.
+	 * Prints the message or adds the message to the internal message list.
 	 * 
 	 * @param message the message.
 	 */
@@ -80,6 +81,12 @@ public final class Debug {
 		}
 		//#else
 		// add message to list:
+		if (exception != null) {
+			message += ": " + exception.toString();
+			if (exception.getMessage() != null) {
+				message += ": " + exception.getMessage();
+			}
+		}
 		MESSAGES.add( message );
 		if (MESSAGES.size() > 98) {
 			MESSAGES.remove( 0 );
@@ -88,7 +95,15 @@ public final class Debug {
 	}
 		
 	//#ifdef polish.useDebugGui
-	public static final Form getLogForm( boolean reverseSort ) {
+	/**
+	 * Retrieves a form with all the debugging messages.
+	 * 
+	 * @param reverseSort true when the last message should be shown first
+	 * @param listener the command listener for the created form
+	 * @return the form containing all the debugging messages so far.
+	 * @throws NullPointerException when the listener is null
+	 */
+	public static final Form getLogForm( boolean reverseSort, CommandListener listener ) {
 		String[] messages = (String[]) MESSAGES.toArray( new String[ MESSAGES.size() ] );
 		StringItem[] items = new StringItem[ messages.length ];
 		int index = messages.length - 1;
@@ -103,6 +118,7 @@ public final class Debug {
 			items[i] = new StringItem( null, message );
 		}
 		Form form = new Form( "debug", items );
+		form.setCommandListener(listener);
 		form.addCommand(RETURN_COMMAND);
 		return form;
 	}

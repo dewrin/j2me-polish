@@ -17,7 +17,7 @@
         	packagenames="de.enough.*" 
         	sourcepath="source/src" 
         	classpath="bin/classes:import/midpapi.zip:import/bluetooth.zip:import/mma.zip:import/nokiaui.zip:import/wma.zip:import/junit.jar" 
-        	doctitle="the polish framework"/>
+        	doctitle="the J2ME Polish framework"/>
     </target>
     
 </project>
