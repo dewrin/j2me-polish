@@ -234,6 +234,7 @@ implements ImageConsumer
 	public void setImage(String name, Image image) {
 		this.isInitialised = false;
 		this.image = image;
+		//System.out.println("image [" + name + "] has been set.");
 		repaint();
 	}
 	//#endif

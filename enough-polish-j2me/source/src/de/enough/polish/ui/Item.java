@@ -278,6 +278,11 @@ import javax.microedition.lcdui.Graphics;
  * the implementation is allowed to treat it as if it had a different
  * appearance mode.</p>
  * 
+ * <p>J2ME Polish notifies the command-listener of the current screen,
+ * when an item-command has been selected and no item-command-listener
+ * has been registered.
+ * </p>
+ * 
  * <a name="appearance"></a>
  * <h3>Appearance Modes</h3>
  * 
@@ -635,7 +640,7 @@ public abstract class Item extends Object
 	 */
 	protected Item parent;
 
-	private ArrayList commands;
+	protected ArrayList commands;
 	
 	protected boolean isLayoutCenter;
 	protected boolean isLayoutExpand;
@@ -913,7 +918,12 @@ public abstract class Item extends Object
 		}
 		if (!this.commands.contains( cmd )) {
 			this.commands.add(cmd);
-			repaint();
+			if (this.appearanceMode == PLAIN) {
+				this.appearanceMode = HYPERLINK;
+			}
+			if (this.isInitialised) {
+				repaint();
+			}
 		}
 	}
 
@@ -1017,14 +1027,17 @@ public abstract class Item extends Object
 	 * Sets a listener for <code>Commands</code> to this <code>Item</code>,
 	 * replacing any previous
 	 * <code>ItemCommandListener</code>. A <code>null</code> reference
-	 * is allowed and has the effect of
-	 * removing any existing listener.
+	 * is allowed and has the effect of removing any existing listener.
+	 * 
+	 * When no listener is registered, J2ME Polish notofies the 
+	 * command-listener of the current screen, when an item command 
+	 * has been selected.
 	 * 
 	 * <p>It is illegal to call this method if this <code>Item</code>
 	 * is contained within an <code>Alert</code>.</p>
 	 * 
-	 * @param l - the new listener, or null.
-	 * @throws IllegalStateException - if this Item is contained within an Alert
+	 * @param l the new listener, or null.
+	 * @throws IllegalStateException if this Item is contained within an Alert
 	 * @since  MIDP 2.0
 	 */
 	public void setItemCommandListener( ItemCommandListener l)
@@ -1574,11 +1587,21 @@ public abstract class Item extends Object
 	 * Please note, that implementation should first try to handle the
 	 * given key-code, before the game-action is processed.
 	 * 
+	 * The default implementation just handles the FIRE game-action
+	 * when a default-command and an item-command-listener have been
+	 * registered.
+	 * 
 	 * @param keyCode the code of the pressed key, e.g. Canvas.KEY_NUM2
 	 * @param gameAction the corresponding game-action, e.g. Canvas.UP
-	 * @return
+	 * @return true when the key has been handled / recognized
 	 */
 	protected boolean handleKeyPressed( int keyCode, int gameAction ) {
+		if ((gameAction == Canvas.FIRE) 
+				&& (this.defaultCommand != null)
+				&& (this.itemCommandListener != null)) {
+			this.itemCommandListener.commandAction(this.defaultCommand, this);
+			return true;
+		}
 		return false;
 	}
 
@@ -1602,6 +1625,13 @@ public abstract class Item extends Object
 		Style oldStyle = this.style;
 		setStyle( focusedStyle );
 		this.isFocused = true;
+		// now set any commands of this item:
+		if (this.commands != null) {
+			Screen scr = getScreen();
+			if (scr != null) {
+				scr.setItemCommands(this);
+			}
+		}
 		return oldStyle;
 	}
 	
@@ -1615,6 +1645,13 @@ public abstract class Item extends Object
 			setStyle( originalStyle );
 		}
 		this.isFocused = false;
+		// now remove any commands which are associated with this item:
+		if (this.commands != null) {
+			Screen scr = getScreen();
+			if (scr != null) {
+				scr.removeItemCommands(this);
+			}
+		}
 	}
 	
 }

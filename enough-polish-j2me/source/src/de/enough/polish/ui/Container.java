@@ -26,11 +26,11 @@
  */
 package de.enough.polish.ui;
 
-import de.enough.polish.util.ArrayList;
-import de.enough.polish.util.TextUtil;
-
 import javax.microedition.lcdui.Canvas;
 import javax.microedition.lcdui.Graphics;
+
+import de.enough.polish.util.ArrayList;
+import de.enough.polish.util.TextUtil;
 
 /**
  * <p>Contains a number of items.</p>
@@ -197,7 +197,20 @@ public class Container extends Item {
 	 */
 	public Item remove( int index ) {
 		this.isInitialised = false;
-		return (Item) this.itemsList.remove(index);
+		Item removedItem = (Item) this.itemsList.remove(index);
+		// check if the currenlty focused item has been removed:
+		if (index == this.focusedIndex) {
+			// focus the first possible item:
+			Item[] myItems = (Item[]) this.itemsList.toArray( new Item[ this.itemsList.size() ]);
+			for (int i = 0; i < myItems.length; i++) {
+				Item item = myItems[i];
+				if (item.appearanceMode != PLAIN) {
+					focus( i, item );
+					break;
+				}
+			}
+		}
+		return removedItem;
 	}
 	
 	/**
