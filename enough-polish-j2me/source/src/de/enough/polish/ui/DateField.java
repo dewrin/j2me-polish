@@ -249,11 +249,23 @@ implements CommandListener
 		// set date:
 		if (date == null ) {
 			if (this.mode == DATE) {
-				this.text = "YYYY-MM-DD";
+				//#if polish.DateFormat == us
+					this.text = "MM-DD-YYYY";
+				//#elif polish.DateFormat == de
+					this.text = "TT.MM.JJJJ";
+				//#else
+					this.text = "YYYY-MM-DD";
+				//#endif
 			} else if (this.mode == TIME) {
 				this.text = "hh:mm";
 			} else {
-				this.text = "YYYY-MM-DD hh:mm";				
+				//#if polish.DateFormat == us
+					this.text = "MM-DD-YYYY hh:mm";
+				//#elif polish.DateFormat == de
+					this.text = "TT.MM.JJJJ hh:mm";
+				//#else
+					this.text = "YYYY-MM-DD hh:mm";				
+				//#endif
 			}
 		} else {
 			if (this.calendar == null) {
@@ -264,19 +276,45 @@ implements CommandListener
 			StringBuffer buffer = new StringBuffer();
 			if ((this.mode == DATE) || (this.mode == DATE_TIME)) {
 				int year = this.calendar.get(Calendar.YEAR);
-				buffer.append( year )
-				      .append("-");
 				int month = this.calendar.get( Calendar.MONTH );
-				if (month < 9) {
-					buffer.append('0');
-				}
-				buffer.append( ++month )
-			          .append("-");
 				int day = this.calendar.get( Calendar.DAY_OF_MONTH );
-				if (day < 10) {
-					buffer.append( '0' );
-				}
-				buffer.append( day );
+				//#if polish.DateFormat == us
+					if (month < 9) {
+						buffer.append('0');
+					}
+					buffer.append( ++month )
+				          .append("-");
+					if (day < 10) {
+						buffer.append( '0' );
+					}
+					buffer.append( day )
+						  .append("-");
+					buffer.append( year );
+				//#elif polish.DateFormat == de
+					if (day < 10) {
+						buffer.append( '0' );
+					}
+					buffer.append( day )
+						  .append(".");
+					if (month < 9) {
+						buffer.append('0');
+					}
+					buffer.append( ++month )
+				          .append(".");
+					buffer.append( year );
+				//#else
+					buffer.append( year )
+					      .append("-");
+					if (month < 9) {
+						buffer.append('0');
+					}
+					buffer.append( ++month )
+				          .append("-");
+					if (day < 10) {
+						buffer.append( '0' );
+					}
+					buffer.append( day );
+				//#endif
 				if  (this.mode == DATE_TIME) {
 					buffer.append(' ');
 				}
@@ -407,7 +445,6 @@ implements CommandListener
 		if (heightStr != null) {
 			this.minimumHeight = Integer.parseInt( heightStr );
 		}
-		//TODO rob allow specification of DateFormat
 	}
 	
 	/* (non-Javadoc)
@@ -450,9 +487,6 @@ implements CommandListener
 	private void showDateForm() {
 		if (this.midpDateField == null) {
 			this.midpDateField = new javax.microedition.lcdui.DateField( this.label, this.mode, this.timeZone );
-			if (this.date == null) {
-				this.date = new Date();
-			}
 			this.midpDateField.setDate( this.date );
 			this.form = new javax.microedition.lcdui.Form( StyleSheet.currentScreen.getTitle() );
 			this.form.append( this.midpDateField );
