@@ -1,5 +1,5 @@
 <project 
-	name="enough-polish-build" 
+	name="enough-polish-dict" 
 	default="polish">
 
   <!-- needed polish settings -->
@@ -14,7 +14,7 @@
 
 <!-- task definitions -->
 
-<taskdef name="polish" classname="de.enough.polish.ant.PolishTask" classpath="import/enough-polish.jar:import/jdom.jar"/>
+<taskdef name="polish" classname="de.enough.polish.ant.PolishTask" classpath="import/enough-polish.jar:import/jdom.jar:import.proguard.jar"/>
 
 
 <!-- build targets, each target can be called via "ant [name]", e.g. "ant clean" -->
@@ -88,6 +88,12 @@
 			<variables>
 				<variable name="update-url" value="http://www.enough.de/update" />
 			</variables>
+			<!-- obfuscator settings -->
+			<obfuscator name="ProGuard" enable="true" >
+				<!--
+				<keep class="de.enough.polish.dict.UnusedClass" />
+				-->
+			</obfuscator>
 			<!-- sources -->
 			<source
 				url="./source/src"
@@ -105,6 +111,27 @@
 		</build>
 	</polish>
 </target>
+
+<target name="doc">
+	<javadoc 
+        	destdir="doc" 
+        	access="public" 
+        	use="true" 
+        	notree="false" 
+        	nonavbar="false" 
+        	noindex="false" 
+        	splitindex="true" 
+        	author="true" 
+        	version="true" 
+        	nodeprecatedlist="false" 
+        	nodeprecated="false" 
+        	packagenames="de.enough.*" 
+        	sourcepath="source/src" 
+        	classpath="bin/classes:import/midpapi.zip:import/bluetooth.zip:import/mma.zip:import/nokiaui.zip:import/wma.zip:import/junit.jar" 
+        	doctitle="the polish framework"
+	/>
+</target>
+
 
 <target name="clean" depends="init">
 	<delete dir="build" />
