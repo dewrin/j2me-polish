@@ -181,12 +181,11 @@
 		<fileset dir="." includes="apis.xml,vendors.xml,groups.xml,devices.xml, build/j2mepolish.index.txt" />
 		<fileset dir="../enough-polish-j2me/source" includes="src/**/*.java" />
 	</jar>
-	<!-- create the binary J2ME util distribution -->
-	<jar destfile="dist/enough-j2mepolish-util.jar"
+	<!-- create the binary J2ME distribution -->
+	<jar destfile="dist/enough-j2mepolish-client.jar"
 	     basedir="../enough-polish-j2me/bin/classes"
 		 excludes="**/*.html"
 		 index="true"
-		 includes="de/enough/polish/util/*.class"
 	     >
 	</jar>
 </target>
@@ -198,7 +197,7 @@
 	<mkdir dir="tmp/import" />
 	<!-- create the installation zip file -->
 	<copy todir="tmp/" >
-		<fileset dir="." includes="apis.xml,vendors.xml,groups.xml,devices.xml" />
+		<fileset dir="." includes="apis.xml,vendors.xml,groups.xml,devices.xml,LICENSE.txt" />
 		<fileset dir="setup" />
 	</copy>
 	<copy todir="tmp/import">

@@ -1,9 +1,26 @@
 //#condition polish.usePolishGui
 /*
  * Created on 12-Mar-2004 at 21:46:17.
- * This source code is published under the GNU General Public Licence and
- * the enough-software-licence for commercial use.
- * Please refer to accompanying LICENSE.txt or visit www.enough.de for details.
+ * 
+ * This file is part of J2ME Polish.
+ *
+ * J2ME Polish is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * J2ME Polish is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ * Commercial licenses are also available, please
+ * refer to the accompanying LICENSE.txt or visit
+ * www.enough.de/j2mepolish for details.
  */
 package de.enough.polish.ui;
 
@@ -88,9 +105,10 @@ extends Canvas
 		private boolean menuOpened;
 		private Font menuFont = Font.getFont( Font.FACE_SYSTEM, Font.STYLE_BOLD, Font.SIZE_MEDIUM );
 		private int menuFontColor = 0;
-		private int menuHeightClosed = this.menuFont.getHeight() + 2;
+		private int menuBarHeight = this.menuFont.getHeight() + 2;
 		private int menuMaxWidth = ( getWidth() * 2 ) / 3;
 		private int menuBarColor = 0xFFFFFF;
+		private int fullScreenHeight;
 	//#endif
 
 	/**
@@ -111,7 +129,12 @@ extends Canvas
 	 */
 	public Screen( String title, Style style ) {
 		super();
-		this.screenHeight = getHeight();
+		//#ifdef tmp.menuFullScreen
+		this.fullScreenHeight = super.getHeight();
+		this.screenHeight = this.fullScreenHeight - this.menuBarHeight;
+		//#else
+		this.screenHeight = super.getHeight();
+		//#endif
 		this.screenWidth = getWidth();
 		this.container = new Container( true );
 		this.container.screen = this;
@@ -126,16 +149,10 @@ extends Canvas
 	 */
 	public void setStyle(Style style) {
 		this.style = style;
-		if (style != null) {
-			this.background = style.background;
-			this.border = style.border;
-			this.container.setStyle(style, true);
-			this.isLayoutVCenter = (( style.layout & Item.LAYOUT_VCENTER ) == Item.LAYOUT_VCENTER);
-		} else {
-			this.isLayoutVCenter = false;
-			this.background = null;
-			this.border = null;
-		}
+		this.background = style.background;
+		this.border = style.border;
+		this.container.setStyle(style, true);
+		this.isLayoutVCenter = (( style.layout & Item.LAYOUT_VCENTER ) == Item.LAYOUT_VCENTER);
 		//#ifdef tmp.menuFullScreen
 		Style menuStyle = StyleSheet.getStyle("menu");
 		if (menuStyle != null) {
@@ -143,10 +160,13 @@ extends Canvas
 			if (colorStr != null) {
 				this.menuBarColor = Integer.parseInt(colorStr);
 			}
-			colorStr = menuStyle.getProperty("menufont-color");
-			if (colorStr != null) {
-				this.menuFontColor = Integer.parseInt(colorStr);
+			this.menuFontColor = menuStyle.labelFontColor;
+			if (menuStyle.labelFont != null) {
+				this.menuFont = menuStyle.labelFont;
+				this.menuBarHeight = this.menuFont.getHeight() + 2;
+				this.screenHeight = this.fullScreenHeight - this.menuBarHeight;
 			}
+			
 		}
 		//#endif
 	}
@@ -171,7 +191,11 @@ extends Canvas
 	protected void paint(Graphics g) {
 		// paint background:
 		if (this.background != null) {
+			//#ifdef tmp.menuFullScreen
+			this.background.paint(0, 0, this.screenWidth, this.fullScreenHeight, g);
+			//#else
 			this.background.paint(0, 0, this.screenWidth, this.screenHeight, g);
+			//#endif
 		}
 		// paint title:
 		if (this.title != null) {
@@ -179,15 +203,18 @@ extends Canvas
 		}
 		
 		int y = this.titleHeight;
-		
-		// paint content:
-		//#ifdef tmp.menuFullScreen
-		g.setClip(0, y, this.screenWidth, this.screenHeight - y - this.menuHeightClosed);
-		//#else
+		// protect the title and the full-screen-menu area:
 		g.setClip(0, y, this.screenWidth, this.screenHeight - y );
-		//#endif
-		paintScreen( 0, y, this.screenWidth, g);
+		// paint content:
+		g.translate( 0, y );
+		paintScreen( g);
+		g.translate( 0, -y );
+		// allow painting outside of the screen again:
+		//#ifdef tmp.menuFullScreen
+		g.setClip(0, 0, this.screenWidth, this.fullScreenHeight );
+		//#else
 		g.setClip(0, 0, this.screenWidth, this.screenHeight );
+		//#endif
 		
 		// paint border:
 		if (this.border != null) {
@@ -198,19 +225,19 @@ extends Canvas
 		//#ifdef tmp.menuFullScreen
 			if (this.menuOpened) {
 				int menuHeight = this.menuContainer.getItemHeight(this.menuMaxWidth, this.menuMaxWidth);
-				y = this.screenHeight - (menuHeight + this.menuHeightClosed + 2);
+				y = this.screenHeight - menuHeight;
 				if (y < this.titleHeight) {
 					y = this.titleHeight; 
+					this.menuContainer.setVerticalDimensions(y, this.screenHeight);
 				}
 				this.menuContainer.paint(0, y, 0, this.menuMaxWidth, g);
 			} 
+			// clear menu-bar:
+			if (this.menuBarColor != Item.TRANSPARENT) {
+				g.setColor( this.menuBarColor );
+				g.fillRect(0, this.screenHeight, this.screenWidth,  this.menuBarHeight );
+			}
 			if (this.menuContainer.size() > 0) {
-				// clear menu-bar:
-				int yStart = this.screenHeight - this.menuHeightClosed;
-				if (this.menuBarColor != Item.TRANSPARENT) {
-					g.setColor( this.menuBarColor );
-					g.fillRect(0, yStart, this.screenWidth,  this.menuHeightClosed );
-				}
 				String menuText = null;
 				if (this.menuOpened) {
 					//TODO rob internationalise cmd.selectMenu
@@ -225,12 +252,12 @@ extends Canvas
 				}
 				g.setColor( this.menuFontColor );
 				g.setFont( this.menuFont );
-				g.drawString(menuText, 2, yStart + 1, Graphics.TOP | Graphics.LEFT );
+				g.drawString(menuText, 2, this.screenHeight + 1, Graphics.TOP | Graphics.LEFT );
 				if ( this.menuOpened ) {
 					// draw select string:
 					//TODO rob internationalise cmd.cancelMenu
 					menuText = "Cancel";
-					g.drawString(menuText, this.screenWidth - 2, yStart + 1, Graphics.TOP | Graphics.RIGHT );
+					g.drawString(menuText, this.screenWidth - 2, this.screenHeight + 1, Graphics.TOP | Graphics.RIGHT );
 				}
 			}
 		//#endif
@@ -240,25 +267,18 @@ extends Canvas
 	/**
 	 * Paints the screen.
 	 * 
-	 * @param x the horizontal start position
-	 * @param y the vertical start position
-	 * @param rightBorder the vertical position of the right border of the screen.
-	 * 		       No painting right of this position is allowed.
 	 * @param g the graphics on which the screen should be painted
 	 */
-	protected void paintScreen( int x, int y, int rightBorder, Graphics g ) {
+	protected void paintScreen( Graphics g ) {
+		int y = 0;
 		if (this.isLayoutVCenter) {
-			int containerHeight = this.container.getItemHeight( rightBorder, rightBorder);
-			int availableHeight = this.screenHeight - y - containerHeight;
-			//#ifdef tmp.menuFullScreen
-			availableHeight -= (this.menuFont.getHeight() + 1);
-			//#endif
-			
+			int containerHeight = this.container.getItemHeight( this.screenWidth, this.screenWidth);
+			int availableHeight = this.screenHeight - this.titleHeight - containerHeight;
 			if (availableHeight > 0) {
-				y += (availableHeight / 2);
+				y = (availableHeight / 2);
 			}
 		}
-		this.container.paint( x, y, x, rightBorder, g );
+		this.container.paint( 0, y, 0, this.screenWidth, g );
 	}
 	
 	/**
@@ -297,11 +317,7 @@ extends Canvas
 			this.title = null;
 			this.titleHeight = 0;
 		}
-		//#ifdef tmp.menuFullScreen
-		this.container.setVerticalDimensions( this.titleHeight,  this.screenHeight - this.menuHeightClosed );
-		//#else
-		this.container.setVerticalDimensions( this.titleHeight,  this.screenHeight );
-		//#endif
+		this.container.setVerticalDimensions( 0,  this.screenHeight );
 		if (isShown()) {
 			repaint();
 		}
@@ -511,5 +527,12 @@ extends Canvas
 				Debug.debug("unable to process command [" + cmd.getLabel() + "]: " + e.getMessage(), e );
 			}
 		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see javax.microedition.lcdui.Canvas#getHeight()
+	 */
+	public int getHeight() {
+		return this.screenHeight - this.titleHeight;
 	}
 }
