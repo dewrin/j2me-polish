@@ -29,6 +29,7 @@ public class StringItem extends Item
 	private String[] textLines;
 	private int textColor;
 	private Font font;
+	private boolean isSingleLine;
 
 	/**
 	 * Creates a new <code>StringItem</code> object.  Calling this
@@ -214,25 +215,21 @@ public class StringItem extends Item
 	 */
 	public void paintContent(int x, int y, int leftBorder, int rightBorder, Graphics g) {
 		if (this.text != null) {
-			int lineHeight = this.font.getHeight() + this.paddingVertical; 
 			g.setFont( this.font );
 			g.setColor( this.textColor );
-			int centerX = (rightBorder - leftBorder) / 2;
+			int lineHeight = this.font.getHeight() + this.paddingVertical; 
+			int centerX = leftBorder + (rightBorder - leftBorder) / 2;
+			//System.out.println("StringItem-centerX=" + centerX );
 			for (int i = 0; i < this.textLines.length; i++) {
 				String line = this.textLines[i];
-				//TODO rob check layout when i != 0
-				if (i ==0) {
-					g.drawString( line, x, y, Graphics.TOP | Graphics.LEFT );
+				// adjust the painting according to the layout:
+				if (this.isLayoutRight) {
+					g.drawString( line, rightBorder, y, Graphics.TOP | Graphics.RIGHT );
+				} else if (this.isLayoutCenter) {
+					g.drawString( line, centerX, y, Graphics.TOP | Graphics.HCENTER );
 				} else {
-					// needs to be checked:
-					if (this.isLayoutRight) {
-						g.drawString( line, rightBorder, y, Graphics.TOP | Graphics.RIGHT );
-					} else if (this.isLayoutCenter) {
-						g.drawString( line, centerX, y, Graphics.TOP | Graphics.HCENTER );
-					} else {
-						// left layout
-						g.drawString( line, leftBorder, y, Graphics.TOP | Graphics.LEFT );
-					}
+					// left layout
+					g.drawString( line, leftBorder, y, Graphics.TOP | Graphics.LEFT );
 				}
 				y += lineHeight;
 			}
@@ -265,6 +262,7 @@ public class StringItem extends Item
 		}
 		this.contentWidth = maxWidth;
 		this.textLines = lines;
+		this.isSingleLine = (lines.length == 1);
 	}
 
 	/* (non-Javadoc)

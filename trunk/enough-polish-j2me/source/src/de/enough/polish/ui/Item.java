@@ -1168,6 +1168,7 @@ public abstract class Item extends Object
 					System.out.println( this.style.name + ": centering item by " + ((itemSpace - this.itemWidth) / 2)+ " pixels, event though LAYOUT_EXPAND is set!");
 				}
 				*/
+				//System.out.println("itemSpace=" + itemSpace + "  itemWidth=" + this.itemWidth + "  x-increase=" + ((itemSpace - this.itemWidth) / 2));
 				x+= (itemSpace - this.itemWidth) / 2;
 				doCenter = false;
 			}
