@@ -270,10 +270,8 @@ public class StringItem extends Item
 	 */
 	public void setStyle(Style style) {
 		super.setStyle(style);
-		if (style != null) {
-			this.textColor = style.fontColor;
-			this.font = style.font;
-		}
+		this.textColor = style.fontColor;
+		this.font = style.font;
 	}
 
 	//#ifdef polish.useDynamicStyles

@@ -15,7 +15,7 @@ import javax.microedition.lcdui.Graphics;
 
 /**
  * <p>Contains a number of items.</p>
- * <p>Main purpose is to manage all items of a Form or similiar canvasses.</p>
+ * <p>Main purpose is to manage all items of a Form or similiar canvases.</p>
  * <p>Containers support following CSS attributes:
  * <ul>
  * 		<li><b>focused</b>: The name of the focused style, e.g. "style( funnyFocused );"
@@ -59,6 +59,10 @@ public class Container extends Item {
 	private int[] columnsWidths;
 	private int[] rowsHeights;
 	private int numberOfRows;
+	private boolean enableScrolling;
+	private int yTop;
+	private int yBottom;
+	private int yOffset;
 	
 	/**
 	 * Creates a new empty container.
@@ -66,7 +70,7 @@ public class Container extends Item {
 	 * @param focusFirstElement true when the first focussable element should be focused automatically.
 	 */
 	public Container( boolean focusFirstElement ) {
-		this( focusFirstElement, null );
+		this( focusFirstElement, null, -1, -1 );
 	}
 	
 	/**
@@ -76,6 +80,19 @@ public class Container extends Item {
 	 * @param style the style for this container
 	 */
 	public Container(boolean focusFirstElement, Style style) {
+		this( focusFirstElement, style, -1, -1 );
+	}
+
+	/**
+	 * Creates a new empty container.
+	 * 
+	 * @param focusFirstElement true when the first focussable element should be focused automatically.
+	 * @param style the style for this container
+	 * @param yTop the vertical start of the screen - used for scrolling. -1 when not set.
+	 * @param yBottom the vertical end of the scren - used for scrolling -1 when not set.
+	 * @see #setVerticalDimensions(int, int ) 
+	 */
+	public Container(boolean focusFirstElement, Style style, int yTop, int yBottom ) {
 		super( style );
 		this.itemsList = new ArrayList();
 		this.focusFirstElement = focusFirstElement;
@@ -83,35 +100,93 @@ public class Container extends Item {
 			this.focusedStyle = StyleSheet.focusedStyle;
 		}
 		this.layout |= Item.LAYOUT_NEWLINE_BEFORE;
+		setVerticalDimensions(yTop, yBottom);
 	}
-
+	
+	/**
+	 * Sets the scrolling parameter for this container.
+	 * 
+	 * @param yTop the start of the screen for this container, -1 when scrolling should not be done.
+	 * @param yBottom the end of the screen for this container, -1 when scrolling should not be done.
+	 */
+	public void setVerticalDimensions( int yTop, int yBottom ) {
+		this.yTop = yTop;
+		this.yBottom = yBottom;
+		this.enableScrolling = (yTop != -1);
+	}
+	
+	/**
+	 * Adds an item to this container.
+	 * 
+	 * @param item the item which should be added.
+	 * @throws IllegalArgumentException when the given item is null
+	 */
 	public void add( Item item ) {
 		this.isInitialised = false;
 		item.parent = this;
 		this.itemsList.add( item );
 	}
 
+	/**
+	 * Inserts the given item at the defined position.
+	 * Any following elements are shifted one position to the back.
+	 * 
+	 * @param index the position at which the element should be inserted, 
+	 * 					 use 0 when the element should be inserted in the front of this list.
+	 * @param item the item which should be inserted
+	 * @throws IllegalArgumentException when the given item is null
+	 * @throws IndexOutOfBoundsException when the index < 0 || index >= size()
+	 */
 	public void add( int index, Item item ) {
 		this.isInitialised = false;
 		item.parent = this;
 		this.itemsList.add( index, item );
 	}
 	
-	public void set( int index, Item item ) {
+	/**
+	 * Replaces the item at the specified position in this list with the given item. 
+	 * 
+	 * @param index the position of the element, the first element has the index 0.
+	 * @param item the item which should be set
+	 * @return the replaced item
+	 * @throws IndexOutOfBoundsException when the index < 0 || index >= size()
+	 */
+	public Item set( int index, Item item ) {
 		this.isInitialised = false;
 		item.parent = this;
-		this.itemsList.set( index, item );
+		return (Item) this.itemsList.set( index, item );
 	}
 	
+	/**
+	 * Returns the item at the specified position of this container.
+	 *  
+	 * @param index the position of the desired item.
+	 * @return the item stored at the given position
+	 * @throws IndexOutOfBoundsException when the index < 0 || index >= size()
+	 */
 	public Item get( int index ) {
 		return (Item) this.itemsList.get( index );
 	}
 	
+	/**
+	 * Removes the item at the specified position of this container.
+	 *  
+	 * @param index the position of the desired item.
+	 * @return the item stored at the given position
+	 * @throws IndexOutOfBoundsException when the index < 0 || index >= size()
+	 */
 	public Item remove( int index ) {
 		this.isInitialised = false;
 		return (Item) this.itemsList.remove(index);
 	}
 	
+	/**
+	 * Removes the given item.
+	 * 
+	 * @param item the item which should be removed.
+	 * @return true when the item was found in this list.
+	 * @throws IllegalArgumentException when the given item is null
+	 */
 	public boolean remove( Item item ) {
 		this.isInitialised = false;
 		return this.itemsList.remove( item ); 
@@ -148,17 +223,17 @@ public class Container extends Item {
 	}
 	
 	/**
-	 * Focusses the specified item.
+	 * Focuses the specified item.
 	 * 
 	 * @param index the index of the item. The first item has the index 0. 
 	 * @return true when the specified item could be focused.
 	 * 		   It needs to have an appearanceMode which is not Item.PLAIN to
-	 *         be focussable.
+	 *         be focusable.
 	 */
 	public boolean focus(int index) {
 		Item item = this.items[ index ];
 		if (item.appearanceMode != Item.PLAIN) {
-			focus( index, item );
+			focus( index, item );			
 			return true;
 		}
 		return false;
@@ -180,6 +255,22 @@ public class Container extends Item {
 		this.focusedIndex = index;
 		this.focusedItem = item;
 		item.setStyle( this.focusedStyle );
+		if (this.enableScrolling && this.isInitialised) {
+			// this container has been painted already,
+			// so the dimensions are known.
+			// Now adjust the scrolling:
+			int itemYTop = item.yTopPos;
+			int itemYBottom = item.yBottomPos;
+				
+			if (itemYBottom > this.yBottom) {
+				// this item is too low:
+				this.yOffset -= ( itemYBottom - this.yBottom ); 
+			} else if (itemYTop < this.yTop) {
+				// this item is too high:
+				this.yOffset += ( this.yTop - itemYTop ); 
+			}
+			
+		}
 		this.isInitialised = false;
 	}
 
@@ -226,7 +317,7 @@ public class Container extends Item {
 				this.columnsWidths[i] = availableColumnWidth;
 			}
 		}
-		this.numberOfRows = (myItems.length / this.numberOfColumns) + 1;
+		this.numberOfRows = (myItems.length / this.numberOfColumns) + (myItems.length % 2);
 		this.rowsHeights = new int[ this.numberOfRows ];
 		int maxRowHeight = 0;
 		int columnIndex = 0;
@@ -297,6 +388,8 @@ public class Container extends Item {
 		// paints all items,
 		// the layout will be done according to this containers'
 		// layout or according to the items layout, when specified.
+		// adjust vertical start for scrolling:
+		y += this.yOffset;
 		if (this.columnsSetting == NO_COLUMNS) {
 			for (int i = 0; i < this.items.length; i++) {
 				Item item = this.items[i];
@@ -343,25 +436,44 @@ public class Container extends Item {
 			}
 			
 		}
+		boolean processed = false;
 		if ( gameAction == Canvas.RIGHT || gameAction == Canvas.DOWN ) {
 			if (gameAction == Canvas.DOWN && this.columnsSetting != NO_COLUMNS) {
 				int currentRow = this.focusedIndex / this.numberOfColumns;
 				if (currentRow < this.numberOfRows - 1) {
-					return shiftFocus( true, this.numberOfColumns - 1 );
+					processed = shiftFocus( true, this.numberOfColumns - 1 );
 				}
 			}
-			return shiftFocus( true, 0 );
+			if (!processed) {
+				processed = shiftFocus( true, 0 );
+			}
+			if ((!processed) && this.enableScrolling 
+					&&  (this.yBottomPos + this.yOffset > this.yBottom)) {
+				// scroll downwards:
+				this.yOffset -= 10;
+				processed = true;
+				System.out.println("yBottomPos: " + this.yBottomPos + "  yBottom: " + this.yBottom );
+			}
 		} else if ( gameAction == Canvas.LEFT || gameAction == Canvas.UP ) {
 			if (gameAction == Canvas.UP && this.columnsSetting != NO_COLUMNS) {
 				int currentRow = this.focusedIndex / this.numberOfColumns;
 				if (currentRow > 0) {
-					return shiftFocus( false,  -(this.numberOfColumns -1 ));
+					processed = shiftFocus( false,  -(this.numberOfColumns -1 ));
 				}
 			}
-			return shiftFocus( false, 0 );
-		} else {
-			return false;
+			if (!processed) {
+				processed = shiftFocus( false, 0 );
+			}
+			if ((!processed) && this.enableScrolling && (this.yOffset < 0)) {
+				// scroll upwards:
+				this.yOffset += 10;
+				if (this.yOffset > 0) {
+					this.yOffset = 0;
+				}
+				processed = true;
+			}
 		}
+		return processed;
 	}
 
 	/**

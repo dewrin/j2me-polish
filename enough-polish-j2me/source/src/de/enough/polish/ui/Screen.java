@@ -68,6 +68,7 @@ extends Canvas
 {
 	
 	protected StringItem title;
+	protected int titleHeight;
 	protected Background background;
 	protected Border border;
 	protected Style style;
@@ -110,14 +111,11 @@ extends Canvas
 	 */
 	public Screen( String title, Style style ) {
 		super();
-		if (title != null) {
-			//#style title, default
-			this.title = new StringItem( null, title );
-		}
 		this.screenHeight = getHeight();
 		this.screenWidth = getWidth();
 		this.container = new Container( true );
 		this.container.screen = this;
+		setTitle( title );
 		setStyle( style );
 	}
 
@@ -175,26 +173,34 @@ extends Canvas
 		if (this.background != null) {
 			this.background.paint(0, 0, this.screenWidth, this.screenHeight, g);
 		}
-		int y = 0;
 		// paint title:
 		if (this.title != null) {
 			this.title.paint(0, 0, 0, this.screenWidth, g);
-			y = this.title.getItemHeight( this.screenWidth, this.screenWidth );
 		}
+		
+		int y = this.titleHeight;
+		
 		// paint content:
+		//#ifdef tmp.menuFullScreen
+		g.setClip(0, y, this.screenWidth, this.screenHeight - y - this.menuHeightClosed);
+		//#else
+		g.setClip(0, y, this.screenWidth, this.screenHeight - y );
+		//#endif
 		paintScreen( 0, y, this.screenWidth, g);
+		g.setClip(0, 0, this.screenWidth, this.screenHeight );
+		
 		// paint border:
 		if (this.border != null) {
 			this.border.paint(0, 0, this.screenWidth, this.screenHeight, g);
 		}
+		
+		// paint menu in full-screen mode:
 		//#ifdef tmp.menuFullScreen
 			if (this.menuOpened) {
 				int menuHeight = this.menuContainer.getItemHeight(this.menuMaxWidth, this.menuMaxWidth);
-				int titleHeight = this.title.getItemHeight( this.screenWidth, this.screenWidth )
-					+ 1; //TODO add paddingVertical?
 				y = this.screenHeight - (menuHeight + this.menuHeightClosed + 2);
-				if (y < titleHeight) {
-					y = titleHeight; 
+				if (y < this.titleHeight) {
+					y = this.titleHeight; 
 				}
 				this.menuContainer.paint(0, y, 0, this.menuMaxWidth, g);
 			} 
@@ -283,14 +289,19 @@ extends Canvas
 	 */
 	public void setTitle( String s)
 	{
-		if (this.title == null ) {
-			if (s != null) {
-				//#style title, default
-				this.title = new StringItem( null, s );
-			}
+		if (s != null) {
+			//#style title, default
+			this.title = new StringItem( null, s );
+			this.titleHeight = this.title.getItemHeight(this.screenWidth, this.screenWidth);
 		} else {
-			this.title.setText(s);
+			this.title = null;
+			this.titleHeight = 0;
 		}
+		//#ifdef tmp.menuFullScreen
+		this.container.setVerticalDimensions( this.titleHeight,  this.screenHeight - this.menuHeightClosed );
+		//#else
+		this.container.setVerticalDimensions( this.titleHeight,  this.screenHeight );
+		//#endif
 		if (isShown()) {
 			repaint();
 		}
@@ -459,7 +470,7 @@ extends Canvas
 		this.cmdListener = listener;
 	}
 	
-	//#if tmp.menuFullScreen
+	//#ifdef tmp.menuFullScreen
 	/* (non-Javadoc)
 	 * @see javax.microedition.lcdui.Displayable#addCommand(javax.microedition.lcdui.Command)
 	 */
@@ -482,7 +493,7 @@ extends Canvas
 	 * @see javax.microedition.lcdui.Displayable#removeCommand(javax.microedition.lcdui.Command)
 	 */
 	public void removeCommand(Command cmd) {
-		// TODO enough implement removeCommand
+		// TODO enough implement Screen.removeCommand
 	}
 	//#endif
 	
