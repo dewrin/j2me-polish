@@ -221,11 +221,11 @@ implements ImageConsumer
 	 * @param propName the name of the property
 	 * @return the value of this property. If none has been defined, null will be returned.
 	 */
-	public Object getProperty( String propName ) {
+	public String getProperty( String propName ) {
 		if (this.properties ==null) {
 			return null;
 		}
-		return this.properties.get( propName );
+		return (String) this.properties.get( propName );
 	}
 
 	//#ifdef tmp.imageConsumer

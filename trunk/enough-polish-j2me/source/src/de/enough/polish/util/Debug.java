@@ -6,7 +6,8 @@
  */
 package de.enough.polish.util;
 
-//#ifdef polish.debug.visual
+//#ifdef polish.useDebugGui
+import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.Form;
 import javax.microedition.lcdui.StringItem;
 //#endif
@@ -22,8 +23,9 @@ import javax.microedition.lcdui.StringItem;
  * @author Robert Virkus, robert@enough.de
  */
 public final class Debug {
-	//#ifdef polish.debug.visual
-	static final ArrayList MESSAGES = new ArrayList( 100 );
+	//#ifdef polish.useDebugGui
+	public static final Command RETURN_COMMAND = new Command( "return", Command.SCREEN, 1 );
+	private static final ArrayList MESSAGES = new ArrayList( 100 );
 	//#endif
 	
 	/**
@@ -40,10 +42,19 @@ public final class Debug {
 	 * Prints a message.
 	 * 
 	 * @param message the message.
+	 */
+	public static final void debug( String message ) {
+		debug( message, null );
+	}
+	
+	/**
+	 * Prints a message.
+	 * 
+	 * @param message the message.
 	 * @param exception the exception
 	 */
 	public static final void debug( String message, Throwable exception ) {
-		//#ifndef polish.debug.visual
+		//#ifndef polish.useDebugGui
 		System.out.println( message );
 		if (exception != null) {
 			exception.printStackTrace();
@@ -56,18 +67,9 @@ public final class Debug {
 		}
 		//#endif
 	}
-	
-	/**
-	 * Prints a message.
-	 * 
-	 * @param message the message.
-	 */
-	public static final void debug( String message ) {
-		debug( message, null );
-	}
-	
-	//#ifdef polish.debug.visual
-	static final Form getMessagesBox( boolean reverseSort ) {
+		
+	//#ifdef polish.useDebugGui
+	public static final Form getLogForm( boolean reverseSort ) {
 		String[] messages = (String[]) MESSAGES.toArray( new String[ MESSAGES.size() ] );
 		StringItem[] items = new StringItem[ messages.length ];
 		int index = messages.length - 1;
@@ -81,8 +83,12 @@ public final class Debug {
 			}
 			items[i] = new StringItem( null, message );
 		}
-		return new Form( "debug", items );
+		Form form = new Form( "debug", items );
+		form.addCommand(RETURN_COMMAND);
+		return form;
 	}
 	//#endif
 	
 }
+
+

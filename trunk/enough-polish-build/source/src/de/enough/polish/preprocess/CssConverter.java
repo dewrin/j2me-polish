@@ -17,21 +17,6 @@ import java.util.HashMap;
 
 /**
  * <p>Converts CSS files to Java-Code.</p>
- * general thoughts:
- * - all widgets, backgrounds and borders have an xml-file describing the possible parameters
- *   (for the predefined widgets, this xml-file is build-in)
- *   ImageItem.xml:
- * 	<parameters> !!es muessen nur zusaetzliche parameter beschrieben werden!
- * 		<parameter name="image" alt="img,img-source" type="String" mandatory="yes" />
- * 		??<parameter name="style" type="Style" mandatory="yes" default="ImageItem" />
- * 	</parameters>
- * 	<selector default="image" alt="img,images" />
- * - The Css2Java-Task will create backgrounds and borders directly
- * - also the new-statements will be generated
- * 
- * Wenn sich Styles, Backgrounds oder Borders wiederholen, so erstellt der Task automatisch
- * nur eine Version davon und gibt nur referenzen weiter, ohne dass dies vom designer vorher
- * festgelegt werden muesste. 
  *
  * @author Robert Virkus, robert@enough.de
  * <pre>
@@ -85,6 +70,7 @@ public class CssConverter extends Converter {
 		LAYOUTS.put( "vexpand", "Item.LAYOUT_VEXPAND" );
 		LAYOUTS.put( "vertical-expand", "Item.LAYOUT_VEXPAND" );
 	}
+	private ArrayList referencedStyles;
 	
 	/**
 	 * Creates a new CSS converter
@@ -112,6 +98,7 @@ public class CssConverter extends Converter {
 		}
 		// okay start with the creation of source code:
 		ArrayList codeList = new ArrayList();
+		this.referencedStyles = new ArrayList();
 		// initialise the syle sheet:
 		styleSheet.inherit();
 		// set the color-definitions:
@@ -178,20 +165,36 @@ public class CssConverter extends Converter {
 				processStyle( style, codeList, styleSheet );
 			}
 		}
-		// register dynamic styles:
+		
+		// process referenced styles:
+		Style[] styles = (Style[]) this.referencedStyles.toArray( new Style[ this.referencedStyles.size() ] );
+		for (int i = 0; i < styles.length; i++) {
+			Style style = styles[i];
+			processStyle( style, codeList, styleSheet );
+		}
+		
+		// process dynamic styles:
 		if (styleSheet.containsDynamicStyles()) {
 			Style[] dynamicStyles = styleSheet.getDynamicStyles(); 
 			for (int i = 0; i < dynamicStyles.length; i++) {
 				Style style = dynamicStyles[i];
 				processStyle( style, codeList, styleSheet );
+				this.referencedStyles.add( style );
 			}
-			codeList.add("\tstatic { // register dynamic styles:");
-			for (int i = 0; i < dynamicStyles.length; i++) {
-				Style style = dynamicStyles[i];
+		}
+		
+		// register referenced and dynamic styles:
+		if (this.referencedStyles.size() > 0) {
+			codeList.add("\tstatic { \t//register referenced and dynamic styles:");
+			styles = (Style[]) this.referencedStyles.toArray( new Style[ this.referencedStyles.size() ] );
+			for (int i = 0; i < styles.length; i++) {
+				Style style = styles[i];
 				codeList.add("\t\tstylesByName.put( \"" + style.getSelector() + "\", " + style.getStyleName() + "Style );");
 			}
-			codeList.add("\t}");
+			codeList.add("}");
 		}
+
+		
 		// create focussed style if necessary:
 		Style focussedStyle = styleSheet.getStyle("focussed"); 
 		if (focussedStyle == null) {
@@ -388,6 +391,9 @@ public class CssConverter extends Converter {
 					if (value.startsWith("url")) {
 						value = getUrl( value );
 					}
+					if (value.startsWith("style(")) {
+						value = getStyleReference( value, style, styleSheet );
+					}
 					line.append("\", \"")
 						.append( value )
 						.append("\" );");
@@ -395,8 +401,33 @@ public class CssConverter extends Converter {
 				}
 			}
 			codeList.add("\t}");
+		} // if there are any non-standard attribute-groups		
+	}
+
+
+	/**
+	 * Gets a reference to another style.
+	 * 
+	 * @param value the reference, needs to start with "style("
+	 * @param parent the parent style
+	 * @param styleSheet the sheet in which the style is embedded
+	 * @return
+	 */
+	private String getStyleReference(String value, Style parent, StyleSheet styleSheet) {
+		String reference = value.substring( 6 );
+		int closingPos = reference.indexOf(')');
+		if (closingPos == -1) {
+			throw new BuildException("Invalid CSS: the style-reference [" + value + "] in style [" + parent.getSelector() + "] needs to be closed by a parenthesis.");
 		}
-		
+		reference = reference.substring( 0, closingPos ).trim().toLowerCase();
+		if (!styleSheet.isUsed(reference)) {
+			Style style = styleSheet.getStyle(reference);
+			if (style == null) {
+				throw new BuildException("Invalid CSS: the style-reference to [" + value + "] in style [" + parent.getSelector() + "] refers to a non-existing style.");
+			}
+			this.referencedStyles.add( style );
+		}
+		return reference;
 	}
 
 
