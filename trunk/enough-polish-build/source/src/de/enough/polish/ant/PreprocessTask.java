@@ -6,7 +6,7 @@
  */
 package de.enough.polish.ant;
 
-import de.enough.polish.Capability;
+import de.enough.polish.Variable;
 import de.enough.polish.util.FileUtil;
 import de.enough.polish.util.TextUtil;
 
@@ -112,7 +112,7 @@ public class PreprocessTask extends ConditionalTask {
 	 * 
 	 * @param variable the variable-definition
 	 */
-	public void addConfiguredVariable( Capability variable ) {
+	public void addConfiguredVariable( Variable variable ) {
 		if (variable.getName() == null) {
 			throw new BuildException("nested element variable needs to have the attribute [name] defined.");
 		} else if (variable.getValue() == null) {
@@ -144,7 +144,7 @@ public class PreprocessTask extends ConditionalTask {
 					if (equalsPos != -1) {
 						String name = line.substring( 0, equalsPos ).trim();
 						String value = line.substring( equalsPos + 1).trim();
-						Capability variable = new Capability( name, value );
+						Variable variable = new Variable( name, value );
 						this.variables.add( variable );
 					}
 				}

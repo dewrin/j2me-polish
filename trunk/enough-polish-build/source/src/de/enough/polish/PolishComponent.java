@@ -247,7 +247,7 @@ public class PolishComponent {
 	 * 
 	 * @param capability The capability which should be added
 	 */
-	public void addDirectCapability(Capability capability) {
+	public void addDirectCapability(Variable capability) {
 		this.capabilities.put( capability.getName(), capability.getValue() );
 	}
 	

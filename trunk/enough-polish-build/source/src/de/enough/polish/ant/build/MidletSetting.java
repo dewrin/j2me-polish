@@ -8,7 +8,7 @@ package de.enough.polish.ant.build;
 
 import org.apache.tools.ant.BuildException;
 
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * <p>Manages all midlets of a specific project.</p>
@@ -38,8 +38,40 @@ public class MidletSetting {
 		this.midlets.add( midlet );
 	}
 	
+	/**
+	 * Gets all the defined midlets in the correct order.
+	 * 
+	 * @return All midlets in the correct order, that means Midlet-1 is the first element of the array. 
+	 */
 	public Midlet[] getMidlets() {
-		return (Midlet[]) this.midlets.toArray( new Midlet[ this.midlets.size() ] );
+		Midlet[] midletsArray = (Midlet[]) this.midlets.toArray( new Midlet[ this.midlets.size() ] );
+		Arrays.sort( midletsArray, new MidletComparator() );
+		return midletsArray;
+	}
+	
+	/**
+	 * <p>Is used to sort midlets.</p>
+	 * <p>copyright enough software 2004</p>
+	 * <pre>
+	 * history
+	 *        18-Feb-2004 - rob creation
+	 * </pre>
+	 * @author Robert Virkus, robert@enough.de
+	 */
+	class MidletComparator implements Comparator {
+
+		/* (non-Javadoc)
+		 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+		 */
+		public int compare(Object one, Object two) {
+			if ( ! ( one instanceof Midlet && two instanceof Midlet )) {
+				return 0;
+			}
+			Midlet midlet1 = (Midlet) one;
+			Midlet midlet2 = (Midlet) two;
+			return midlet1.getNumber() - midlet2.getNumber();
+		}
+		
 	}
 
 }

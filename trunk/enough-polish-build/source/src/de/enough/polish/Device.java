@@ -58,6 +58,8 @@ public class Device extends PolishComponent {
 	private String classPath;
 	private String sourceDir;
 	private String classesDir;
+	private String baseDir;
+	private String[] groups;
 	
 
 	/**
@@ -97,11 +99,11 @@ public class Device extends PolishComponent {
 		//add groups:
 		String groupsDefinition = definition.getChildTextTrim( "groups");
 		if (groupsDefinition != null) {
-			String[] groups = TextUtil.splitAndTrim(groupsDefinition, ',');
-			for (int i = 0; i < groups.length; i++) {
-				DeviceGroup group = groupManager.getGroup( groups[i] );
+			this.groups = TextUtil.splitAndTrim(groupsDefinition, ',');
+			for (int i = 0; i < this.groups.length; i++) {
+				DeviceGroup group = groupManager.getGroup( this.groups[i] );
 				if (group == null) {
-					throw new InvalidComponentException("The device [" + this.identifier + "] contains the undefined group [" + groups[i] + "] - please check either [devices.xml] or [groups.xml].");
+					throw new InvalidComponentException("The device [" + this.identifier + "] contains the undefined group [" + this.groups[i] + "] - please check either [devices.xml] or [groups.xml].");
 				}
 				addComponent(group);
 			}
@@ -264,6 +266,44 @@ public class Device extends PolishComponent {
 	 */
 	public void setSourceDir(String sourceDir) {
 		this.sourceDir = sourceDir;
+	}
+
+
+	/**
+	 * @param baseDir The base directory of this device.
+	 */
+	public void setBaseDir(String baseDir) {
+		this.baseDir = baseDir;
+	}
+	
+	public String getBaseDir() {
+		return this.baseDir;
+	}
+
+
+	/**
+	 * @return The name of this device, e.g. "3650" for a "Nokia/3650" device.
+	 */
+	public String getName() {
+		return this.name;
+	}
+
+
+	/**
+	 * @return The name of the Vendor, e.g. "Nokia" for a "Nokia/3650" device.
+	 */
+	public String getVendor() {
+		return this.vendorName;
+	}
+
+
+	/**
+	 * Retrieves the names of the groups to which this device belongs to.
+	 * 
+	 * @return The names of all groups of this device.
+	 */
+	public String[] getGroups() {
+		return this.groups;
 	}
 
 }

@@ -6,7 +6,7 @@
  */
 package de.enough.polish.ant.requirements;
 
-import de.enough.polish.Capability;
+import de.enough.polish.Variable;
 
 import java.util.ArrayList;
 
@@ -33,7 +33,7 @@ implements DeviceFilter
 		this.filters = new ArrayList();
 	}
 	
-	public void addConfiguredRequirement( Capability req ) {
+	public void addConfiguredRequirement( Variable req ) {
 		String name = req.getName(); 
 		String value = req.getValue();
 		String type = req.getType();

@@ -28,8 +28,10 @@ import java.util.regex.Pattern;
 public class Preprocessor {
 	
 	private static final int DIRECTIVE_FOUND = 1;
-	private static final int CHANGED = 2;
-	private static final int NOT_PROCESSED= 4;
+	public static final int CHANGED = 2;
+	public static final int NOT_PROCESSED = 4;
+	public static final int SKIP_FILE = 8;
+	
 	public static final Pattern DIRECTIVE_PATTERN = 
 		Pattern.compile("\\s*(//#if\\s+|//#ifdef\\s+|//#ifndef\\s+|//#elif\\s+|//#elifdef\\s+|//#elifndef\\s+|//#else|//#endif|//#include\\s+|//#endinclude|//#style |//#debug|//#mdebug|//#enddebug|//#define\\s+|//#undefine\\s+|//#=\\s+)");
 

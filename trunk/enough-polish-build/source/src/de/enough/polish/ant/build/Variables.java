@@ -34,7 +34,7 @@ public class Variables {
 		this.variables = new ArrayList();
 	}
 	
-	public void addConfiguredVariable( Capability var ) {
+	public void addConfiguredVariable( Variable var ) {
 		if (var.getName() == null) {
 			throw new BuildException("Please check your variable definition, each variable needs to have the attribute [name]");
 		}
@@ -44,8 +44,8 @@ public class Variables {
 		this.variables.add( var );
 	}
 	
-	public Capability[] getVariables() {
-		return (Capability[]) this.variables.toArray( new Capability[ this.variables.size() ] );
+	public Variable[] getVariables() {
+		return (Variable[]) this.variables.toArray( new Variable[ this.variables.size() ] );
 	}
 
 }
