@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="iso-8859-1" standalone="yes" ?>
+
+<!-- 
+    A sample installation file.
+    Use it as a base for your own installers :-)
+    
+    To compile it :
+    - go in the bin directory where you installed IzPack
+    - call "compile ../sample/install.xml -b ../sample"
+-->
+
+<installation version="1.0">
+
+    <!--
+        The info section.
+        The meaning of the tags should be natural ...
+    -->
+    <info>
+        <appname>J2ME Polish</appname>
+        <appversion>${ Version }</appversion>
+        <authors>
+            <author name="Robert Virkus" email="info@enough.de"/>
+        </authors>
+        <url>http://www.j2mepolish.org/</url>
+    </info>
+    
+    <!-- 
+        The gui preferences indication.
+        Sets the installer window to 640x480. It will not be able to change the size.
+    -->
+    <guiprefs width="640" height="480" resizable="yes"/>
+    
+    <!-- 
+        The locale section.
+        Only use the English locale at the moment.
+    -->
+    <locale>
+        <langpack iso3="eng"/>
+    </locale>
+    
+    <!-- 
+        The resources section.
+        The ids must be these ones if you want to use the LicencePanel and/or the InfoPanel.
+    -->
+    <resources>
+        <res id="HTMLLicencePanel.licence" src="../setup/htmllicense.txt"/>
+	<res id="userInputSpec.xml" src="userInputSpec.xml" />
+	<res id="useNativeLAF" src="../setup/useNativeLAF" />
+        <res id="Installer.image" src="../setup/j2mepolish-logo.png" />
+    </resources>
+    
+    <!-- 
+        The panels section.
+        We indicate here which panels we want to use. The order will be respected.
+    -->
+    <panels>
+	<!-- welcome screen -->
+        <panel classname="UserInputPanel" />
+	<!-- showing the licensing possibilities -->
+        <panel classname="HTMLLicencePanel" />
+	<!-- choosing the license -->
+        <panel classname="ChooseLicensePanel" />
+	<!-- where to find the WTK -->
+ 	<panel classname="UserInputPanel" />
+        <!-- what packages should be installed -->
+        <panel classname="PacksPanel" />
+	<!-- where to install J2ME Polish -->
+ 	<panel classname="TargetPanel" />
+	<!-- the actual installation -->
+        <panel classname="InstallPanel" />
+	<!-- installation success screen -->
+ 	<panel classname="UserInputPanel" />
+    </panels>
+    
+    <!-- 
+        The packs section.
+        We specify here our packs.
+    -->
+    <packs>
+        <pack name="Base" required="yes">
+            <description>The J2ME Polish library files, which will be copied into the &quot;import&quot;-folder.</description>
+            <file src="import" targetdir="$INSTALL_PATH"/>
+            <file src="Readme.txt" targetdir="$INSTALL_PATH"/>
+            <file src="../LICENSE.txt" targetdir="$INSTALL_PATH"/>
+            <file src="../setup/build.xml" targetdir="$INSTALL_PATH"/>
+            <parsable targetfile="$INSTALL_PATH/build.xml" type="shell" /> 
+        </pack>
+        <pack name="Sample Application" required="no">
+            <description>A sample application which shows a simple menu and contains two different CSS designs.</description>
+            <file src="src" targetdir="$INSTALL_PATH"/>
+            <file src="resources" targetdir="$INSTALL_PATH"/>
+            <file src="resources2" targetdir="$INSTALL_PATH"/>
+        </pack>
+        <pack name="External Device Database" required="no" preselected="no" >
+            <description>The files &quot;devices.xml&quot;, &quot;vendors.xml&quot;, &quot;groups.xml&quot; and &quot;apis.xml&quot;. These are only necessary if you want to add your own device-definitions or modify existing ones.</description>
+            <file src="devices.xml" targetdir="$INSTALL_PATH"/>
+            <file src="vendors.xml" targetdir="$INSTALL_PATH"/>
+      	    <file src="groups.xml" targetdir="$INSTALL_PATH"/>
+            <file src="apis.xml" targetdir="$INSTALL_PATH"/>
+        </pack>
+        <pack name="Docs" required="no">
+            <description>The documentation of J2ME Polish.</description>
+            <file src="doc" targetdir="$INSTALL_PATH"/> <!-- Reccursive adding -->
+        </pack>
+        <pack name="Sources" required="no" preselected="no">
+            <description>The sources of J2ME Polish. These are useful if you want to extend J2ME Polish.</description>
+            <file src="j2mepolish-src" targetdir="$INSTALL_PATH"/>
+        </pack>
+    </packs>
+    
+</installation>
