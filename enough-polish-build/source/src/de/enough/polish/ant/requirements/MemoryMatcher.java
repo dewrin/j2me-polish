@@ -117,6 +117,9 @@ implements Matcher
 	 * @see de.enough.polish.ant.requirements.Matcher#matches(java.lang.String)
 	 */
 	public boolean matches(String deviceValue) {
+		if ("dynamic".equals( deviceValue )) {
+			return true;
+		}
 		long deviceBytes = getBytes( deviceValue );
 		if (this.equalsOrGreater) {
 			return deviceBytes >= this.bytes;
