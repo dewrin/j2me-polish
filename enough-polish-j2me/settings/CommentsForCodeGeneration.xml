@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates><codetemplate name="typecomment" description="Comment for created types" context="typecomment_context" enabled="true">/**
+ * &lt;p&gt;&lt;/p&gt;
+ *
+ * @author ${user}
+ * &lt;pre&gt;
+ * history
+ *        ${date} - ${user} creation
+ * &lt;/pre&gt;
+ */</codetemplate></templates>
