@@ -10,6 +10,8 @@ import de.enough.polish.*;
 
 import org.apache.tools.ant.BuildException;
 
+import java.io.File;
+
 /**
  * <p>Represents the build settings of a polish J2ME project.</p>
  *
@@ -28,9 +30,13 @@ public class BuildSetting {
 	private DebugSetting debugSetting;
 	private MidletSetting midletSetting; 
 	private String version;
+	private File targetDir;
 	private String symbols;
 	private int imageLoadStrategy;
 	private FullScreenSetting fullScreenSetting;
+	private File devices;
+	private File vendors;
+	private File groups;
 	private Capability[] variables;
 	private Source source;
 	private boolean usePolishGui;
@@ -39,7 +45,10 @@ public class BuildSetting {
 	 * Creates a new build setting.
 	 */
 	public BuildSetting() {
-		// initialisation is done via the setter methods
+		this.targetDir = new File("./build");
+		this.devices = new File("./devices.xml");
+		this.vendors = new File("./vendors.xml");
+		this.groups = new File("./groups.xml");
 	}
 	
 	public void addConfiguredMidlets( MidletSetting setting ) {
@@ -76,6 +85,9 @@ public class BuildSetting {
 	}
 	
 	public void addConfiguredSource( Source src ) {
+		if (src.getUrl() == null) {
+			throw new BuildException("The nested element <source> needs to define the attribute [url].");
+		}
 		this.source = src;
 	}
 	
@@ -160,4 +172,68 @@ public class BuildSetting {
 		}
 	}
 	
+	/**
+	 * @return Returns the devices.
+	 */
+	public File getDevices() {
+		return this.devices;
+	}
+	
+	/**
+	 * @param devices The path to the devices.xml
+	 */
+	public void setDevices(File devices) {
+		if (!devices.exists()) {
+			throw new BuildException("The [devices]-attribute of the <build> element points to a non existing file: [" + devices.getAbsolutePath() + "].");
+		}
+		this.devices = devices;
+	}
+	
+	/**
+	 * @return Returns the targetDir.
+	 */
+	public File getTargetDir() {
+		return this.targetDir;
+	}
+	
+	/**
+	 * @param targetDir The targetDir to set.
+	 */
+	public void setTargetDir(File targetDir) {
+		this.targetDir = targetDir;
+	}
+
+	/**
+	 * @return Returns the groups.
+	 */
+	public File getGroups() {
+		return this.groups;
+	}
+	/**
+	 * @param groups The groups to set.
+	 */
+	public void setGroups(File groups) {
+		if (!groups.exists()) {
+			throw new BuildException("The [groups]-attribute of the <build> element points to a non existing file: [" + groups.getAbsolutePath() + "].");
+		}
+		this.groups = groups;
+	}
+
+	/**
+	 * @return Returns the vendors.
+	 */
+	public File getVendors() {
+		return this.vendors;
+	}
+	
+	/**
+	 * @param vendors The vendors to set.
+	 */
+	public void setVendors(File vendors) {
+		if (!vendors.exists()) {
+			throw new BuildException("The [vendors]-attribute of the <build> element points to a non existing file: [" + vendors.getAbsolutePath() + "].");
+		}
+		this.vendors = vendors;
+	}
+
 }

@@ -66,12 +66,13 @@ public final class FileUtil {
 	public static void writeTextFile(File file, String[] lines) 
 	throws IOException 
 	{
-		if (! file.exists()) {
-			file.mkdirs();
+		File parentDir = file.getParentFile(); 
+		if (! parentDir.exists()) {
+			parentDir.mkdirs();
 		}
-		BufferedWriter out = new BufferedWriter(new FileWriter( file ) );
+		PrintWriter out = new PrintWriter(new FileWriter( file ) );
 		for (int i = 0; i < lines.length; i++) {
-			out.write( lines[i] );
+			out.println( lines[i] );
 		}
 		out.close();
 	}

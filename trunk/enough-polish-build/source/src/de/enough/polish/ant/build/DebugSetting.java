@@ -6,6 +6,10 @@
  */
 package de.enough.polish.ant.build;
 
+import org.apache.tools.ant.BuildException;
+
+import java.util.ArrayList;
+
 
 /**
  * <p>Represents the debug settings.</p>
@@ -23,13 +27,13 @@ public class DebugSetting {
 	private boolean verbose;
 	private boolean visual;
 	private String level;
-	
+	private ArrayList filters;
 
 	/**
 	 * Creates a new empty debug-setting.
 	 */
 	public DebugSetting() {
-		// initialisation is done with the setter methods.
+		this.filters = new ArrayList();
 	}
 	
 
@@ -113,8 +117,21 @@ public class DebugSetting {
 	}
 	
 	public void addConfiguredFilter( Filter filter ) {
-		System.out.println("pattern:" + filter.getPattern() );
-		System.out.println("level:" + filter.getLevel() );
+		if (filter.getPattern() == null) {
+			throw new BuildException("Error in debug settings: the element [filter] needs to define the attribute [pattern].");
+		}
+		if (filter.getLevel() == null) {
+			throw new BuildException("Error in debug settings: the element [filter] needs to define the attribute [level].");
+		}
+		this.filters.add( filter );
+	}
+
+
+	/**
+	 * @return an array of all debug-filters.
+	 */
+	public Filter[] getFilters() {
+		return (Filter[]) this.filters.toArray( new Filter[ this.filters.size() ] );
 	}
 
 }

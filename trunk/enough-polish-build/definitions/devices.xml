@@ -5,7 +5,7 @@
       human readable anymore (everything is just a capability) 
       -->
 <devices>
-<! -- some user agents:
+<!-- some user agents:
 Ericsson T68 SonyEricssonT68
 Motorola T720 MOT-T720
 Nokia 3100 Nokia3100
@@ -54,26 +54,23 @@ SonyEricsson T68i  SonyEricssonT68
 
 <!-- Nokia devices -->
 	<device>
-		<screen width="126" height="100" fullScreenWidth="129" fullScreenHeight="300" bitsPerPixel="8" />
-		<name>3650</name>
-		<midp>1</midp>
-		<vendor>Nokia</vendor>
+		<identifier>Nokia/3650</identifier>
 		<groups>Series60</groups>
 		<apis>mmapi</apis>
 	</device>
 
 	<device>
-		<name>6650</name>
-		<midp>2</midp>
-		<vendor>Nokia</vendor>
+		<identifier>Nokia/6600</identifier>
 		<groups>Series60</groups>
 		<apis>mmapi,bluetooth,wmapi</apis>
+		<capability name="JavaPlatform" value="MIDP/2.0" />
 	</device>
 
 <!-- Siemens devices -->
 	<device 
 		supportsPolishGui="true">
 		<identifier>Siemens/SX1</identifier>
-		<vendor>Siemens</vendor>
+		<capability name="JavaPlatform" value="MIDP/1.0" />
+		<capability name="JavaPackage" value="nokia-ui-replacement" />
 	</device>
 </devices>
