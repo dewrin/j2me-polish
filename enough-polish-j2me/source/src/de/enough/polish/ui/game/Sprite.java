@@ -2,7 +2,7 @@
 //only include this file for midp1-devices:
 //#condition polish.midp1 && polish.usePolishGui
 /*
- * Copyright (c) 2004 Robert Virkus / enough software
+ * Copyright (c) 2004 Robert Virkus / Enough Software
  *
  * This file is part of J2ME Polish.
  *
@@ -22,17 +22,16 @@
  * 
  * Commercial licenses are also available, please
  * refer to the accompanying LICENSE.txt or visit
- * www.enough.de/j2mepolish for details.
+ * http://www.j2mepolish.org for details.
  */
 package de.enough.polish.ui.game;
 
-//#ifdef polish.api.nokia-ui
-import com.nokia.mid.ui.DirectGraphics;
-import com.nokia.mid.ui.DirectUtils;
-//#endif
 
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
+
+import com.nokia.mid.ui.DirectGraphics;
+import com.nokia.mid.ui.DirectUtils;
 
 /**
  * A Sprite is a basic visual element that can be rendered with one of
@@ -234,16 +233,35 @@ public class Sprite extends Layer
 	 * 
 	 */
 	public static final int TRANS_MIRROR_ROT270 = 4;
-
-	//following variables are implicitely defined by getter- or setter-methods:
+		
+	private Image image;
 	private int refPixelX;
 	private int refPixelY;
-	private int frame;
-	private int rawFrameCount;
-	private int frameSequenceLength;
+	private int frameSequenceIndex;
 	private int[] frameSequence;
 	private int transform;
-	private Image currentFrame;
+	//#ifdef polish.api.nokia-ui
+		private int nokiaTransform;
+		private Image nokiaFrame;
+		private Image[] nokiaFrames;
+	//#endif
+	private int collisionX;
+	private int collisionY;
+	private int collisionWidth;
+	private int collisionHeight;
+	private int transformedCollisionX;
+	private int transformedCollisionY;
+	private int transformedCollisionWidth;
+	private int transformedCollisionHeight;
+
+	private int frameHeight;
+	private int frameWidth;
+	private int rawFrameCount;
+	private int transformedRefX;
+	private int transformedRefY;
+	private int numberOfColumns;
+	private int column;
+	private int row;
 
 	/**
 	 * Creates a new non-animated Sprite using the provided Image.
@@ -254,12 +272,12 @@ public class Sprite extends Layer
 	 * corner is positioned at (0,0) in the painter's coordinate system.
 	 * <br>
 	 * 
-	 * @param image - the Image to use as the single frame for the Sprite
-	 * @throws NullPointerException - if img is null
+	 * @param image the Image to use as the single frame for the Sprite
+	 * @throws NullPointerException if img is null
 	 */
 	public Sprite( Image image)
 	{
-		//TODO implement Sprite
+		setImage( image, image.getWidth(), image.getHeight() );
 	}
 
 	/**
@@ -282,32 +300,56 @@ public class Sprite extends Layer
 	 * positioned at (0,0) in the painter's coordinate system.
 	 * <p>
 	 * 
-	 * @param image - the Image to use for Sprite
-	 * @param frameWidth - the width, in pixels, of the individual raw frames
-	 * @param frameHeight - the height, in pixels, of the individual raw frames
-	 * @throws NullPointerException - if img is null
-	 * @throws IllegalArgumentException - if frameHeight or frameWidth is less than 1
-	 *												      or if the image width is not an integer multiple of the frameWidth
-	 *												      or if the image height is not an integer multiple of the frameHeight
+	 * @param image the Image to use for Sprite
+	 * @param frameWidth the width, in pixels, of the individual raw frames
+	 * @param frameHeight the height, in pixels, of the individual raw frames
+	 * @throws NullPointerException if img is null
+	 * @throws IllegalArgumentException if frameHeight or frameWidth is less than 1
+	 *									or if the image width is not an integer multiple of the frameWidth
+	 *									or if the image height is not an integer multiple of the frameHeight
 	 */
 	public Sprite( Image image, int frameWidth, int frameHeight)
 	{
-		//TODO implement Sprite
+		setImage(image, frameWidth, frameHeight);
 	}
 
 	/**
-	 * Creates a new Sprite from another Sprite.  <p>
+	 * Creates a new Sprite from another Sprite. 
 	 * 
 	 * All instance attributes (raw frames, position, frame sequence, current
 	 * frame, reference point, collision rectangle, transform, and visibility)
 	 * of the source Sprite are duplicated in the new Sprite.
 	 * 
-	 * @param s - the Sprite to create a copy of
-	 * @throws NullPointerException - if s is null
+	 * @param s  the Sprite to create a copy of
+	 * @throws NullPointerException if s is null
 	 */
 	public Sprite( Sprite s)
 	{
-		//TODO implement Sprite
+		this.image = s.image;
+		this.frameWidth = s.frameWidth;
+		this.frameHeight = s.frameHeight;
+		this.width = s.width;
+		this.height = s.height;
+		this.xPosition = s.xPosition;
+		this.yPosition = s.yPosition;
+		this.frameSequenceIndex = s.frameSequenceIndex;
+		this.frameSequence = s.frameSequence;
+		this.refPixelX = s.refPixelX;
+		this.refPixelY = s.refPixelY;
+		this.transformedRefX = s.transformedRefX;
+		this.transformedRefY = s.transformedRefY;
+		this.transform = s.transform;
+		//#ifdef polish.api.nokia-ui
+			this.nokiaTransform = s.nokiaTransform;
+		//#endif
+		this.collisionX = s.collisionX;
+		this.collisionY = s.collisionY;
+		this.collisionWidth = s.collisionWidth;
+		this.collisionHeight = s.collisionHeight;
+		this.transformedCollisionX = s.transformedCollisionX;
+		this.transformedCollisionY = s.transformedCollisionY;
+		this.transformedCollisionWidth = s.transformedCollisionWidth;
+		this.transformedCollisionHeight = s.transformedCollisionHeight;
 	}
 
 	/**
@@ -327,31 +369,35 @@ public class Sprite extends Layer
 	 * <p>
 	 * Changing the reference pixel does not change the
 	 * Sprite's physical position in the painter's coordinate system;
-	 * that is, the values returned by <A HREF="../../../../javax/microedition/lcdui/game/Layer.html#getX()"><CODE>getX()</CODE></A> and
-	 * <A HREF="../../../../javax/microedition/lcdui/game/Layer.html#getY()"><CODE>getY()</CODE></A> will not change as a result of defining the
+	 * that is, the values returned by <A HREF="../../../../de/enough/polish/ui/game/Layer.html#getX()"><CODE>getX()</CODE></A> and
+	 * <A HREF="../../../../de/enough/polish/ui/game/Layer.html#getY()"><CODE>getY()</CODE></A> will not change as a result of defining the
 	 * reference pixel.  However, subsequent calls to methods that
 	 * involve the reference pixel will be impacted by its new definition.
 	 * 
-	 * @param refX - the horizontal location of the reference pixel, relative to the left edge of the un-transformed frame
-	 * @param refY - the vertical location of the reference pixel, relative to the top edge of the un-transformed frame
+	 * @param refX the horizontal location of the reference pixel, relative to the left edge of the un-transformed frame
+	 * @param refY the vertical location of the reference pixel, relative to the top edge of the un-transformed frame
 	 * @see #setRefPixelPosition(int, int), #getRefPixelX(), #getRefPixelY()
 	 */
 	public void defineReferencePixel(int refX, int refY)
 	{
-		//TODO implement defineReferencePixel
+		this.refPixelX = refX;
+		this.refPixelY = refY;
+		this.transformedRefX = refX;
+		this.transformedRefY = refY;
 	}
 
 	/**
 	 * Sets this Sprite's position such that its reference pixel is located
 	 * at (x,y) in the painter's coordinate system.
 	 * 
-	 * @param x - the horizontal location at which to place the reference pixel
-	 * @param y - the vertical location at which to place the reference pixel
+	 * @param x the horizontal location at which to place the reference pixel
+	 * @param y the vertical location at which to place the reference pixel
 	 * @see #defineReferencePixel(int, int),  #getRefPixelX(), #getRefPixelY()
 	 */
 	public void setRefPixelPosition(int x, int y)
 	{
-		//TODO implement setRefPixelPosition
+		this.xPosition = x - this.transformedRefX;
+		this.yPosition = y - this.transformedRefY;
 	}
 
 	/**
@@ -379,24 +425,27 @@ public class Sprite extends Layer
 	}
 
 	/**
-	 * Selects the current frame in the frame sequence.  <p>
-	 * The current frame is rendered when <A HREF="../../../../javax/microedition/lcdui/game/Sprite.html#paint(javax.microedition.lcdui.Graphics)"><CODE>paint(Graphics)</CODE></A> is called.
+	 * Selects the current frame in the frame sequence.  
+	 * <p>
+	 * The current frame is rendered when 
+	 * <A HREF="../../../../de/enough/polish/ui/game/Sprite.html#paint(javax.microedition.lcdui.Graphics)"><CODE>paint(Graphics)</CODE></A>
+	 * is called.
 	 * <p>
 	 * The index provided refers to the desired entry in the frame sequence,
 	 * not the index of the actual frame itself.
 	 * 
-	 * @param sequenceIndex - the index of of the desired entry in the frame  sequence
-	 * @throws IndexOutOfBoundsException - if frameIndex is less than 0
-	 *												      or if frameIndex is equal to or greater than the length of the current frame sequence (or the number of raw frames for the default sequence)
+	 * @param sequenceIndex the index of of the desired entry in the frame  sequence
+	 * @throws IndexOutOfBoundsException if frameIndex is less than 0
+	 *									 or if frameIndex is equal to or greater than the length of the current frame sequence (or the number of raw frames for the default sequence)
 	 * @see #setFrameSequence(int[]), getFrame()
 	 */
 	public void setFrame(int sequenceIndex)
 	{
-		this.frame = sequenceIndex;
+		this.frameSequenceIndex = sequenceIndex;
 	}
 
 	/**
-	 * Gets the current index in the frame sequence.  <p>
+	 * Gets the current index in the frame sequence.
 	 * The index returned refers to the current entry in the frame sequence,
 	 * not the index of the actual frame that is displayed.
 	 * 
@@ -405,7 +454,7 @@ public class Sprite extends Layer
 	 */
 	public final int getFrame()
 	{
-		return this.frame;
+		return this.frameSequenceIndex;
 	}
 
 	/**
@@ -433,7 +482,7 @@ public class Sprite extends Layer
 	 */
 	public int getFrameSequenceLength()
 	{
-		return this.frameSequenceLength;
+		return this.frameSequence.length;
 	}
 
 	/**
@@ -447,7 +496,11 @@ public class Sprite extends Layer
 	 */
 	public void nextFrame()
 	{
-		//TODO implement nextFrame
+		this.frameSequenceIndex++;
+		if (this.frameSequenceIndex >= this.frameSequence.length ) {
+			this.frameSequenceIndex = 0;
+		}
+		updateFrame();
 	}
 
 	/**
@@ -461,7 +514,78 @@ public class Sprite extends Layer
 	 */
 	public void prevFrame()
 	{
-		//TODO implement prevFrame
+		this.frameSequenceIndex--;
+		if (this.frameSequenceIndex < 0 ) {
+			this.frameSequenceIndex = this.frameSequence.length - 1;
+		}
+		updateFrame();
+	}
+
+	/**
+	 * Updates the position at which the image should be drawn,
+	 * This depends on the frame-index as well as the current transformation.
+	 */
+	private void updateFrame() {
+		if (this.frameSequence == null) {
+			return;
+		}
+		int frameIndex = this.frameSequence[ this.frameSequenceIndex ];
+		int c = frameIndex % this.numberOfColumns;
+		int r = frameIndex / this.numberOfColumns;
+		
+		//#ifdef polish.api.nokia-ui
+			Image frame = this.nokiaFrames[ frameIndex ];
+			if ( frame == null ) {
+				frame = DirectUtils.createImage( this.frameWidth, this.frameHeight, 0x00FFFFFF );
+				Graphics g = frame.getGraphics();
+				// when creating an transparent image, one must not "touch"
+				// that image with an ordinary Graphics-object --- instead
+				// ALWAYS an DirectGraphics-object needs to be used. Sigh!
+				//g.drawImage(this.image, -(c * this.frameWidth), -(r * this.frameHeight), Graphics.TOP | Graphics.LEFT );
+				DirectGraphics dg = DirectUtils.getDirectGraphics(g);
+				dg.drawImage(this.image, -(c * this.frameWidth), -(r * this.frameHeight), Graphics.TOP | Graphics.LEFT, 0 );
+			}
+			this.nokiaFrame = frame; 
+		//#else
+			int numberOfRows = this.rawFrameCount / this.numberOfColumns;
+			
+			this.column = c;
+			this.row = r;
+			switch (this.transform ) {
+				case TRANS_NONE:
+					this.column = c;
+					this.row = r;
+					break;
+				case TRANS_MIRROR_ROT180:
+					this.column = c;
+					this.row = (numberOfRows-1) - r;
+					break;
+				case TRANS_MIRROR:
+					this.column = (this.numberOfColumns -1) - c;
+					this.row = r;
+					break;
+				case TRANS_ROT180:
+					this.column = (this.numberOfColumns -1) - c;
+					this.row = (numberOfRows-1) - r;
+					break;
+				case TRANS_MIRROR_ROT270:
+					this.column = c;
+					this.row = r;
+					break;
+				case TRANS_ROT90:
+					this.column = (numberOfRows -1) - r;
+					this.row = c;
+					break;
+				case TRANS_ROT270:
+					this.column = r;
+					this.row = (this.numberOfColumns -1) - c;
+					break;
+				case TRANS_MIRROR_ROT90:
+					this.row = (numberOfRows-1) - r;
+					this.row = (this.numberOfColumns -1) - c;
+					break;
+			}
+		//#endif
 	}
 
 	/**
@@ -479,23 +603,43 @@ public class Sprite extends Layer
 	 * If the Sprite's Image is mutable, the Sprite is rendered using the
 	 * current contents of the Image.
 	 * 
-	 * @param g - the graphics object to draw Sprite on
+	 * @param g the graphics object to draw Sprite on
 	 * @throws NullPointerException - if g is null
 	 * @see Layer#paint(Graphics) in class Layer
 	 */
 	public final void paint( Graphics g)
 	{
-		//TODO implement paint
 		//#ifdef polish.api.nokia-ui
-		DirectGraphics dg = DirectUtils.getDirectGraphics( g );
-		// rotate sprite-image:
-		dg.drawImage(this.currentFrame, this.x, this.y, Graphics.TOP | Graphics.LEFT, this.transform );
+			// just draw and rotate the current frame:
+			DirectGraphics dg = DirectUtils.getDirectGraphics( g );
+			dg.drawImage(this.nokiaFrame, this.xPosition, this.yPosition, Graphics.TOP | Graphics.LEFT, this.nokiaTransform );
+		//#else
+			if (this.rawFrameCount == 1) {
+				g.drawImage( this.image, this.xPosition, this.yPosition, Graphics.TOP | Graphics.LEFT );							
+			} else { 
+				// there are several frames contained in the base-image:
+				int x = this.xPosition;
+				int y = this.yPosition;
+				//System.out.print("painting sprite at " + x + ", " + y );
+				//save the current clip position:
+				int clipX = g.getClipX();
+				int clipY = g.getClipY();
+				int clipWidth = g.getClipWidth();
+				int clipHeight = g.getClipHeight();
+				g.setClip( x, y, this.width, this.height );
+				x -= this.column * this.width;
+				y -= this.row * this.height;
+			
+				g.drawImage( this.image, x, y, Graphics.TOP | Graphics.LEFT );			
+				
+				// reset original clip:
+				g.setClip( clipX, clipY, clipWidth, clipHeight );
+			}
 		//#endif
-
 	}
 
 	/**
-	 * Set the frame sequence for this Sprite.  <p>
+	 * Set the frame sequence for this Sprite.
 	 * 
 	 * All Sprites have a default sequence that displays the Sprites
 	 * frames in order.  This method allows for the creation of an
@@ -510,14 +654,20 @@ public class Sprite extends Layer
 	 * Passing in <code>null</code> causes the Sprite to revert to the
 	 * default frame sequence.<p>
 	 * 
-	 * @param sequence - an array of integers, where each integer represents a frame index
-	 * @throws ArrayIndexOutOfBoundsException - if seq is non-null and any member of the array has a value less than 0 or greater than or equal to the number of frames as reported by getRawFrameCount()
-	 * @throws IllegalArgumentException - if the array has less than 1 element
+	 * @param sequence an array of integers, where each integer represents a frame index
+	 * @throws ArrayIndexOutOfBoundsException if seq is non-null and any member of the array has a value less than 0 or greater than or equal to the number of frames as reported by getRawFrameCount()
+	 * @throws IllegalArgumentException if the array has less than 1 element
 	 * @see #nextFrame(), #prevFrame(), #setFrame(int), #getFrame()
 	 */
 	public void setFrameSequence(int[] sequence)
 	{
-		this.frameSequence = sequence;
+		int[] newSequence = new int[ sequence.length ];
+		System.arraycopy( sequence, 0, newSequence, 0, sequence.length );
+		this.frameSequence = newSequence;
+		this.frameSequenceIndex = 0;
+		int frameIndex = this.frameSequence[ 0 ];
+		this.column = frameIndex % this.numberOfColumns;
+		this.row = frameIndex / this.numberOfColumns;
 	}
 
 	/**
@@ -567,17 +717,46 @@ public class Sprite extends Layer
 	 * bounds of the untransformed Sprite).
 	 * <p>
 	 * 
-	 * @param img - the Image to use for Sprite
-	 * @param frameWidth - the width in pixels of the individual raw frames
-	 * @param frameHeight - the height in pixels of the individual raw frames
-	 * @throws NullPointerException - if img is null
-	 * @throws IllegalArgumentException - if frameHeight or frameWidth is less than 1
-	 *												      or if the image width is not an integer multiple of the frameWidth
-	 *												      or if the image height is not an integer multiple of the frameHeight
+	 * @param image the Image to use for Sprite
+	 * @param frameWidth the width in pixels of the individual raw frames
+	 * @param frameHeight the height in pixels of the individual raw frames
+	 * @throws NullPointerException if img is null
+	 * @throws IllegalArgumentException if frameHeight or frameWidth is less than 1
+	 *									or if the image width is not an integer multiple of the frameWidth
+	 *									or if the image height is not an integer multiple of the frameHeight
 	 */
-	public void setImage( Image img, int frameWidth, int frameHeight)
+	public void setImage( Image image, int frameWidth, int frameHeight)
 	{
-		//TODO implement setImage
+		this.image = image;
+		this.frameWidth = frameWidth;
+		this.width = frameWidth;
+		this.frameHeight = frameHeight;
+		this.height = frameHeight;
+		this.numberOfColumns = image.getWidth() / frameWidth;
+		int rows = image.getHeight() / frameHeight;
+		this.rawFrameCount = this.numberOfColumns * rows;
+		this.frameSequenceIndex = 0;
+		this.column = 0;
+		this.row = 0;
+		this.collisionX = 0;
+		this.collisionY = 0;
+		this.collisionWidth = frameWidth;
+		this.collisionHeight = frameHeight;
+		this.transformedCollisionX = 0;
+		this.transformedCollisionY = 0;
+		this.transformedCollisionWidth = frameWidth;
+		this.transformedCollisionHeight = frameHeight;
+		//#ifdef polish.api.nokia-ui
+			this.nokiaFrame = DirectUtils.createImage( frameWidth, frameHeight, 0x00FFFFFF );
+			Graphics g = this.nokiaFrame.getGraphics();
+			// when creating an transparent image, one must not "touch"
+			// that image with an ordinary Graphics-object --- instead
+			// ALWAYS an DirectGraphics-object needs to be used. Sigh!
+			//g.drawImage(this.image, 0, 0, Graphics.TOP | Graphics.LEFT );
+			DirectGraphics dg = DirectUtils.getDirectGraphics(g);
+			dg.drawImage(this.image, 0, 0, Graphics.TOP | Graphics.LEFT, 0 );
+			this.nokiaFrames = new Image[ this.rawFrameCount ];
+		//#endif
 	}
 
 	/**
@@ -593,15 +772,22 @@ public class Sprite extends Layer
 	 * larger, the pixels outside the bounds of the Sprite are considered to be
 	 * transparent for pixel-level collision detection.
 	 * 
-	 * @param leftX - the horizontal location of the collision rectangle relative to the untransformed Sprite's left edge
-	 * @param topY - the vertical location of the collision rectangle relative to the untransformed Sprite's top edge
-	 * @param cWidth - the width of the collision rectangle
-	 * @param cHeight - the height of the collision rectangle
-	 * @throws IllegalArgumentException - if the specified width or height is less than 0
+	 * @param leftX the horizontal location of the collision rectangle relative to the untransformed Sprite's left edge
+	 * @param topY the vertical location of the collision rectangle relative to the untransformed Sprite's top edge
+	 * @param cWidth the width of the collision rectangle
+	 * @param cHeight the height of the collision rectangle
+	 * @throws IllegalArgumentException if the specified width or height is less than 0
 	 */
 	public void defineCollisionRectangle(int leftX, int topY, int cWidth, int cHeight)
 	{
-		//TODO implement defineCollisionRectangle
+		this.collisionX = leftX;
+		this.collisionY = topY;
+		this.collisionWidth = cWidth;
+		this.collisionHeight = cHeight;
+		this.transformedCollisionX = leftX;
+		this.transformedCollisionY = topY;
+		this.transformedCollisionWidth = cWidth;
+		this.transformedCollisionHeight = cHeight;
 	}
 
 	/**
@@ -609,12 +795,13 @@ public class Sprite extends Layer
 	 * applied to a Sprite to change its rendered appearance.  Transforms
 	 * are applied to the original Sprite image; they are not cumulative,
 	 * nor can they be combined.  By default, a Sprite's transform is
-	 * <A HREF="../../../../javax/microedition/lcdui/game/Sprite.html#TRANS_NONE"><CODE>TRANS_NONE</CODE></A>.
+	 * <A HREF="../../../../de/enough/polish/ui/game/Sprite.html#TRANS_NONE"><CODE>TRANS_NONE</CODE></A>.
 	 * <P>
 	 * Since some transforms involve rotations of 90 or 270 degrees, their
 	 * use may result in the overall width and height of the Sprite
 	 * being swapped.  As a result, the values returned by
-	 * <A HREF="../../../../javax/microedition/lcdui/game/Layer.html#getWidth()"><CODE>Layer.getWidth()</CODE></A> and <A HREF="../../../../javax/microedition/lcdui/game/Layer.html#getHeight()"><CODE>Layer.getHeight()</CODE></A> may change.
+	 * <A HREF="../../../../de/enough/polish/ui/game/Layer.html#getWidth()"><CODE>Layer.getWidth()</CODE></A> 
+	 * and <A HREF="../../../../de/enough/polish/ui/game/Layer.html#getHeight()"><CODE>Layer.getHeight()</CODE></A> may change.
 	 * <p>
 	 * The collision rectangle is also modified by the transform so that
 	 * it remains static relative to the pixel data of the Sprite.
@@ -625,53 +812,197 @@ public class Sprite extends Layer
 	 * the reference pixel in the painter's coordinate system does not change
 	 * as a result of changing the transform.  Thus, the reference pixel
 	 * effectively becomes the centerpoint for the transform.  Consequently,
-	 * the values returned by <A HREF="../../../../javax/microedition/lcdui/game/Sprite.html#getRefPixelX()"><CODE>getRefPixelX()</CODE></A> and <A HREF="../../../../javax/microedition/lcdui/game/Sprite.html#getRefPixelY()"><CODE>getRefPixelY()</CODE></A>
+	 * the values returned by <A HREF="../../../../de/enough/polish/ui/game/Sprite.html#getRefPixelX()"><CODE>getRefPixelX()</CODE></A> 
+	 * and <A HREF="../../../../de/enough/polish/ui/game/Sprite.html#getRefPixelY()"><CODE>getRefPixelY()</CODE></A>
 	 * will be the same both before and after the transform is applied, but
-	 * the values returned by <A HREF="../../../../javax/microedition/lcdui/game/Layer.html#getX()"><CODE>getX()</CODE></A> and <A HREF="../../../../javax/microedition/lcdui/game/Layer.html#getY()"><CODE>getY()</CODE></A>
+	 * the values returned by <A HREF="../../../../de/enough/polish/ui/game/Layer.html#getX()"><CODE>getX()</CODE></A> 
+	 * and <A HREF="../../../../de/enough/polish/ui/game/Layer.html#getY()"><CODE>getY()</CODE></A>
 	 * may change.
 	 * <p>
 	 * 
-	 * @param transform - the desired transform for this Sprite
-	 * @throws IllegalArgumentException - if the requested transform is invalid
+	 * @param transform the desired transform for this Sprite
+	 * @throws IllegalArgumentException if the requested transform is invalid
 	 * @see #TRANS_NONE, #TRANS_ROT90, #TRANS_ROT180, #TRANS_ROT270, #TRANS_MIRROR, #TRANS_MIRROR_ROT90, #TRANS_MIRROR_ROT180, #TRANS_MIRROR_ROT270
 	 */
 	public void setTransform(int transform)
 	{
+		boolean switchHeightAndWidth = false;
+		int refX = 0;
+		int refY = 0;
+		switch (transform ) {
+			case TRANS_NONE:
+				//#debug
+				System.out.println("TRANS_NONE");
+				refX = this.refPixelX;
+				refY = this.refPixelY;
+				//#ifdef polish.api.nokia-ui
+					this.nokiaTransform = 0;
+				//#endif
+				break;
+			case TRANS_MIRROR_ROT180:
+				//#debug
+				System.out.println("TRANS_MIRROR_ROT180");
+				refX = this.refPixelX;
+				refY = (this.frameHeight - 1) - this.refPixelY;
+				//#ifdef polish.api.nokia-ui
+					this.nokiaTransform = DirectGraphics.FLIP_VERTICAL;
+				//#endif
+				break;
+			case TRANS_MIRROR:
+				//#debug
+				System.out.println("TRANS_MIRROR");
+				refX = (this.frameWidth - 1) - this.refPixelX;
+				refY = this.refPixelY;
+				//#ifdef polish.api.nokia-ui
+					this.nokiaTransform = DirectGraphics.FLIP_HORIZONTAL;
+				//#endif
+				break;
+			case TRANS_ROT180:
+				//#debug
+				System.out.println("TRANS_ROT180");
+				refX = (this.frameWidth - 1) - this.refPixelX;
+				refY = (this.frameHeight - 1) - this.refPixelY;
+				//#ifdef polish.api.nokia-ui
+					this.nokiaTransform = DirectGraphics.ROTATE_180;
+				//#endif
+				break;
+			case TRANS_MIRROR_ROT270:
+				//#debug
+				System.out.println("TRANS_MIRROR_ROT270");
+				refX = this.refPixelY;
+				refY = this.refPixelX;
+				//#ifdef polish.api.nokia-ui
+					this.nokiaTransform = DirectGraphics.ROTATE_270 | DirectGraphics.FLIP_HORIZONTAL;
+				//#endif
+				switchHeightAndWidth = true;
+				break;
+			case TRANS_ROT90:
+				//#debug
+				System.out.println("TRANS_ROT90");
+				refX = (this.frameHeight - 1) - this.refPixelY;
+				refY = this.refPixelX;
+				//#ifdef polish.api.nokia-ui
+					this.nokiaTransform = DirectGraphics.ROTATE_270;
+				//#endif
+				switchHeightAndWidth = true;
+				break;
+			case TRANS_ROT270:
+				//#debug
+				System.out.println("TRANS_ROT270");
+				refX = this.refPixelY; //(this.frameHeight - 1 ) - this.refPixelY;
+				refY = (this.frameWidth - 1 ) - this.refPixelX;
+				//#ifdef polish.api.nokia-ui
+					this.nokiaTransform = DirectGraphics.ROTATE_90;
+				//#endif
+				switchHeightAndWidth = true;
+				break;
+			case TRANS_MIRROR_ROT90:
+				//#debug
+				System.out.println("TRANS_MIRROR_ROT90");
+				refX = (this.frameHeight - 1) - this.refPixelY;
+				refY = (this.frameWidth - 1) - this.refPixelX;
+				//#ifdef polish.api.nokia-ui
+					this.nokiaTransform = DirectGraphics.ROTATE_90 | DirectGraphics.FLIP_HORIZONTAL;
+				//#endif
+				switchHeightAndWidth = true;
+				break;
+			default:
+				//#ifdef polish.debugVerbose
+					throw new IllegalArgumentException("Invalid sprite transformation: " + transform );
+				//#else
+					//# throw new IllegalArgumentException();	
+				//#endif
+		}
+		int xDiff = this.transformedRefX - refX;
+		int yDiff = this.transformedRefY - refY;
+
+		this.transformedRefX = refX;
+		this.transformedRefY = refY;
+
+		this.xPosition += xDiff;
+		this.yPosition += yDiff;
+		
+		this.transformedCollisionX += xDiff;
+		this.transformedCollisionY += yDiff;
+		
+		if (switchHeightAndWidth) {
+			this.width = this.frameHeight;
+			this.height = this.frameWidth;
+			this.transformedCollisionWidth = this.collisionHeight;
+			this.transformedCollisionHeight = this.collisionWidth;
+		} else {
+			this.width = this.frameWidth;
+			this.height = this.frameHeight;
+			this.transformedCollisionWidth = this.collisionWidth;
+			this.transformedCollisionHeight = this.collisionHeight;
+		}
+		
 		this.transform = transform;
+		//#ifndef polish.api.nokia-ui
+			// when the nokia-ui is used the frame-dimensions do not need to be changed:
+			if (this.rawFrameCount > 1) {
+				updateFrame();
+			}
+		//#endif
 	}
 
 	/**
 	 * Checks for a collision between this Sprite and the specified Sprite.
+	 * <p>
+	 * The J2ME Polish implementation for MIDP/1.0 devices currently does
+	 * not support a pixel-level detection. Instead only the defined
+	 * collision rectangles are used. 
+	 * </p>
 	 * <P>
 	 * If pixel-level detection is used, a collision is detected only if
 	 * opaque pixels collide.  That is, an opaque pixel in the first
 	 * Sprite would have to collide with an opaque  pixel in the second
 	 * Sprite for a collision to be detected.  Only those pixels within
 	 * the Sprites' respective collision rectangles are checked.
+	 * </P>
 	 * <P>
 	 * If pixel-level detection is not used, this method simply
 	 * checks if the Sprites' collision rectangles intersect.
+	 * </P>
 	 * <P>
 	 * Any transforms applied to the Sprites are automatically accounted for.
 	 * <P>
 	 * Both Sprites must be visible in order for a collision to be
 	 * detected.
-	 * <P>
+	 * </P>
 	 * 
-	 * @param s - the Sprite to test for collision with
-	 * @param pixelLevel - true to test for collision on a pixel-by-pixel basis, false to test using simple bounds checking.
+	 * @param s the Sprite to test for collision with
+	 * @param pixelLevel true to test for collision on a pixel-by-pixel basis, false to test using simple bounds checking.
 	 * @return true if the two Sprites have collided, otherwise false
-	 * @throws NullPointerException - if Sprite s is null
+	 * @throws NullPointerException if Sprite s is null
 	 */
 	public final boolean collidesWith( Sprite s, boolean pixelLevel)
 	{
+		if (!(this.isVisible && s.isVisible)) {
+			return false;
+		}
+		int cXStart = this.xPosition + this.transformedCollisionX;
+		int cXEnd = cXStart + this.transformedCollisionWidth;
+		int spriteCXStart = s.xPosition + s.transformedCollisionX;
+		int spriteCXEnd = spriteCXStart + s.transformedCollisionWidth;
+		if ((cXStart <= spriteCXStart && cXEnd >= spriteCXStart)
+		 || (cXStart >= spriteCXEnd && cXEnd <= spriteCXEnd) ) {
+			int cYStart = this.yPosition + this.transformedCollisionY;
+			int cYEnd = cYStart + this.transformedCollisionHeight;
+			int spriteCYStart = s.yPosition + s.transformedCollisionY;
+			int spriteCYEnd = spriteCYStart + s.transformedCollisionHeight;
+			if ((cYStart <= spriteCYStart && cYEnd >= spriteCYStart)
+					 || (cYStart >= spriteCYEnd && cYEnd <= spriteCYEnd) ) {
+				return true;
+			}			
+		}
 		return false;
-		//TODO implement collidesWith
 	}
 
 	/**
-	 * Checks for a collision between this Sprite and the specified
-	 * TiledLayer.  If pixel-level detection is used, a collision is
+	 * Checks for a collision between this Sprite and the specified TiledLayer.  
+	 * 
+	 * If pixel-level detection is used, a collision is
 	 * detected only if opaque pixels collide.  That is, an opaque pixel in
 	 * the Sprite would have to collide with an opaque pixel in TiledLayer
 	 * for a collision to be detected.  Only those pixels within the Sprite's

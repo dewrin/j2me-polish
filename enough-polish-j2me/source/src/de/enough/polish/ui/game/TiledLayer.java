@@ -2,7 +2,7 @@
 //only include this file for midp1-devices:
 //#condition polish.midp1 && polish.usePolishGui
 /*
- * Copyright (c) 2004 Robert Virkus / enough software
+ * Copyright (c) 2004 Robert Virkus / Enough Software
  *
  * This file is part of J2ME Polish.
  *
@@ -22,12 +22,14 @@
  * 
  * Commercial licenses are also available, please
  * refer to the accompanying LICENSE.txt or visit
- * www.enough.de/j2mepolish for details.
+ * http://www.j2mepolish.org for details.
  */
 package de.enough.polish.ui.game;
 
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
+
+import de.enough.polish.util.ArrayList;
 
 /**
  * A TiledLayer is a visual element composed of a grid of cells that
@@ -62,7 +64,7 @@ import javax.microedition.lcdui.Image;
  * the tile and the image data associated with it.
  * A static tile set is created when the TiledLayer is instantiated;
  * it can also be updated
- * at any time using the <A HREF="../../../../javax/microedition/lcdui/game/TiledLayer.html#setStaticTileSet(javax.microedition.lcdui.Image, int, int)"><CODE>setStaticTileSet(javax.microedition.lcdui.Image, int, int)</CODE></A> method.
+ * at any time using the <A HREF="../../../../de/enough/polish/ui/game/TiledLayer.html#setStaticTileSet(javax.microedition.lcdui.Image, int, int)"><CODE>setStaticTileSet(javax.microedition.lcdui.Image, int, int)</CODE></A> method.
  * In addition to the static tile set, the developer can also define
  * several <em>animated tiles</em>.
  * An animated tile is a virtual tile that is dynamically associated
@@ -78,13 +80,13 @@ import javax.microedition.lcdui.Image;
  * animated tile.  This technique is very useful for animating large
  * repeating areas without
  * having to explicitly change the contents of numerous cells.
- * Animated tiles are created using the <A HREF="../../../../javax/microedition/lcdui/game/TiledLayer.html#createAnimatedTile(int)"><CODE>createAnimatedTile(int)</CODE></A>
+ * Animated tiles are created using the <A HREF="../../../../de/enough/polish/ui/game/TiledLayer.html#createAnimatedTile(int)"><CODE>createAnimatedTile(int)</CODE></A>
  * method, which returns the
  * index to be used for the new animated tile.  The animated tile
  * indices are always negative
  * and consecutive, beginning with -1.  Once created, the static tile
  * associated with an
- * animated tile can be changed using the <A HREF="../../../../javax/microedition/lcdui/game/TiledLayer.html#setAnimatedTile(int, int)"><CODE>setAnimatedTile(int, int)</CODE></A>
+ * animated tile can be changed using the <A HREF="../../../../de/enough/polish/ui/game/TiledLayer.html#setAnimatedTile(int, int)"><CODE>setAnimatedTile(int, int)</CODE></A>
  * method.
  * <h3>Cells</h3>
  * The TiledLayer's grid is made up of equally sized cells; the number
@@ -100,8 +102,8 @@ import javax.microedition.lcdui.Image;
  * transparent and nothing is drawn
  * in that area by the TiledLayer.  By default, all cells contain tile
  * index 0.
- * The contents of cells may be changed using <A HREF="../../../../javax/microedition/lcdui/game/TiledLayer.html#setCell(int, int, int)"><CODE>setCell(int, int, int)</CODE></A> and
- * <A HREF="../../../../javax/microedition/lcdui/game/TiledLayer.html#fillCells(int, int, int, int, int)"><CODE>fillCells(int, int, int, int, int)</CODE></A>.  Several
+ * The contents of cells may be changed using <A HREF="../../../../de/enough/polish/ui/game/TiledLayer.html#setCell(int, int, int)"><CODE>setCell(int, int, int)</CODE></A> and
+ * <A HREF="../../../../de/enough/polish/ui/game/TiledLayer.html#fillCells(int, int, int, int, int)"><CODE>fillCells(int, int, int, int, int)</CODE></A>.  Several
  * cells may contain the same tile; however, a single cell cannot
  * contain more than one tile.
  * The following example illustrates how a simple background can be
@@ -139,11 +141,18 @@ import javax.microedition.lcdui.Image;
  */
 public class TiledLayer extends Layer
 {
-	//following variables are implicitely defined by getter- or setter-methods:
 	private int cellWidth;
 	private int cellHeight;
-	private int columns;
-	private int rows;
+	private int[][] grid;
+	private Image image;
+	private int[] tileXPositions;
+	private int[] tileYPositions;
+	private ArrayList animatedTiles;
+	private int numberOfTiles;
+	//private int numberOfRows;
+	private int numberOfColumns;
+	private int gridColumns;
+	private int gridRows;
 
 	/**
 	 * Creates a new TiledLayer.  <p>
@@ -151,7 +160,7 @@ public class TiledLayer extends Layer
 	 * The TiledLayer's grid will be <code>rows</code> cells high and
 	 * <code>columns</code> cells wide.  All cells in the grid are initially
 	 * empty (i.e. they contain tile index 0).  The contents of the grid may
-	 * be modified through the use of <A HREF="../../../../javax/microedition/lcdui/game/TiledLayer.html#setCell(int, int, int)"><CODE>setCell(int, int, int)</CODE></A> and <A HREF="../../../../javax/microedition/lcdui/game/TiledLayer.html#fillCells(int, int, int, int, int)"><CODE>fillCells(int, int, int, int, int)</CODE></A>.
+	 * be modified through the use of <A HREF="../../../../de/enough/polish/ui/game/TiledLayer.html#setCell(int, int, int)"><CODE>setCell(int, int, int)</CODE></A> and <A HREF="../../../../javax/microedition/lcdui/game/TiledLayer.html#fillCells(int, int, int, int, int)"><CODE>fillCells(int, int, int, int, int)</CODE></A>.
 	 * <P>
 	 * The static tile set for the TiledLayer is created from the specified
 	 * Image with each tile having the dimensions of tileWidth x tileHeight.
@@ -161,28 +170,92 @@ public class TiledLayer extends Layer
 	 * is thrown;<p>
 	 * 
 	 * The entire static tile set can be changed using
-	 * <A HREF="../../../../javax/microedition/lcdui/game/TiledLayer.html#setStaticTileSet(javax.microedition.lcdui.Image, int, int)"><CODE>setStaticTileSet(Image, int, int)</CODE></A>.
+	 * <A HREF="../../../../de/enough/polish/ui/game/TiledLayer.html#setStaticTileSet(javax.microedition.lcdui.Image, int, int)"><CODE>setStaticTileSet(Image, int, int)</CODE></A>.
 	 * These methods should be used sparingly since they are both
 	 * memory and time consuming.
 	 * Where possible, animated tiles should be used instead to
 	 * animate tile appearance.<p>
 	 * 
-	 * @param columns - the width of the TiledLayer, expressed as a number of cells
-	 * @param rows - the height of the TiledLayer, expressed as a number of cells
-	 * @param image - the Image to use for creating the static tile set
-	 * @param tileWidth - the width in pixels of a single tile
-	 * @param tileHeight - the height in pixels of a single tile
-	 * @throws NullPointerException - if image is null
-	 * @throws IllegalArgumentException - if the number of rows or columns is less than 1
-	 *												      or if tileHeight or tileWidth is less than 1
-	 *												      or if the image width is not an integer multiple of the tileWidth
-	 *												      or if the image height is not an integer multiple of the tileHeight
+	 * @param columns the width of the TiledLayer, expressed as a number of cells
+	 * @param rows the height of the TiledLayer, expressed as a number of cells
+	 * @param image the Image to use for creating the static tile set
+	 * @param tileWidth the width in pixels of a single tile
+	 * @param tileHeight the height in pixels of a single tile
+	 * @throws NullPointerException if image is null
+	 * @throws IllegalArgumentException if the number of rows or columns is less than 1
+	 *									or if tileHeight or tileWidth is less than 1
+	 *									or if the image width is not an integer multiple of the tileWidth
+	 *									or if the image height is not an integer multiple of the tileHeight
 	 */
 	public TiledLayer(int columns, int rows, Image image, int tileWidth, int tileHeight)
 	{
-		//TODO implement TiledLayer
+		this.grid = new int[ columns ] [ rows ];
+		this.gridColumns = columns;
+		this.gridRows = rows;
+		this.width = columns * tileWidth;
+		this.height = rows * tileHeight;
+		this.animatedTiles = new ArrayList();
+		setStaticTileSet(image, tileWidth, tileHeight);
 	}
 
+	/**
+	 * Change the static tile set.  
+	 * <p>
+	 * Replaces the current static tile set with a new static tile set.
+	 * See the constructor <A HREF="../../../../de/enough/polish/ui/game/TiledLayer.html#TiledLayer(int, int, javax.microedition.lcdui.Image, int, int)"><CODE>TiledLayer(int, int, Image, int, int)</CODE></A>
+	 * for information on how the tiles are created from the
+	 * image.<p>
+	 * 
+	 * If the new static tile set has as many or more tiles than the
+	 * previous static tile set,
+	 * the the animated tiles and cell contents will be preserve.  If
+	 * not, the contents of
+	 * the grid will be cleared (all cells will contain index 0) and
+	 * all animated tiles
+	 * will be deleted.
+	 * <P>
+	 * 
+	 * @param image the Image to use for creating the static tile set
+	 * @param tileWidth the width in pixels of a single tile
+	 * @param tileHeight the height in pixels of a single tile
+	 * @throws NullPointerException if image is null
+	 * @throws IllegalArgumentException if tileHeight or tileWidth is less than 1
+	 * 									or if the image width is not an integer  multiple of the tileWidth
+	 *									or if the image height is not an integer  multiple of the tileHeight
+	 */
+	public void setStaticTileSet( Image image, int tileWidth, int tileHeight)
+	{
+		this.image = image;
+		this.cellWidth = tileWidth;
+		this.cellHeight = tileHeight;
+		int columns = image.getWidth() / tileWidth;
+		int rows = image.getHeight() / tileHeight;
+		this.tileXPositions = new int[ columns ];
+		int pos = 0;
+		for (int i = 0; i < columns; i++ ) {
+			this.tileXPositions[ i ] = pos;
+			pos += tileWidth;
+		}
+		this.tileYPositions = new int[ rows ];
+		pos = 0;
+		for (int i = 0; i < rows; i++ ) {
+			this.tileYPositions[ i ] = pos;
+			pos += tileHeight;
+		}
+		
+		if ( columns * rows < this.numberOfTiles ) {
+			// clear the grid, when there are not as many tiles as in the previous set:
+			for (int i = 0; i < this.grid.length; i++) {
+				for (int j = 0; j < this.grid[i].length; j++) {
+					this.grid[i][j] = 0;
+				}
+			}
+		}
+		this.numberOfTiles = columns * rows;
+		this.numberOfColumns = columns;
+		//this.numberOfRows = rows;
+	}
+	
 	/**
 	 * Creates a new animated tile and returns the index that refers
 	 * to the new animated tile.  It is initially associated with
@@ -191,81 +264,106 @@ public class TiledLayer extends Layer
 	 * The indices for animated tiles are always negative.  The first
 	 * animated tile shall have the index -1, the second, -2, etc.
 	 * 
-	 * @param staticTileIndex - the index of the associated tile  (must be 0 or a valid static tile index)
+	 * @param staticTileIndex the index of the associated tile  (must be 0 or a valid static tile index)
 	 * @return the index of newly created animated tile
-	 * @throws IndexOutOfBoundsException - if the staticTileIndex is invalid
+	 * @throws IndexOutOfBoundsException if the staticTileIndex is invalid
 	 */
 	public int createAnimatedTile(int staticTileIndex)
 	{
-		return 0;
-		//TODO implement createAnimatedTile
+		if (staticTileIndex >= this.numberOfTiles ) {
+			//#ifdef polish.debugVerbos
+				throw new IllegalArgumentException("invalid static tile index: " + staticTileIndex + " (there are only [" + this.numberOfTiles + "] tiles available.");
+			//#else
+				//# throw new IllegalArgumentException();
+			//#endif
+		}
+		this.animatedTiles.add( new Integer( staticTileIndex ));
+		return -1 * (this.animatedTiles.size() -1);
 	}
 
 	/**
 	 * Associates an animated tile with the specified static tile.  <p>
 	 * 
-	 * @param animatedTileIndex - the index of the animated tile
-	 * @param staticTileIndex - the index of the associated tile (must be 0 or a valid static tile index)
-	 * @throws IndexOutOfBoundsException - if the staticTileIndex is invalid
-	 *												      or if the animated tile index is invalid
+	 * @param animatedTileIndex the index of the animated tile
+	 * @param staticTileIndex the index of the associated tile (must be 0 or a valid static tile index)
+	 * @throws IndexOutOfBoundsException if the staticTileIndex is invalid
+	 *									 or if the animated tile index is invalid
 	 * @see #getAnimatedTile(int)
 	 */
 	public void setAnimatedTile(int animatedTileIndex, int staticTileIndex)
 	{
-		//TODO implement setAnimatedTile
+		if (staticTileIndex >= this.numberOfTiles ) {
+			//#ifdef polish.debugVerbos
+				throw new IllegalArgumentException("invalid static tile index: " + staticTileIndex + " (there are only [" + this.numberOfTiles + "] tiles available.");
+			//#else
+				//# throw new IllegalArgumentException();
+			//#endif
+		}
+		int animatedIndex = (-1 * animatedTileIndex) - 1;
+		this.animatedTiles.set( animatedIndex, new Integer( staticTileIndex ) );
 	}
 
 	/**
-	 * Gets the tile referenced by an animated tile.  <p>
+	 * Gets the tile referenced by an animated tile.  
+	 * <p>
 	 * 
 	 * Returns the tile index currently associated with the
 	 * animated tile.
 	 * 
-	 * @param animatedTileIndex - the index of the animated tile
+	 * @param animatedTileIndex the index of the animated tile
 	 * @return the index of the tile reference by the animated tile
-	 * @throws IndexOutOfBoundsException - if the animated tile index is invalid
+	 * @throws IndexOutOfBoundsException if the animated tile index is invalid
 	 * @see #setAnimatedTile(int, int)
 	 */
 	public int getAnimatedTile(int animatedTileIndex)
 	{
-		return 0;
-		//TODO implement getAnimatedTile
+		int animatedIndex = (-1 * animatedTileIndex) - 1;
+		Integer animatedTile = (Integer) this.animatedTiles.get( animatedIndex );
+		return animatedTile.intValue();
 	}
 
 	/**
-	 * Sets the contents of a cell.  <P>
+	 * Sets the contents of a cell.  
 	 * 
+	 * <P>
 	 * The contents may be set to a static tile index, an animated
 	 * tile index, or it may be left empty (index 0)
 	 * 
-	 * @param col - the column of cell to set
-	 * @param row - the row of cell to set
-	 * @param tileIndex - the index of tile to place in cell
-	 * @throws IndexOutOfBoundsException - if there is no tile with index tileIndex
-	 *												      or if row or col is outside the bounds of the TiledLayer grid
+	 * @param col the column of cell to set
+	 * @param row the row of cell to set
+	 * @param tileIndex the index of tile to place in cell
+	 * @throws IndexOutOfBoundsException if there is no tile with index tileIndex
+	 *									 or if row or col is outside the bounds of the TiledLayer grid
 	 * @see #getCell(int, int), #fillCells(int, int, int, int, int)
 	 */
 	public void setCell(int col, int row, int tileIndex)
 	{
-		//TODO implement setCell
+		if (tileIndex >= this.numberOfTiles ) {
+			//#ifdef polish.debugVerbos
+				throw new IllegalArgumentException("invalid static tile index: " + tileIndex + " (there are only [" + this.numberOfTiles + "] tiles available.");
+			//#else
+				//# throw new IllegalArgumentException();
+			//#endif
+		}
+		this.grid[ col ][ row ] = tileIndex;
 	}
 
 	/**
-	 * Gets the contents of a cell.  <p>
+	 * Gets the contents of a cell.  
 	 * 
+	 * <p>
 	 * Gets the index of the static or animated tile currently displayed in
 	 * a cell.  The returned index will be 0 if the cell is empty.
 	 * 
-	 * @param col - the column of cell to check
-	 * @param row - the row of cell to check
+	 * @param col the column of cell to check
+	 * @param row the row of cell to check
 	 * @return the index of tile in cell
-	 * @throws IndexOutOfBoundsException - if row or col is outside the bounds of the TiledLayer grid
+	 * @throws IndexOutOfBoundsException if row or col is outside the bounds of the TiledLayer grid
 	 * @see #setCell(int, int, int), #fillCells(int, int, int, int, int)
 	 */
 	public int getCell(int col, int row)
 	{
-		return 0;
-		//TODO implement getCell
+		return this.grid[ col ][ row ];
 	}
 
 	/**
@@ -273,20 +371,33 @@ public class TiledLayer extends Layer
 	 * with a static tile index, an animated tile index, or they may be left
 	 * empty (index <code>0</code>).
 	 * 
-	 * @param col - the column of top-left cell in the region
-	 * @param row - the row of top-left cell in the region
-	 * @param numCols - the number of columns in the region
-	 * @param numRows - the number of rows in the region
-	 * @param tileIndex - the Index of the tile to place in all cells in the  specified region
-	 * @throws IndexOutOfBoundsException - if the rectangular region defined by the parameters extends beyond the bounds of the TiledLayer grid
-	 *														   or if there is no tile with index tileIndex
-	 * @throws IllegalArgumentException - if numCols is less than zero
-	 *												      or if numRows is less than zero
+	 * @param col the column of top-left cell in the region
+	 * @param row the row of top-left cell in the region
+	 * @param numCols the number of columns in the region
+	 * @param numRows the number of rows in the region
+	 * @param tileIndex the Index of the tile to place in all cells in the  specified region
+	 * @throws IndexOutOfBoundsException if the rectangular region defined by the parameters extends beyond the bounds of the TiledLayer grid
+	 *									 or if there is no tile with index tileIndex
+	 * @throws IllegalArgumentException if numCols is less than zero
+	 *									or if numRows is less than zero
 	 * @see #setCell(int, int, int), #getCell(int, int)
 	 */
 	public void fillCells(int col, int row, int numCols, int numRows, int tileIndex)
 	{
-		//TODO implement fillCells
+		if (tileIndex >= this.numberOfTiles ) {
+			//#ifdef polish.debugVerbos
+				throw new IllegalArgumentException("invalid static tile index: " + tileIndex + " (there are only [" + this.numberOfTiles + "] tiles available.");
+			//#else
+				//# throw new IllegalArgumentException();
+			//#endif
+		}
+		int endCols = col + numCols;
+		int endRows = row + numRows;
+		for (int i = col; i < endCols; i++ ) {
+			for (int j = row; j < endRows; j++) {
+				this.grid[ i ][ j ] = tileIndex;
+			}
+		}
 	}
 
 	/**
@@ -312,55 +423,25 @@ public class TiledLayer extends Layer
 	/**
 	 * Gets the number of columns in the TiledLayer grid.
 	 * The overall width of the TiledLayer, in pixels,
-	 * may be obtained by calling <A HREF="../../../../javax/microedition/lcdui/game/Layer.html#getWidth()"><CODE>Layer.getWidth()</CODE></A>.
+	 * may be obtained by calling <A HREF="../../../../de/enough/polish/ui/game/Layer.html#getWidth()"><CODE>Layer.getWidth()</CODE></A>.
 	 * 
 	 * @return the width in columns of the  TiledLayer grid
 	 */
 	public final int getColumns()
 	{
-		return this.columns;
+		return this.gridColumns;
 	}
 
 	/**
 	 * Gets the number of rows in the TiledLayer grid.  The overall
 	 * height of the TiledLayer, in pixels, may be obtained by
-	 * calling <A HREF="../../../../javax/microedition/lcdui/game/Layer.html#getHeight()"><CODE>Layer.getHeight()</CODE></A>.
+	 * calling <A HREF="../../../../de/enough/polish/ui/game/Layer.html#getHeight()"><CODE>Layer.getHeight()</CODE></A>.
 	 * 
 	 * @return the height in rows of the  TiledLayer grid
 	 */
 	public final int getRows()
 	{
-		return this.rows;
-	}
-
-	/**
-	 * Change the static tile set.  <p>
-	 * 
-	 * Replaces the current static tile set with a new static tile set.
-	 * See the constructor <A HREF="../../../../javax/microedition/lcdui/game/TiledLayer.html#TiledLayer(int, int, javax.microedition.lcdui.Image, int, int)"><CODE>TiledLayer(int, int, Image, int, int)</CODE></A>
-	 * for information on how the tiles are created from the
-	 * image.<p>
-	 * 
-	 * If the new static tile set has as many or more tiles than the
-	 * previous static tile set,
-	 * the the animated tiles and cell contents will be preserve.  If
-	 * not, the contents of
-	 * the grid will be cleared (all cells will contain index 0) and
-	 * all animated tiles
-	 * will be deleted.
-	 * <P>
-	 * 
-	 * @param image - the Image to use for creating the static tile set
-	 * @param tileWidth - the width in pixels of a single tile
-	 * @param tileHeight - the height in pixels of a single tile
-	 * @throws NullPointerException - if image is null
-	 * @throws IllegalArgumentException - if tileHeight or tileWidth is less than 1
-	 * 												   or if the image width is not an integer  multiple of the tileWidth
-	 *												       or if the image height is not an integer  multiple of the tileHeight
-	 */
-	public void setStaticTileSet( Image image, int tileWidth, int tileHeight)
-	{
-		//TODO implement setStaticTileSet
+		return this.gridRows;
 	}
 
 	/**
@@ -372,7 +453,7 @@ public class TiledLayer extends Layer
 	 * TiledLayer's current
 	 * position relative to the origin of the Graphics object.   The current
 	 * position of the TiledLayer's upper-left corner can be retrieved by
-	 * calling <A HREF="../../../../javax/microedition/lcdui/game/Layer.html#getX()"><CODE>Layer.getX()</CODE></A> and <A HREF="../../../../javax/microedition/lcdui/game/Layer.html#getY()"><CODE>Layer.getY()</CODE></A>.
+	 * calling <A HREF="../../../../de/enough/polish/ui/game/Layer.html#getX()"><CODE>Layer.getX()</CODE></A> and <A HREF="../../../../javax/microedition/lcdui/game/Layer.html#getY()"><CODE>Layer.getY()</CODE></A>.
 	 * The appropriate use of a clip region and/or translation allows
 	 * an arbitrary region
 	 * of the TiledLayer to be rendered.
@@ -380,13 +461,49 @@ public class TiledLayer extends Layer
 	 * If the TiledLayer's Image is mutable, the TiledLayer is rendered
 	 * using the current contents of the Image.
 	 * 
-	 * @param g - the graphics object to draw the TiledLayer
+	 * @param g the graphics object to draw the TiledLayer
 	 * @throws NullPointerException - if g is null
 	 * @see Layer#paint(Graphics) in class Layer
 	 */
 	public final void paint( Graphics g)
 	{
-		//TODO implement paint
+		int clipX = g.getClipX();
+		int clipY = g.getClipY();
+		int clipWidth = g.getClipWidth();
+		int clipHeight = g.getClipHeight();
+		//TODO calculate first and last column, and first and last row (to save time)
+		int x = this.xPosition;
+		int y = this.yPosition;
+		int[][] gridTable = this.grid;
+		for (int i = 0; i < this.gridColumns; i++) {
+			int[] gridRow = gridTable[i];
+			for (int j = 0; j < gridRow.length; j++) {
+				int cellIndex = gridRow[j];
+				if (cellIndex != 0) {
+					// okay this cell needs to be rendered:
+					int tileIndex;
+					if (cellIndex < 0) {
+						Integer tile = (Integer) this.animatedTiles.get( (-1 * cellIndex ) -1 );
+						tileIndex = tile.intValue() - 1;
+					} else {
+						tileIndex = cellIndex -1;
+					}
+					// now draw the tile:
+					g.setClip( x, y, this.cellWidth, this.cellHeight );
+					int column = tileIndex % this.numberOfColumns;
+					int row = tileIndex / this.numberOfColumns; 
+					int tileX = x - this.tileXPositions[ column ];
+					int tileY = y - this.tileYPositions[ row ];
+					g.drawImage( this.image, tileX, tileY, Graphics.TOP | Graphics.LEFT );
+				}
+				y += this.cellHeight;
+			} // for each row
+			y = this.yPosition;
+			x += this.cellWidth;
+		} // for each column
+		
+		// reset original clip:
+		g.setClip( clipX, clipY, clipWidth, clipHeight );
 	}
 
 }

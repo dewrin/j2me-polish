@@ -2,7 +2,7 @@
 //only include this file for midp1-devices:
 //#condition polish.midp1 && polish.usePolishGui
 /*
- * Copyright (c) 2004 Robert Virkus / enough software
+ * Copyright (c) 2004 Robert Virkus / Enough Software
  *
  * This file is part of J2ME Polish.
  *
@@ -22,11 +22,13 @@
  * 
  * Commercial licenses are also available, please
  * refer to the accompanying LICENSE.txt or visit
- * www.enough.de/j2mepolish for details.
+ * http://www.j2mepolish.org for details.
  */
 package de.enough.polish.ui.game;
 
 import javax.microedition.lcdui.Graphics;
+
+import de.enough.polish.util.ArrayList;
 
 /**
  * The LayerManager manages a series of Layers.
@@ -74,16 +76,19 @@ import javax.microedition.lcdui.Graphics;
  * <center><img src="doc-files/drawWindow.gif" width=321 height=324
  * ALT="Drawing the View Window"></center>
  * <br>
- * <p>
- * <HR>
- * 
  * 
  * @since MIDP 2.0
  */
 public class LayerManager extends Object
 {
-	//following variables are implicitely defined by getter- or setter-methods:
-	private int size;
+	private ArrayList layersList;
+	private Layer[] layers;
+	private int viewX;
+	private int viewY;
+	private int viewWidth;
+	private int viewHeight;
+	private boolean isInitialised;
+	private boolean viewWindowSet;
 
 	/**
 	 * Creates a new LayerManager.</DL>
@@ -92,22 +97,25 @@ public class LayerManager extends Object
 	 */
 	public LayerManager()
 	{
-		//TODO implement LayerManager
+		this.layersList = new ArrayList( 4, 50 );
 	}
 
 	/**
-	 * Appends a Layer to this LayerManager.  The Layer is appended to the
+	 * Appends a Layer to this LayerManager.  
+	 * 
+	 * The Layer is appended to the
 	 * list of existing Layers such that it has the highest index (i.e. it
 	 * is furthest away from the user).  The Layer is first removed
 	 * from this LayerManager if it has already been added.
 	 * 
-	 * @param l - the Layer to be added
-	 * @throws NullPointerException - if the Layer is  null
+	 * @param l the Layer to be added
+	 * @throws NullPointerException if the Layer is  null
 	 * @see #insert(Layer, int), #remove(Layer)
 	 */
 	public void append( Layer l)
 	{
-		//TODO implement append
+		this.layersList.add( l );
+		this.isInitialised = false;
 	}
 
 	/**
@@ -115,61 +123,65 @@ public class LayerManager extends Object
 	 * The Layer is first removed from this LayerManager if it has already
 	 * been added.
 	 * 
-	 * @param l - the Layer to be inserted
-	 * @param index - the index at which the new Layer is to be inserted
-	 * @throws NullPointerException - if the Layer is null
-	 * @throws IndexOutOfBoundsException - if the index is less than 0 or greater than the number of Layers already added to the this LayerManager
+	 * @param l the Layer to be inserted
+	 * @param index the index at which the new Layer is to be inserted
+	 * @throws NullPointerException if the Layer is null
+	 * @throws IndexOutOfBoundsException if the index is less than 0 or greater than the number of Layers already added to the this LayerManager
 	 * @see #append(Layer), #remove(Layer)
 	 */
 	public void insert( Layer l, int index)
 	{
-		//TODO implement insert
+		this.layersList.remove(l);
+		this.layersList.add(index, l);
+		this.isInitialised = false;
+		//TODO rob check if insert( l, layersList.length() ) works
 	}
 
 	/**
 	 * Gets the Layer with the specified index.
 	 * 
-	 * @param index - the index of the desired Layer
+	 * @param index the index of the desired Layer
 	 * @return the Layer that has the specified index
-	 * @throws IndexOutOfBoundsException - if the specified index is less than zero, or if it is equal to or greater than the number of Layers added to the this LayerManager
+	 * @throws IndexOutOfBoundsException if the specified index is less than zero, 
+	 * 			or if it is equal to or greater than the number of Layers added to the 
+	 * 			this LayerManager
 	 */
 	public Layer getLayerAt(int index)
 	{
-		return null;
-		//TODO implement getLayerAt
+		return (Layer) this.layersList.get( index );
 	}
 
 	/**
 	 * Gets the number of Layers in this LayerManager.
-	 * <p>
 	 * 
 	 * @return the number of Layers
 	 */
 	public int getSize()
 	{
-		return this.size;
+		return this.layersList.size();
 	}
 
 	/**
 	 * Removes the specified Layer from this LayerManager.  This method does
 	 * nothing if the specified Layer is not added to the this LayerManager.
 	 * 
-	 * @param l - the Layer to be removed
-	 * @throws NullPointerException - if the specified Layer is null
+	 * @param l the Layer to be removed
+	 * @throws NullPointerException if the specified Layer is null
 	 * @see #append(Layer), #insert(Layer, int)
 	 */
 	public void remove( Layer l)
 	{
-		//TODO implement remove
+		this.layersList.remove( l );
+		this.isInitialised = false;
 	}
 
 	/**
-	 * Renders the LayerManager's current view window at the specified
-	 * location.
+	 * Renders the LayerManager's current view window at the specified location.
 	 * <p>
 	 * The LayerManager renders each of its layers in order of descending
 	 * index, thereby implementing the correct z-order.  Layers that are
 	 * completely outside of the view window are not rendered.
+	 * </p>
 	 * <p>
 	 * The coordinates passed to this method determine where the
 	 * LayerManager's view window will be rendered relative to the origin
@@ -188,10 +200,12 @@ public class LayerManager extends Object
 	 * in the appropriate order.  The translation and clip region of the
 	 * Graphics object are restored to their prior values before this method
 	 * returns.
+	 * </p>
 	 * <p>
 	 * Rendering is subject to the clip region and translation of the Graphics
 	 * object.  Thus, only part of the specified view window may be rendered
 	 * if the clip region is not large enough.
+	 * </p>
 	 * <p>
 	 * For performance reasons, this method may ignore Layers that are
 	 * invisible or that would be rendered entirely outside of the Graphics
@@ -200,17 +214,34 @@ public class LayerManager extends Object
 	 * The clip region may extend beyond the bounds of a Layer; it is the
 	 * responsibility of the Layer to ensure that rendering operations are
 	 * performed within its bounds.
-	 * <p>
+	 * </p>
 	 * 
-	 * @param g - the graphics instance with which to draw the LayerManager
-	 * @param x - the horizontal location at which to render the view window,  relative to the Graphics' translated origin
-	 * @param y - the vertical location at which to render the view window, relative to the Graphics' translated origin
-	 * @throws NullPointerException - if g is null
+	 * @param g the graphics instance with which to draw the LayerManager
+	 * @param x the horizontal location at which to render the view window,  relative to the Graphics' translated origin
+	 * @param y the vertical location at which to render the view window, relative to the Graphics' translated origin
+	 * @throws NullPointerException if g is null
 	 * @see #setViewWindow(int, int, int, int)
 	 */
 	public void paint( Graphics g, int x, int y)
 	{
-		//TODO implement paint
+		if (!this.isInitialised) {
+			this.layers = (Layer[]) this.layersList.toArray( new Layer[ this.layersList.size() ] );
+		}
+		int clipX = g.getClipX();
+		int clipY = g.getClipY();
+		int clipWidth = g.getClipWidth();
+		int clipHeight = g.getClipHeight();
+		if (this.viewWindowSet) {
+			g.setClip( x, y, this.viewWidth, this.viewHeight );
+		}
+		for (int i = this.layers.length -1; i >= 0; i--) {
+			Layer layer = this.layers[ i ];
+			layer.paint( g );
+		}
+		// reset original clip:
+		if (this.viewWindowSet) {
+			g.setClip( clipX, clipY, clipWidth, clipHeight );
+		}
 	}
 
 	/**
@@ -226,15 +257,19 @@ public class LayerManager extends Object
 	 * the LayerManager's coordinate system and its width and height are both
 	 * set to Integer.MAX_VALUE.
 	 * 
-	 * @param x - the horizontal location of the view window relative to the  LayerManager's origin
-	 * @param y - the vertical location of the view window relative to the LayerManager's origin
-	 * @param width - the width of the view window
-	 * @param height - the height of the view window
-	 * @throws IllegalArgumentException - if the width or height is less than 0
+	 * @param x the horizontal location of the view window relative to the  LayerManager's origin
+	 * @param y the vertical location of the view window relative to the LayerManager's origin
+	 * @param width the width of the view window
+	 * @param height the height of the view window
+	 * @throws IllegalArgumentException if the width or height is less than 0
 	 */
 	public void setViewWindow(int x, int y, int width, int height)
 	{
-		//TODO implement setViewWindow
+		this.viewWindowSet = true;
+		this.viewX = x;
+		this.viewY = y;
+		this.viewWidth = width;
+		this.viewHeight = height;
 	}
 
 }

@@ -20,7 +20,7 @@
  * 
  * Commercial licenses are also available, please
  * refer to the accompanying LICENSE.txt or visit
- * www.enough.de/j2mepolish for details.
+ * http://www.j2mepolish.org for details.
  */
 package de.enough.polish.ui;
 
@@ -86,6 +86,12 @@ public abstract class Screen
 	implements CommandListener
 //#endif
 {
+	//#ifdef false
+		public static final int SCREEN_WIDTH = 80;
+		public static final int SCREEN_HEIGHT = 100;
+	//#endif
+	//#= public final static int SCREEN_WIDTH = ${ polish.ScreenWidth };
+	//#= public final static int SCREEN_HEIGHT = ${ polish.ScreenHeight };
 	
 	protected StringItem title;
 	protected String titleText;
@@ -220,9 +226,18 @@ public abstract class Screen
 			}
 		//#endif
 		//#ifdef tmp.menuFullScreen
-			 Style menuStyle = StyleSheet.getStyle("menu");
+			Style menuStyle = StyleSheet.getStyle("menu");
+			if (menuStyle == null) {
+				menuStyle = this.style;
+			}
 			if (menuStyle != null) {
 				String colorStr = menuStyle.getProperty("menubar-color");
+				if (this.style != null) {
+					String localColorStr = this.style.getProperty("menubar-color");
+					if (localColorStr != null) {
+						colorStr = localColorStr;
+					}
+				}
 				if (colorStr != null) {
 					this.menuBarColor = Integer.parseInt(colorStr);
 				}
@@ -329,93 +344,93 @@ public abstract class Screen
 			if (!this.isInitialised) {
 				init();
 			}
-		// paint background:
-		if (this.background != null) {
-			//#ifdef tmp.menuFullScreen
-				this.background.paint(0, 0, this.screenWidth, this.fullScreenHeight, g);
-			//#else
-				this.background.paint(0, 0, this.screenWidth, this.screenHeight, g);
-			//#endif
-		} else {
-			g.setColor( 0xFFFFFF );
-			//#ifdef tmp.menuFullScreen
-				g.fillRect( 0, 0, this.screenWidth, this.fullScreenHeight );
-			//#else
-				g.fillRect( 0, 0, this.screenWidth, this.screenHeight );
-			//#endif
-		}
-		// paint title:
-		if (this.title != null) {
-			this.title.paint(0, 0, 0, this.screenWidth, g);
-		}
-		// protect the title, ticker and the full-screen-menu area:
-		g.setClip(0, this.titleHeight, this.screenWidth, this.screenHeight - this.titleHeight );
-		g.translate( 0, this.titleHeight );
-		// paint content:
-		paintScreen( g);
-		
-		g.translate( 0, -this.titleHeight );
-		// allow painting outside of the screen again:
-		//#ifdef tmp.menuFullScreen
-		 	g.setClip(0, 0, this.screenWidth, this.fullScreenHeight );
-		//#else
-		 	g.setClip(0, 0, this.screenWidth, this.originalScreenHeight );
-		//#endif
-		 	
-		if (this.ticker != null) {
-			this.ticker.paint( 0, this.screenHeight, 0, this.screenWidth, g );
-		}
-		
-		// paint border:
-		if (this.border != null) {
-			this.border.paint(0, 0, this.screenWidth, this.screenHeight, g);
-		}
-		
-		// paint menu in full-screen mode:
-		//#ifdef tmp.menuFullScreen
-			if (this.menuOpened) {
-				int menuHeight = this.menuContainer.getItemHeight(this.menuMaxWidth, this.menuMaxWidth);
-				int y = this.originalScreenHeight - menuHeight;
-				if (y < this.titleHeight) {
-					y = this.titleHeight; 
-					this.menuContainer.setVerticalDimensions(y, this.screenHeight);
-				}
-				this.menuContainer.paint(0, y, 0, this.menuMaxWidth, g);
-			} 
-			// clear menu-bar:
-			if (this.menuBarColor != Item.TRANSPARENT) {
-				g.setColor( this.menuBarColor );
-				g.fillRect(0, this.originalScreenHeight, this.screenWidth,  this.menuBarHeight );
+			// paint background:
+			if (this.background != null) {
+				//#ifdef tmp.menuFullScreen
+					this.background.paint(0, 0, this.screenWidth, this.fullScreenHeight, g);
+				//#else
+					this.background.paint(0, 0, this.screenWidth, this.screenHeight, g);
+				//#endif
+			} else {
+				g.setColor( 0xFFFFFF );
+				//#ifdef tmp.menuFullScreen
+					g.fillRect( 0, 0, this.screenWidth, this.fullScreenHeight );
+				//#else
+					g.fillRect( 0, 0, this.screenWidth, this.screenHeight );
+				//#endif
 			}
-			if (this.menuContainer.size() > 0) {
-				String menuText = null;
+			// paint title:
+			if (this.title != null) {
+				this.title.paint(0, 0, 0, this.screenWidth, g);
+			}
+			// protect the title, ticker and the full-screen-menu area:
+			g.setClip(0, this.titleHeight, this.screenWidth, this.screenHeight - this.titleHeight );
+			g.translate( 0, this.titleHeight );
+			// paint content:
+			paintScreen( g);
+			
+			g.translate( 0, -this.titleHeight );
+			// allow painting outside of the screen again:
+			//#ifdef tmp.menuFullScreen
+			 	g.setClip(0, 0, this.screenWidth, this.fullScreenHeight );
+			//#else
+			 	g.setClip(0, 0, this.screenWidth, this.originalScreenHeight );
+			//#endif
+			 	
+			if (this.ticker != null) {
+				this.ticker.paint( 0, this.screenHeight, 0, this.screenWidth, g );
+			}
+			
+			// paint border:
+			if (this.border != null) {
+				this.border.paint(0, 0, this.screenWidth, this.screenHeight, g);
+			}
+			
+			// paint menu in full-screen mode:
+			//#ifdef tmp.menuFullScreen
 				if (this.menuOpened) {
-					//TODO rob internationalise cmd.selectMenu
-					menuText = "Select";
-				} else {
-					if (this.menuSingleLeftCommand != null) {
-						menuText = this.menuSingleLeftCommand.getLabel();
+					int menuHeight = this.menuContainer.getItemHeight(this.menuMaxWidth, this.menuMaxWidth);
+					int y = this.originalScreenHeight - menuHeight;
+					if (y < this.titleHeight) {
+						y = this.titleHeight; 
+						this.menuContainer.setVerticalDimensions(y, this.screenHeight);
+					}
+					this.menuContainer.paint(0, y, 0, this.menuMaxWidth, g);
+				} 
+				// clear menu-bar:
+				if (this.menuBarColor != Item.TRANSPARENT) {
+					g.setColor( this.menuBarColor );
+					g.fillRect(0, this.originalScreenHeight, this.screenWidth,  this.menuBarHeight );
+				}
+				if (this.menuContainer.size() > 0) {
+					String menuText = null;
+					if (this.menuOpened) {
+						//TODO rob internationalise cmd.selectMenu
+						menuText = "Select";
 					} else {
-						//TODO rob internationalise cmd.openMenu
-						menuText = "Options";				
+						if (this.menuSingleLeftCommand != null) {
+							menuText = this.menuSingleLeftCommand.getLabel();
+						} else {
+							//TODO rob internationalise cmd.openMenu
+							menuText = "Options";				
+						}
+					}
+					g.setColor( this.menuFontColor );
+					g.setFont( this.menuFont );
+					g.drawString(menuText, 2, this.originalScreenHeight + 2, Graphics.TOP | Graphics.LEFT );
+					if ( this.menuOpened ) {
+						// draw select string:
+						//TODO rob internationalise cmd.cancelMenu
+						menuText = "Cancel";
+						g.drawString(menuText, this.screenWidth - 2, this.originalScreenHeight + 2, Graphics.TOP | Graphics.RIGHT );
 					}
 				}
-				g.setColor( this.menuFontColor );
-				g.setFont( this.menuFont );
-				g.drawString(menuText, 2, this.originalScreenHeight + 2, Graphics.TOP | Graphics.LEFT );
-				if ( this.menuOpened ) {
-					// draw select string:
-					//TODO rob internationalise cmd.cancelMenu
-					menuText = "Cancel";
-					g.drawString(menuText, this.screenWidth - 2, this.originalScreenHeight + 2, Graphics.TOP | Graphics.RIGHT );
+				if (this.menuSingleRightCommand != null && !this.menuOpened) {
+					g.setColor( this.menuFontColor );
+					g.setFont( this.menuFont );
+					g.drawString(this.menuSingleRightCommand.getLabel(), this.screenWidth - 2, this.originalScreenHeight + 2, Graphics.TOP | Graphics.RIGHT );
 				}
-			}
-			if (this.menuSingleRightCommand != null && !this.menuOpened) {
-				g.setColor( this.menuFontColor );
-				g.setFont( this.menuFont );
-				g.drawString(this.menuSingleRightCommand.getLabel(), this.screenWidth - 2, this.originalScreenHeight + 2, Graphics.TOP | Graphics.RIGHT );
-			}
-		//#endif
+			//#endif
 		} catch (RuntimeException e) {
 			//#mdebug error
 				g.setColor( 0xFF0000 );
@@ -428,7 +443,7 @@ public abstract class Screen
 					return;
 				}
 			//#enddebug
-			throw e;
+			//throw e;
 		}
 		//#if polish.useFullScreen && polish.api.nokia-ui 
 			this.lastPaintTime = System.currentTimeMillis();
@@ -603,7 +618,7 @@ public abstract class Screen
 		} catch (Exception e) {
 			//#debug error
 			Debug.debug("keyPressed() threw an exception", e );
-			//#ifdef polish.useDebugGui
+			//#if polish.useDebugGui && polish.debugVerbose
 				// set the current screen to the debug-screen:
 				StyleSheet.display.setCurrent( Debug.getLogForm(true, this) );
 			//#endif
@@ -806,7 +821,7 @@ public abstract class Screen
 	/**
 	 * <p>A command listener which forwards commands to the item command listener in case it encounters an item command.</p>
 	 *
-	 * <p>copyright enough software 2004</p>
+	 * <p>copyright Enough Software 2004</p>
 	 * <pre>
 	 * history
 	 *        09-Jun-2004 - rob creation

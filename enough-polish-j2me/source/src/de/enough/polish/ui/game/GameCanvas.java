@@ -2,7 +2,7 @@
 // only include this file for midp1-devices:
 //#condition polish.midp1 && polish.usePolishGui
 /*
- * Copyright (c) 2004 Robert Virkus / enough software
+ * Copyright (c) 2004 Robert Virkus / Enough Software
  *
  * This file is part of J2ME Polish.
  *
@@ -22,13 +22,16 @@
  * 
  * Commercial licenses are also available, please
  * refer to the accompanying LICENSE.txt or visit
- * www.enough.de/j2mepolish for details.
+ * http://www.j2mepolish.org for details.
  */
 package de.enough.polish.ui.game;
 
-
 import javax.microedition.lcdui.Canvas;
 import javax.microedition.lcdui.Graphics;
+import javax.microedition.lcdui.Image;
+
+import de.enough.polish.ui.Screen;
+import de.enough.polish.ui.Style;
 
 /**
  * The GameCanvas class provides the basis for a game user interface.
@@ -90,7 +93,8 @@ import javax.microedition.lcdui.Graphics;
  * 
  * @since MIDP 2.0
  */
-public abstract class GameCanvas extends Canvas
+public class GameCanvas
+extends Screen
 {
 	/**
 	 * The bit representing the UP key.  This constant has a value of
@@ -150,9 +154,22 @@ public abstract class GameCanvas extends Canvas
 	 */
 	public static final int GAME_D_PRESSED = 0x1000;
 
-	//following variables are implicitely defined by getter- or setter-methods:
-	private Graphics graphics;
 	private int keyStates;
+	private Image bufferedImage;
+	private Image currentImage;
+	private Graphics currentImageGraphics;
+	private int canvasWidth;
+	private int canvasHeight;
+	
+	private boolean upPressed;
+	private boolean downPressed;
+	private boolean leftPressed;
+	private boolean rightPressed;
+	private boolean firePressed;
+	private boolean gameAPressed;
+	private boolean gameBPressed;
+	private boolean gameCPressed;
+	private boolean gameDPressed;
 
 	/**
 	 * Creates a new instance of a GameCanvas.  A new buffer is also created
@@ -184,7 +201,24 @@ public abstract class GameCanvas extends Canvas
 	 */
 	protected GameCanvas(boolean suppressKeyEvents)
 	{
-		//TODO implement GameCanvas
+		this( suppressKeyEvents, null );
+	}
+	
+	/**
+	 * Creates a new GameCanvas with an associated CSS style.
+	 * 
+	 * @param suppressKeyEvents true when no keyEvents should be generated
+	 * @param style the CSS style for this screen
+	 */
+	protected GameCanvas( boolean suppressKeyEvents, Style style ) {
+		super( null, style );
+		int width = getWidth();
+		int height = getHeight();
+		this.bufferedImage = Image.createImage( width, height );
+		this.currentImage = Image.createImage( width, height );
+		this.currentImageGraphics = this.currentImage.getGraphics();
+		this.canvasWidth = width;
+		this.canvasHeight = height;
 	}
 
 	/**
@@ -221,7 +255,7 @@ public abstract class GameCanvas extends Canvas
 	 */
 	protected Graphics getGraphics()
 	{
-		return this.graphics;
+		return this.bufferedImage.getGraphics();
 	}
 
 	/**
@@ -234,18 +268,21 @@ public abstract class GameCanvas extends Canvas
 	 * key press and release will always be caught by the game loop,
 	 * regardless of how slowly the loop runs.
 	 * <p>
-	 * For example:<code><pre>
+	 * For example:
+	 * <code>
+	 * <pre>
 	 * 
 	 * // Get the key state and store it
 	 * int keyState = getKeyStates();
 	 * if ((keyState & LEFT_KEY) != 0) {
-	 * positionX--;
+	 * 		positionX--;
 	 * }
 	 * else if ((keyState & RIGHT_KEY) != 0) {
-	 * positionX++;
+	 * 		positionX++;
 	 * }
 	 * 
-	 * </pre></code>
+	 * </pre>
+	 * </code>
 	 * <p>
 	 * Calling this method has the side effect of clearing any latched state.
 	 * Another call to getKeyStates immediately after a prior call will
@@ -273,7 +310,37 @@ public abstract class GameCanvas extends Canvas
 	 */
 	public int getKeyStates()
 	{
-		return this.keyStates;
+		int newState = 0;
+		if (this.upPressed) {
+			newState |= UP_PRESSED;
+		}
+		if (this.downPressed) {
+			newState |= DOWN_PRESSED;
+		}
+		if (this.leftPressed) {
+			newState |= LEFT_PRESSED;
+		}
+		if (this.rightPressed) {
+			newState |= RIGHT_PRESSED;
+		}
+		if (this.firePressed) {
+			newState |= FIRE_PRESSED;
+		}
+		if (this.gameAPressed) {
+			newState |= GAME_A_PRESSED;
+		}
+		if (this.gameBPressed) {
+			newState |= GAME_B_PRESSED;
+		}
+		if (this.gameCPressed) {
+			newState |= GAME_C_PRESSED;
+		}
+		if (this.gameDPressed) {
+			newState |= GAME_D_PRESSED;
+		}
+		int state = this.keyStates;
+		this.keyStates = newState;
+		return state;
 	}
 
 	/**
@@ -282,13 +349,14 @@ public abstract class GameCanvas extends Canvas
 	 * subject to the clip region and origin translation of the Graphics
 	 * object.
 	 * 
-	 * @param g - the Graphics object with which to render the screen.
-	 * @throws NullPointerException - if g is null
+	 * @param g the Graphics object with which to render the screen.
+	 * @throws NullPointerException if g is null
 	 * @see Canvas#paint(Graphics) in class Canvas
 	 */
-	public void paint( Graphics g)
+	public void paintScreen( Graphics g)
 	{
-		//TODO implement GameCanvas.paint
+		g.setClip(0, 0, getWidth(), getHeight() );
+		g.drawImage(this.currentImage, 0, 0, Graphics.TOP | Graphics.LEFT );
 	}
 
 	/**
@@ -307,15 +375,22 @@ public abstract class GameCanvas extends Canvas
 	 * system is busy.
 	 * <p>
 	 * 
-	 * @param x - the left edge of the region to be flushed
-	 * @param y - the top edge of the region to be flushed
-	 * @param width - the width of the region to be flushed
-	 * @param height - the height of the region to be flushed
+	 * @param x the left edge of the region to be flushed
+	 * @param y the top edge of the region to be flushed
+	 * @param width the width of the region to be flushed
+	 * @param height the height of the region to be flushed
 	 * @see #flushGraphics()
 	 */
 	public void flushGraphics(int x, int y, int width, int height)
 	{
-		//TODO implement flushGraphics
+		this.currentImageGraphics.setClip(x, y, width, height);
+		this.currentImageGraphics.drawImage(this.bufferedImage, 0, 0, Graphics.TOP | Graphics.LEFT );
+		this.currentImageGraphics.setClip(0, 0, this.canvasWidth, this.canvasHeight );
+		//#ifdef polish.useFullScreen && polish.api.nokia-ui
+			requestRepaint();
+		//#else
+			repaint();
+		//#endif
 	}
 
 	/**
@@ -335,7 +410,102 @@ public abstract class GameCanvas extends Canvas
 	 */
 	public void flushGraphics()
 	{
-		//TODO implement flushGraphics
+		this.currentImageGraphics.drawImage(this.bufferedImage, 0, 0, Graphics.TOP | Graphics.LEFT );
+		//#ifdef polish.useFullScreen && polish.api.nokia-ui
+			requestRepaint();
+		//#else
+			repaint();
+		//#endif
 	}
 
+	//#ifdef polish.useDynamicStyles	
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Screen#createCssSelector()
+	 */
+	protected String createCssSelector() {
+		return "gamecanvas";
+	}
+	//#endif
+
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Screen#handleKeyPressed(int, int)
+	 */
+	protected boolean handleKeyPressed(int keyCode, int gameAction) {
+		int state = this.keyStates;
+		switch (gameAction) {
+			case Canvas.UP:
+				this.upPressed = true;
+				state |= UP_PRESSED;
+				break;
+			case Canvas.LEFT:
+				this.leftPressed = true;
+				state |= LEFT_PRESSED;
+				break;
+			case Canvas.RIGHT:
+				this.rightPressed = true;
+				state |= RIGHT_PRESSED;
+				break;
+			case Canvas.DOWN:
+				this.downPressed = true;
+				state |= DOWN_PRESSED;
+				break;
+			case Canvas.FIRE:
+				this.firePressed = true;
+				state |= FIRE_PRESSED;
+				break;
+			case Canvas.GAME_A:
+				this.gameAPressed = true;
+				state |= GAME_A_PRESSED;
+				break;
+			case Canvas.GAME_B:
+				this.gameBPressed = true;
+				state |= GAME_B_PRESSED;
+				break;
+			case Canvas.GAME_C:
+				this.gameCPressed = true;
+				state |= GAME_C_PRESSED;
+				break;
+			case Canvas.GAME_D:
+				this.gameDPressed = true;
+				state |= GAME_D_PRESSED;
+				break;
+		}
+		return true;
+	}
+		
+	/* (non-Javadoc)
+	 * @see javax.microedition.lcdui.Canvas#keyReleased(int)
+	 */
+	protected void keyReleased(int keyCode) {
+		int gameAction = getGameAction(keyCode);
+		switch (gameAction) {
+			case Canvas.UP:
+				this.upPressed = false;
+				break;
+			case Canvas.LEFT:
+				this.leftPressed = false;
+				break;
+			case Canvas.RIGHT:
+				this.rightPressed = false;
+				break;
+			case Canvas.DOWN:
+				this.downPressed = false;
+				break;
+			case Canvas.FIRE:
+				this.firePressed = false;
+				break;
+			case Canvas.GAME_A:
+				this.gameAPressed = false;
+				break;
+			case Canvas.GAME_B:
+				this.gameBPressed = false;
+				break;
+			case Canvas.GAME_C:
+				this.gameCPressed = false;
+				break;
+			case Canvas.GAME_D:
+				this.gameDPressed = false;
+				break;
+		}
+	}
 }

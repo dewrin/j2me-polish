@@ -1,6 +1,6 @@
 //#condition polish.usePolishGui
 /*
- * Copyright (c) 2004 Robert Virkus / enough software
+ * Copyright (c) 2004 Robert Virkus / Enough Software
  *
  * This file is part of J2ME Polish.
  *
@@ -20,7 +20,7 @@
  * 
  * Commercial licenses are also available, please
  * refer to the accompanying LICENSE.txt or visit
- * www.enough.de/j2mepolish for details.
+ * http://www.j2mepolish.org for details.
  */
 package de.enough.polish.ui;
 
@@ -677,20 +677,6 @@ public abstract class CustomItem extends Item
 	protected abstract void paint( Graphics g, int w, int h);
 
 	/**
-	 * Called by subclass code to request that the item be repainted.  If this
-	 * item is visible on the display, this will result in a call to
-	 * <code>paint()</code> the next time the <code>CustomItem</code>
-	 * is to be displayed.  The <code>CustomItem</code>
-	 * subclass should call this method when the item's internal state has
-	 * been updated such that its visual representation needs to be updated.</DL>
-	 * 
-	 */
-	protected final void repaint()
-	{
-		//TODO implement repaint
-	}
-
-	/**
 	 * Called by subclass code to request that the specified rectangular area
 	 * of the item be repainted.  If that area is visible on the display, this
 	 * will result in call to <code>paint</code> with graphics set to
@@ -701,14 +687,14 @@ public abstract class CustomItem extends Item
 	 * internal state has been updated and only part of the visual
 	 * representation needs to be updated.
 	 * 
-	 * @param x - the x coordinate of the rectangular area to be updated
-	 * @param y - the y coordinate of the rectangular area to be updated
-	 * @param w - the width of the rectangular area to be updated
-	 * @param h - the height of the rectangular area to be updated
+	 * @param x the x coordinate of the rectangular area to be updated
+	 * @param y the y coordinate of the rectangular area to be updated
+	 * @param w the width of the rectangular area to be updated
+	 * @param h the height of the rectangular area to be updated
 	 */
 	protected final void repaint(int x, int y, int w, int h)
 	{
-		//TODO implement repaint
+		repaint();
 	}
 
 	/**
@@ -1072,8 +1058,8 @@ public abstract class CustomItem extends Item
 	 * bit in the value
 	 * returned by the <code>getInteractionModes</code> method.
 	 * 
-	 * @param x - the x coordinate of the pointer down
-	 * @param y - the y coordinate of the pointer down
+	 * @param x the x coordinate of the pointer down
+	 * @param y the y coordinate of the pointer down
 	 * @see #getInteractionModes()
 	 */
 	protected void pointerPressed(int x, int y)
@@ -1095,8 +1081,8 @@ public abstract class CustomItem extends Item
 	 * <code>POINTER_RELEASE</code> bit in the
 	 * value returned by the <code>getInteractionModes</code> method.
 	 * 
-	 * @param x - the x coordinate of the pointer up
-	 * @param y - the x coordinate of the pointer up
+	 * @param x the x coordinate of the pointer up
+	 * @param y the x coordinate of the pointer up
 	 * @see #getInteractionModes()
 	 */
 	protected void pointerReleased(int x, int y)

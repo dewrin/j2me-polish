@@ -2,7 +2,7 @@
 // only include this file for midp1-devices:
 //#condition polish.midp1 && polish.usePolishGui
 /*
- * Copyright (c) 2004 Robert Virkus / enough software
+ * Copyright (c) 2004 Robert Virkus / Enough Software
  *
  * This file is part of J2ME Polish.
  *
@@ -22,7 +22,7 @@
  * 
  * Commercial licenses are also available, please
  * refer to the accompanying LICENSE.txt or visit
- * www.enough.de/j2mepolish for details.
+ * http://www.j2mepolish.org for details.
  */
 package de.enough.polish.ui.game;
 
@@ -43,19 +43,16 @@ import javax.microedition.lcdui.Graphics;
  * system.  The initial location of a Layer is (0,0).
  * 
  * <p>
- * <HR>
- * 
  * 
  * @since MIDP 2.0
  */
 public abstract class Layer extends Object
 {
-	//following variables are implicitely defined by getter- or setter-methods:
-	protected int x;
-	protected int y;
+	protected int xPosition;
+	protected int yPosition;
 	protected int width;
 	protected int height;
-	protected boolean visible;
+	protected boolean isVisible = true;
 
 	/**
 	 * Sets this Layer's position such that its upper-left corner
@@ -63,14 +60,14 @@ public abstract class Layer extends Object
 	 * A Layer is located at (0,0) by default.
 	 * <br>
 	 * 
-	 * @param x - the horizontal position
-	 * @param y - the vertical position
+	 * @param x the horizontal position
+	 * @param y the vertical position
 	 * @see #move(int, int),  #getX(), #getY()
 	 */
 	public void setPosition(int x, int y)
 	{
-		this.x = x;
-		this.y = y;
+		this.xPosition = x;
+		this.yPosition = y;
 	}
 
 	/**
@@ -80,14 +77,14 @@ public abstract class Layer extends Object
 	 * parameters will cause them to exceed beyond Integer.MAX_VALUE
 	 * or Integer.MIN_VALUE.
 	 * 
-	 * @param dx - the distance to move along horizontal axis (positive to the right, negative to the left)
-	 * @param dy - the distance to move along vertical axis (positive down, negative up)
+	 * @param dx the distance to move along horizontal axis (positive to the right, negative to the left)
+	 * @param dy the distance to move along vertical axis (positive down, negative up)
 	 * @see #setPosition(int, int), #getX(), #getY()
 	 */
 	public void move(int dx, int dy)
 	{
-		this.x += dx;
-		this.y += dy;
+		this.xPosition += dx;
+		this.yPosition += dy;
 	}
 
 	/**
@@ -100,7 +97,7 @@ public abstract class Layer extends Object
 	 */
 	public final int getX()
 	{
-		return this.x;
+		return this.xPosition;
 	}
 
 	/**
@@ -113,7 +110,7 @@ public abstract class Layer extends Object
 	 */
 	public final int getY()
 	{
-		return this.y;
+		return this.yPosition;
 	}
 
 	/**
@@ -148,7 +145,7 @@ public abstract class Layer extends Object
 	 */
 	public void setVisible(boolean visible)
 	{
-		this.visible = visible;
+		this.isVisible = visible;
 	}
 
 	/**
@@ -159,8 +156,7 @@ public abstract class Layer extends Object
 	 */
 	public final boolean isVisible()
 	{
-		return false;
-		//TODO implement isVisible
+		return this.isVisible;
 	}
 
 	/**
