@@ -556,6 +556,11 @@ public class PolishTask extends ConditionalTask {
 							if ( ( saveInAnyCase ) 
 							  || (result == Preprocessor.CHANGED) ) 
 							{
+								// now process the getTicker() and setTicker() calls:
+								boolean usesTicker = TickerConverter.convertTickerCalls(sourceCode);
+								if (usesTicker) {
+									System.out.println("Ticker-call converted");
+								}
 								//System.out.println( "preprocessed [" + className + "]." );
 								file.saveToDir(targetDir, sourceCode.getArray(), false );
 								numberOfChangedFiles++;
