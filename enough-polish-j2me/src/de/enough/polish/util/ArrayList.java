@@ -8,8 +8,23 @@ package de.enough.polish.util;
 
 /**
  * <p>Provides an flexible list for storing objects.</p>
- *
- * @author rob
+ * <p>
+ * This ArrayList is mostly compatible with the java.util.ArrayList of the J2SE.
+ * It lacks, however, some not often used methods. Also some methods like add or remove 
+ * do not return a boolean value, since true is always returned (or an exception is thrown) anyhow.
+ * This way we can save some precious space!
+ * </p>
+ * <p>
+ * Workarounds for some of the missing methods:
+ * <ul>
+ * 	<li><b>isEmpty()<b> Use "list.size() == 0" instead.</li> 
+ *		<li><b>ensureCapacity(int)<b> Define the expected capacity in the constructor.</li>
+ *		<li><b>indexOf(Object)/lastIndexOf(Object)<b> You have to do them manually. 
+ *				Use "list.toArray()" to get the stored objects, cycle through them and test for equality.</li>
+ * 	<li><b>addAll(Collection)<b> Add all elements of the collection singlely.</li> 
+ * </ul>
+ * </p>
+ * @author Robert Virkus, robert@enough.de
  * <pre>
  * history
  *        03-Jan-2004 - rob creation
@@ -55,15 +70,6 @@ public class ArrayList {
 	 */
 	public int size() {
 		return this.size;
-	}
-	
-	/**
-	 * Determines whether this list is empty.
-	 * 
-	 * @return true when this list is empty
-	 */
-	public boolean isEmpty(){
-		return (this.size == 0);
 	}
 	
 	/**
@@ -165,11 +171,10 @@ public class ArrayList {
 	 * Stores the given element in this list.
 	 * 
 	 * @param element - the element which should be appended to this list.
-	 * @return true when the element could be appended (always)
 	 * @throws IllegalArgumentException when the given element is null
-	 * @see #insert( int, Object )
+	 * @see #add( int, Object )
 	 */
-	public boolean add( Object element) {
+	public void add( Object element) {
 		if (element == null) {
 			throw new IllegalArgumentException( "ArrayList cannot contain null.");
 		}
@@ -178,7 +183,6 @@ public class ArrayList {
 		}
 		this.storedObjects[ this.size ] = element;
 		this.size++;
-		return true;
 	}
 	
 	/**
@@ -188,11 +192,10 @@ public class ArrayList {
 	 * @param index - the position at which the element should be inserted, 
 	 * 					 use 0 when the element should be inserted in the front of this list.
 	 * @param element - the element which should be inserted
-	 * @return true when the element could be inserted
 	 * @throws IllegalArgumentException when the given element is null
 	 * @throws IndexOutOfBoundsException when the index < 0 || index >= size()
 	 */
-	public boolean insert( int index, Object element ) {
+	public void add( int index, Object element ) {
 		if (element == null) {
 			throw new IllegalArgumentException( "ArrayList cannot contain null.");
 		}
@@ -203,12 +206,12 @@ public class ArrayList {
 			increaseCapacity();
 		}
 		// shift all following elements one position to the back:
-		for (int i = this.size; i >= index; i--) {
+		for (int i = this.size; i > index; i--) {
 			this.storedObjects[i] = this.storedObjects[ i-1 ];
 		} 
 		// insert the given element:
 		this.storedObjects[ index ] = element;
-		return true;
+		this.size++;
 	}
 	
 	/**
@@ -242,13 +245,26 @@ public class ArrayList {
 	/**
 	 * Returns all stored elements in the given array.
 	 * 
-	 * @param copy - the array in which the stored elements should be copied.
+	 * @param target - the array in which the stored elements should be copied.
 	 * @return the stored elements of this list
 	 */
-	public Object[] toArray( Object[] copy ) {
-		System.arraycopy( this.storedObjects, 0, copy, 0, this.size );
-		return copy;
+	public Object[] toArray( Object[] target ) {
+		System.arraycopy( this.storedObjects, 0, target, 0, this.size );
+		return target;
 	}
+	
+	/**
+	 * Trims the capacity of this ArrayList instance to be the list's current size. 
+	 * An application can use this operation to minimize the storage of an ArrayList instance.
+	 */
+	public void trimToSize() {
+		if (this.storedObjects.length != this.size ) {
+			Object[] newStore = new Object[ this.size ];
+			System.arraycopy( this.storedObjects, 0, newStore, 0, this.size );
+			this.storedObjects = newStore;
+		}
+	}
+	
 
 	/**
 	 * increases the capacity of this list.
