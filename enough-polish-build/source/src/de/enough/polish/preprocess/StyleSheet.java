@@ -238,6 +238,7 @@ public class StyleSheet {
 	 * @see #getSourceCode()
 	 */
 	public void inherit() {
+		//TODO rob create default-style when not explicitely defined.
 		Style[] allStyles = getAllStyles();
 		for (int i = 0; i < allStyles.length; i++) {
 			Style style = allStyles[i];

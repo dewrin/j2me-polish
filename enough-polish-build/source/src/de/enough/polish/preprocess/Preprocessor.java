@@ -675,24 +675,40 @@ public class Preprocessor {
 	/**
 	 * Processes the #style command.
 	 * 
-	 * @param argument the symbol which needs to be defined
+	 * @param styleNames the name of the style(s)
 	 * @param lines the source code
 	 * @param className the name of the source file
 	 * @return true when changes were made
 	 * @throws PreprocessException when the preprocessing fails
 	 */
-	private boolean processStyle(String argument, StringList lines, String className) 
+	private boolean processStyle(String styleNames, StringList lines, String className) 
 	throws PreprocessException
 	{
+		int styleDirectiveLine = lines.getCurrentIndex() + 1;
+		// get the style-name:
+		String[] styles = TextUtil.splitAndTrim(styleNames, ',');
+		String style = null;
+		for (int i = 0; i < styles.length; i++) {
+			String name = styles[i];
+			if (this.styleSheet.isDefined(name)) {
+				style = name;
+				break;
+			}
+		}
+		if (style == null) {
+			throw new PreprocessException(
+					className + " line " + styleDirectiveLine
+					+ ": unable to process #style directive: the style(s) [" + styleNames + "] is/are not defined."
+					);
+		}
 		// when the #style directive is followed by a new operator, then
 		// the defined style will be included as last argument in the new operator,
 		// otherwise the defined style will be set as the current style in the stylesheet:
 		String nextLine = null;
-		int styleDirectiveLine = lines.getCurrentIndex() + 1;
 		if (lines.next()) {
 			nextLine = lines.getCurrent();
 		}
-		if ( (nextLine != null) && (nextLine.indexOf("new ") != -1) && (!includesDirective( nextLine )) ) {
+		if ( (nextLine != null) && (nextLine.indexOf("new ") != -1) && (!containsDirective( nextLine )) ) {
 			uncommentLine( nextLine, lines );
 			while ( nextLine.indexOf(';') == -1) {
 				if (!lines.next()) {
@@ -701,7 +717,7 @@ public class Preprocessor {
 							+ ": unable to process #style directive: there is a new operator without closing semicolon in the following line(s)."
 							);
 				}
-				if ( includesDirective( nextLine) ) {
+				if ( containsDirective( nextLine) ) {
 					throw new PreprocessException(
 							className + " line " + styleDirectiveLine
 							+ ": unable to process #style directive: there is a new operator without closing semicolon in the following line(s)."
@@ -725,17 +741,17 @@ public class Preprocessor {
 			StringBuffer buffer = new StringBuffer();
 			buffer.append( nextLine.substring(0, parenthesisPos ) )
 					.append( ", StyleSheet.getStyle( \"")
-					.append( argument )
+					.append( style )
 					.append( "\") " )
 					.append( nextLine.substring( parenthesisPos ) );
 			lines.setCurrent( buffer.toString() );
 		} else { // either there is no next line or the next line has no new operator
 			lines.prev();
-			lines.insert( "\tStyleSheet.setCurrentStyle( \"" + argument + "\" );"  );
+			lines.insert( "\tStyleSheet.setCurrentStyle( \"" + style + "\" );"  );
 		}
 		// mark the style as beeing used:
 		//TODO allow usage of favourite styles #style myStyle, okStyle, baseStyle
-		this.styleSheet.addUsedStyle( argument );
+		this.styleSheet.addUsedStyle( style );
 		return true;
 	}
 
@@ -844,7 +860,7 @@ public class Preprocessor {
 	 * @param line the line which should be tested 
 	 * @return true when the given line includes a preprocessing directive.
 	 */
-	public static final boolean includesDirective(String line) {
+	public static final boolean containsDirective(String line) {
 		Matcher matcher = DIRECTIVE_PATTERN.matcher( line );
 		return matcher.find();
 	}
