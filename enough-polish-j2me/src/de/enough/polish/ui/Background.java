@@ -23,14 +23,14 @@ public abstract class Background {
 	 * Defines the width of this Background.
 	 * Usually this is 0, but some backgrounds might have a border included.
 	 */
-	protected int backgroundWidth;
+	protected int borderWidth;
 
 	/**
 	 * Creates a new Background.
 	 * The width of this background is set to 0 here.
 	 */
 	public Background() {
-		this.backgroundWidth = 0;
+		this.borderWidth = 0;
 	}
 	
 	/**
