@@ -50,6 +50,8 @@ public class StyleSheet {
 		PSEUDO_CLASSES.put("focussed", Boolean.TRUE );
 		PSEUDO_CLASSES.put("title", Boolean.TRUE );
 		PSEUDO_CLASSES.put("default", Boolean.TRUE );
+		PSEUDO_CLASSES.put("menu", Boolean.TRUE );
+		PSEUDO_CLASSES.put("menuitem", Boolean.TRUE );
 	}
 	private final static CssBlock DEFAULT_STYLE = new CssBlock( 
 			"default {"
@@ -249,6 +251,18 @@ public class StyleSheet {
 				}
 			}
 		} else { // this is a style:
+			String parent = "default";
+			int extendsPos = selector.indexOf(" extends ");
+			if (extendsPos != -1) {
+				parent = selector.substring( extendsPos + 9).trim();
+				selector = selector.substring(0, extendsPos ).trim();
+				if ("default".equals(selector ) ) {
+					throw new BuildException( "Invalid CSS code: The style [default] must not extend any other style.");
+				}
+			}
+			if ("default".equals(selector ) ) {
+				parent = null;
+			}
 			boolean isDynamicStyle = false;
 			// check if this style is dynamic:
 			isDynamicStyle =  (selector.indexOf(' ') != -1)
@@ -269,18 +283,6 @@ public class StyleSheet {
 			if (isDynamicStyle) {
 				this.containsDynamicStyles = true;
 				//System.out.println("project uses dynamic style: [" + selector + "]");				
-			}
-			String parent = "default";
-			int extendsPos = selector.indexOf(" extends ");
-			if (extendsPos != -1) {
-				parent = selector.substring( extendsPos + 9).trim();
-				selector = selector.substring(0, extendsPos ).trim();
-				if ("default".equals(selector ) ) {
-					throw new BuildException( "Invalid CSS code: The style [default] must not extend any other style.");
-				}
-			}
-			if ("default".equals(selector ) ) {
-				parent = null;
 			}
 			// check for reserved names of the style-selector:
 			if (KEYWORDS.get(selector) != null) {

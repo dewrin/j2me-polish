@@ -511,7 +511,10 @@ public class PolishTask extends ConditionalTask {
 					// into the StyleSheet.java source-code:
 					CssConverter cssConverter = new CssConverter();
 					styleSheetCode.reset();
-					cssConverter.convertStyleSheet(styleSheetCode, this.preprocessor.getStyleSheet() ); 				
+					cssConverter.convertStyleSheet(styleSheetCode, 
+							this.preprocessor.getStyleSheet(),
+							device,
+							this.preprocessor ); 				
 					this.styleSheetFile.saveToDir(targetDir, styleSheetCode.getArray(), false );
 					numberOfChangedFiles++;
 				//} else {

@@ -6,14 +6,13 @@
  */
 package de.enough.polish.preprocess;
 
+import de.enough.polish.Device;
 import de.enough.polish.util.StringList;
 import de.enough.polish.util.TextUtil;
 
 import org.apache.tools.ant.BuildException;
 
 import java.util.*;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * <p>Converts CSS files to Java-Code.</p>
@@ -80,7 +79,11 @@ public class CssConverter extends Converter {
 	}
 	
 
-	public void convertStyleSheet( StringList sourceCode, StyleSheet styleSheet ) {
+	public void convertStyleSheet( StringList sourceCode, 
+								   StyleSheet styleSheet, 
+								   Device device,
+								   Preprocessor preprocessor ) 
+	{
 		//TODO rob one could use percentage settings, when the screen sizes are known /
 		// so also give the device!
 		
@@ -158,6 +161,7 @@ public class CssConverter extends Converter {
 		
 		String[] styleNames = styleSheet.getUsedStyleNames();
 		//System.out.println("processing [" + styleNames.length + "] styles.");
+		codeList.add("\t//normal used styles:");
 		for (int i = 0; i < styleNames.length; i++) {
 			String styleName = styleNames[i];
 			if (!styleName.equals("default")) {
@@ -168,13 +172,27 @@ public class CssConverter extends Converter {
 		
 		// process referenced styles:
 		Style[] styles = (Style[]) this.referencedStyles.toArray( new Style[ this.referencedStyles.size() ] );
-		for (int i = 0; i < styles.length; i++) {
-			Style style = styles[i];
-			processStyle( style, codeList, styleSheet );
+		if (styles.length > 0) {
+			codeList.add("\t//referenced styles:");
+			for (int i = 0; i < styles.length; i++) {
+				Style style = styles[i];
+				processStyle( style, codeList, styleSheet );
+			}
+		}
+		
+		// check if fullscreen mode is enabled with menu:
+		if (preprocessor.hasSymbol("polish.useMenuFullScreen") 
+			&& (device.getCapability("polish.classes.fullscreen") != null) ) {
+			if (styleSheet.getStyle("menu" ) == null) {
+				System.out.println("Warning: CSS style [menu] not found, you should define it for designing the FullScreen-menu.");
+			} else {
+				this.referencedStyles.add(styleSheet.getStyle("menu" ));
+			}
 		}
 		
 		// process dynamic styles:
 		if (styleSheet.containsDynamicStyles()) {
+			codeList.add("\t//dynamic styles:");
 			Style[] dynamicStyles = styleSheet.getDynamicStyles(); 
 			for (int i = 0; i < dynamicStyles.length; i++) {
 				Style style = dynamicStyles[i];
@@ -191,7 +209,7 @@ public class CssConverter extends Converter {
 				Style style = styles[i];
 				codeList.add("\t\tstylesByName.put( \"" + style.getSelector() + "\", " + style.getStyleName() + "Style );");
 			}
-			codeList.add("}");
+			codeList.add("\t}");
 		}
 
 		
@@ -203,6 +221,14 @@ public class CssConverter extends Converter {
 		} else {
 			processStyle( focussedStyle, codeList, styleSheet );
 		}
+		
+		// generate general warnings and hints:
+		// check if title style has beend defined:
+		if (styleSheet.getStyle("title" ) == null) {
+			System.out.println("Warning: CSS style [title] not found, you should define it for designing the titles of screens.");
+		}
+		
+		
 		// now insert the created source code into the source of the polish-StyleSheet.java:
 		String[] code = (String[]) codeList.toArray( new String[ codeList.size()]);
 		sourceCode.insert(code);
@@ -388,10 +414,16 @@ public class CssConverter extends Converter {
 							.append(key);
 					}
 					String value = (String) group.get( key );
-					if (value.startsWith("url")) {
+					if (key.equals("style")) {
+						value = getStyleReference( value, style, styleSheet );
+					} else if (key.equals("color")) {
+						value = getColor( value );
+					} else if (key.equals("url")) {
 						value = getUrl( value );
 					}
-					if (value.startsWith("style(")) {
+					if (value.startsWith("url")) {
+						value = getUrl( value );
+					} else if (value.startsWith("style(")) {
 						value = getStyleReference( value, style, styleSheet );
 					}
 					line.append("\", \"")
@@ -406,26 +438,45 @@ public class CssConverter extends Converter {
 
 
 	/**
+	 * Retrieves the color value as a decimal integer value.
+	 * 
+	 * @param value the color
+	 * @return the color as a decimal integer value
+	 */
+	private String getColor(String value) {
+		String color = this.colorConverter.parseColor(value);
+		return Integer.decode(color).toString();
+	}
+
+
+	/**
 	 * Gets a reference to another style.
 	 * 
-	 * @param value the reference, needs to start with "style("
+	 * @param value the reference
 	 * @param parent the parent style
 	 * @param styleSheet the sheet in which the style is embedded
 	 * @return
 	 */
 	private String getStyleReference(String value, Style parent, StyleSheet styleSheet) {
-		String reference = value.substring( 6 );
-		int closingPos = reference.indexOf(')');
-		if (closingPos == -1) {
-			throw new BuildException("Invalid CSS: the style-reference [" + value + "] in style [" + parent.getSelector() + "] needs to be closed by a parenthesis.");
+		String reference = value.toLowerCase();
+		if (value.startsWith("style(")) {
+			reference = reference.substring( 6 );
+			int closingPos = reference.indexOf(')');
+			if (closingPos == -1) {
+				throw new BuildException("Invalid CSS: the style-reference [" + value + "] in style [" + parent.getSelector() + "] needs to be closed by a parenthesis.");
+			}
+			reference = reference.substring( 0, closingPos ).trim();
 		}
-		reference = reference.substring( 0, closingPos ).trim().toLowerCase();
 		if (!styleSheet.isUsed(reference)) {
 			Style style = styleSheet.getStyle(reference);
 			if (style == null) {
 				throw new BuildException("Invalid CSS: the style-reference to [" + value + "] in style [" + parent.getSelector() + "] refers to a non-existing style.");
 			}
-			this.referencedStyles.add( style );
+			// add it to the list of referenced styles, 
+			// but only when it has not been added before:
+			if (! this.referencedStyles.contains(style)) {
+				this.referencedStyles.add( style );
+			}
 		}
 		return reference;
 	}
