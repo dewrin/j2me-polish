@@ -1,0 +1,50 @@
+<?xml  version="1.0"  encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+	<title>variables and switches</title>
+	<link href="polish.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+	<h1>variables for pre-processing</h1>
+	<p>
+	polish knows several variables and switches which can be set directly or indirectly in the polish.xml file.
+	All switches and variables start with &quot;polish.&quot;, so you should not encounter
+	any difficulties with your own switches or variables.
+	</p>
+	<p>
+	This documented is targeted at developers who wants to use polish-specific variables or switches
+	in their own widgets or canvasses.
+	</p>
+	<h2>Switches</h2>
+	<p>
+	Switches are used to indicate specific properties. They are often mutually exclusive with others.
+	</p>
+	<ul>
+		<li><b>polish.images.backgroundLoad</b>: this switch is set when images of the widgets, 
+				backgrounds and canvasses should be loaded in a background thread. This can speed
+				up the responsiveness of an application dramatically, but it also means that
+				some images are set while the user is in a screen. This switch is mutually
+				exclusive with the switch <code>polish.images.directLoad</code>.
+				This switch is set indirectly in polish.xml by the <code>imageLoadStrategy</code>-tag.
+				</li>
+		<li><b>polish.images.directLoad</b>: this switch is set when images of the widgets, 
+				backgrounds and canvasses should be loaded in the foreground thread. 
+				This can slow down the responsiveness of an application, but it also means that
+				all images are loaded when the user enters a screen. This switch is mutually
+				exclusive with the switch <code>polish.images.backgroundLoad</code>.
+				This switch is set indirectly in polish.xml by the <code>imageLoadStrategy</code>-tag.
+				</li>
+		<li><b></b>: </li>
+		<li><b></b>: </li>
+	</ul>
+	<h2>Variables</h2>
+	<p>
+	Variables are used to hold specific values.
+	</p>
+	<ul>
+		<li><b></b>: </li>
+		<li><b></b>: </li>
+	</ul>
+</body>
+</html>
