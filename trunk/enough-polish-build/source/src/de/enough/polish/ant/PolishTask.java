@@ -524,11 +524,11 @@ public class PolishTask extends ConditionalTask {
 				Manifest.Attribute attribute = new Manifest.Attribute(var.getName(), value );
 				manifest.addConfiguredAttribute( attribute  );
 			}
-			// add build properties:
-			String[] midletClassNames = this.buildSetting.getMidletClassNames();
-			for (int i = 0; i < midletClassNames.length; i++) {
-				String name = midletClassNames[i];
-				Manifest.Attribute attribute = new Manifest.Attribute("Midlet-" + (i+1), name );
+			// add build properties - midlet infos:
+			String[] midletInfos = this.buildSetting.getMidletInfos();
+			for (int i = 0; i < midletInfos.length; i++) {
+				String info = midletInfos[i];
+				Manifest.Attribute attribute = new Manifest.Attribute(InfoSetting.NMIDLET + (i+1), info );
 				manifest.addConfiguredAttribute( attribute  );
 			}
 			jarTask.addConfiguredManifest( manifest );
@@ -540,13 +540,18 @@ public class PolishTask extends ConditionalTask {
 		
 		
 		// now create the JAD file:
-		//TODO create JAD
 		System.out.println("Now creating JAD file for device [" + device.getIdentifier() + "].");
 		Jad jad = new Jad();
 		Variable[] jadAttributes = this.infoSetting.getJadAttributes();
 		for (int i = 0; i < jadAttributes.length; i++) {
 			Variable var =jadAttributes[i];
 			jad.addAttribute( var.getName() , PropertyUtil.writeProperties( var.getValue(), infoProperties) );
+		}
+		// add build properties - midlet infos:
+		String[] midletInfos = this.buildSetting.getMidletInfos();
+		for (int i = 0; i < midletInfos.length; i++) {
+			String info = midletInfos[i];
+			jad.addAttribute( InfoSetting.NMIDLET + (i+1), info );
 		}
 		// add size of jar:
 		long size = jarFile.length();
