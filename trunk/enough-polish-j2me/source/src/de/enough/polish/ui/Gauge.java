@@ -842,6 +842,7 @@ implements ImageConsumer
 		if (gameAction == Canvas.RIGHT) {
 			if (this.value < this.maxValue) {
 				setValue( ++ this.value );
+				notifyStateChanged();
 				return true;
 			} else {
 				return false;
@@ -849,6 +850,7 @@ implements ImageConsumer
 		} else if (gameAction == Canvas.LEFT) {
 			if (this.value > 0) {
 				setValue( -- this.value );
+				notifyStateChanged();
 				return true;
 			} else {
 				return false;
