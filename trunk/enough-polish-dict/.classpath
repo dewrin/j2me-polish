@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="source/src"/>
+	<classpathentry output="bin/test" kind="src" path="source/test"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="/enough-polish-j2me"/>
+	<classpathentry kind="lib" path="import/midpapi.zip"/>
+	<classpathentry kind="lib" path="import/nokiaui.zip"/>
+	<classpathentry kind="output" path="bin/classes"/>
+</classpath>
