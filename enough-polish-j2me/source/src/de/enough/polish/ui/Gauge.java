@@ -269,6 +269,7 @@ implements ImageConsumer
 	private static final int MODE_CHUNKED = 1;
 
 	private int value;
+	private String valueString;
 	private int maxValue;
 	private boolean isInteractive;
 	private int color = 0x0000FF; //default color is blue
@@ -283,6 +284,11 @@ implements ImageConsumer
 	//#ifdef polish.midp2
 	private javax.microedition.lcdui.Gauge midpGauge;
 	//#endif
+	private boolean showValue = true;
+	private boolean isValueLeft = true;
+	private int fontColor;
+	private Font font;
+	private int valueWidth;
 
 	/**
 	 * Creates a new <code>Gauge</code> object with the given
@@ -366,14 +372,14 @@ implements ImageConsumer
 			if (interactive) {
 				if (maxValue < 0 ) {
 					//#ifdef polish.debugVerbose
-						throw new IllegalArgumentException("Invalid maxValue for Gauge: " + maxValue );
+						throw new IllegalArgumentException("Invalid maxValue for interactive Gauge: " + maxValue );
 					//#else
 						//# throw new IllegalArgumentException();
 					//#endif
 				}
 				if (initialValue < 0 || initialValue > maxValue) {
 					//#ifdef polish.debugVerbose
-						throw new IllegalArgumentException("Invalid initialValue for Gauge: " + initialValue );
+						throw new IllegalArgumentException("Invalid initialValue for interactive Gauge: " + initialValue );
 					//#else
 						//# throw new IllegalArgumentException();
 					//#endif
@@ -387,7 +393,7 @@ implements ImageConsumer
 							|| initialValue == INCREMENTAL_IDLE
 							|| initialValue == INCREMENTAL_UPDATING ) ) {
 						//#ifdef polish.debugVerbose
-							throw new IllegalArgumentException("Invalid initialValue for Gauge: " + initialValue );
+							throw new IllegalArgumentException("Invalid initialValue for indefinite Gauge: " + initialValue );
 						//#else
 							//# throw new IllegalArgumentException();
 						//#endif
@@ -476,7 +482,8 @@ implements ImageConsumer
 			} else if ( value == INCREMENTAL_UPDATING ) {
 				this.indefinitePos++;
 				if (this.indefinitePos > this.maxValue ) {
-					this.indefinitePos = 0;				}
+					this.indefinitePos = 0;				
+				}
 			} else {
 				//#ifdef polish.debugVerbose
 					throw new IllegalArgumentException("Invalid value for indefinite Gauge: " + value );
@@ -490,6 +497,7 @@ implements ImageConsumer
 			value = this.maxValue;
 		}
 		this.value = value;
+		this.valueString = "" + value;
 		if (this.isInitialised) {
 			if (this.isIndefinite) {
 				updateIndefiniteIndicatorImage();
@@ -510,7 +518,7 @@ implements ImageConsumer
 	 */
 	private void createIndicatorImage() {
 		int percentage = (this.value * 100) / this.maxValue;
-		int position = (percentage * this.contentWidth) / 100;
+		int position = (percentage * (this.contentWidth - this.valueWidth)) / 100;
 		if (position == 0) {
 			position = 1;
 		}
@@ -712,13 +720,36 @@ implements ImageConsumer
 	 * @see de.enough.polish.ui.Item#paint(int, int, javax.microedition.lcdui.Graphics)
 	 */
 	public void paintContent(int x, int y, int leftBorder, int rightBorder, Graphics g) {
+		if (this.showValue && this.isValueLeft) {
+			g.setFont( this.font );
+			g.setColor( this.fontColor );
+			g.drawString( this.valueString, x, y, Graphics.TOP | Graphics.LEFT );
+			x += this.valueWidth;
+		}
 		g.drawImage(this.indicatorImage, x, y, Graphics.TOP | Graphics.LEFT );
+		if (this.showValue && !this.isValueLeft) {
+			g.setFont( this.font );
+			g.setColor( this.fontColor );
+			g.drawString( this.valueString, rightBorder, y, Graphics.TOP | Graphics.RIGHT );
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see de.enough.polish.ui.Item#initItem()
 	 */
 	protected void initContent(int firstLineWidth, int lineWidth) {
+		this.valueWidth = 0;
+		int valueHeight = 0;
+		if (this.isIndefinite) {
+			this.showValue = false;
+		}
+		if ( this.showValue) {
+			if (this.font == null) {
+				this.font = Font.getDefaultFont();
+			}
+			valueHeight = this.font.getHeight();
+			this.valueWidth = this.font.stringWidth( "" + this.maxValue ) + this.paddingHorizontal;
+		}
 		// setting height:
 		if (this.image != null) {
 			this.contentHeight = this.image.getHeight();
@@ -727,16 +758,20 @@ implements ImageConsumer
 		} else {
 			this.contentHeight = 10;
 		}
+		if (this.contentHeight < valueHeight) {
+			this.contentHeight = valueHeight;
+		}
 		// setting width:
 		if (this.image != null 
 				&& !this.isIndefinite 
 				&& this.preferredWidth == 0 ) {
-			this.contentWidth = this.image.getWidth();
+			this.contentWidth = this.image.getWidth() + this.valueWidth;
 		} else if (this.preferredWidth > 0) {
-			this.contentWidth = this.preferredWidth;
+			this.contentWidth = this.preferredWidth + this.valueWidth;
 		} else { //if (this.isLayoutExpand) {
 			this.contentWidth = firstLineWidth;
 		}
+		
 		// update other settings:
 		if (this.isIndefinite) {
 			if (this.value == CONTINUOUS_RUNNING) {
@@ -757,9 +792,9 @@ implements ImageConsumer
 			} else {
 				this.maxValue = 20;
 			}
-			this.indicatorImage = Image.createImage( this.contentWidth, this.contentHeight );
+			this.indicatorImage = Image.createImage( this.contentWidth - this.valueWidth, this.contentHeight );
 			updateIndefiniteIndicatorImage();
-		} else {
+		} else { // this is a definite gauge
 			createIndicatorImage();
 		}
 	}
@@ -817,6 +852,28 @@ implements ImageConsumer
 			} catch (IOException e) {
 				//#debug error
 				Debug.debug("unable to load gauge-image [" + imageStr + "]: " + e.getMessage(), e );
+			}
+		}
+		if (this.maxValue != INDEFINITE) {
+			String showValueStr = style.getProperty("gauge-show-value");
+			if (showValueStr != null) {
+				if ("true".equals(showValueStr)) {
+					this.showValue = true;
+				} else {
+					this.showValue = false;					
+				}
+			}
+			if (style.font != null) {
+				this.font = style.font;
+			}
+			this.fontColor = style.fontColor;
+			String valuePositionStr =  style.getProperty( "gauge-value-align" );
+			if (valuePositionStr != null) {
+				if ("right".equals(valuePositionStr)) {
+					this.isValueLeft = false;
+				} else {
+					this.isValueLeft = true;
+				}
 			}
 		}
 	}
