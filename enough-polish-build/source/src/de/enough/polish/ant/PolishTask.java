@@ -184,11 +184,14 @@ public class PolishTask extends ConditionalTask {
 			try {
 				debugManager = new DebugManager( this.buildSetting.getDebugSetting() );
 			} catch (BuildException e) {
-				throw new BuildException( e.getMessage() );
+				throw new BuildException( e.getMessage(), e );
 			}
 		}
 		// create project settings:
 		this.polishProject = new PolishProject( this.buildSetting.usesPolishGui(), isDebugEnabled, debugManager );
+		if (debugManager.isVerbose()) {
+			this.polishProject.addFeature("debugVerbose");
+		}
 		this.polishProject.addCapability("license", this.infoSetting.getlicense() );
 		// add some specified features:
 		this.polishProject.addFeature(this.buildSetting.getImageLoadStrategy());
