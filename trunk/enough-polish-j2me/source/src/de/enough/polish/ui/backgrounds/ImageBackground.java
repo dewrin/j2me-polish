@@ -23,8 +23,9 @@ import java.io.IOException;
  * <ul>
  * 		<li><b>image</b>: the image url, e.g. url( bg.png ) or none</li>
  * 		<li><b>color</b>: the background color, should the image
- * 							be smaller than the actual background-area.</li>
- * 		<li><b></b>: </li>
+ * 							be smaller than the actual background-area. Or "transparent".</li>
+ * 		<li><b>repeat</b>: defines whether the image should be repeated. Either "no-repeat",
+ * 				"repeat", "repeat-x" or "repeat-y".</li>
  * 		<li><b></b>: </li>
  * </ul>
  * </p>
@@ -91,7 +92,7 @@ implements ImageConsumer
 		if (this.image != null) {
 			if (this.repeatMode == NO_REPEAT) {
 				int centerX = x + (width / 2);
-				int centerY = x + (height / 2);
+				int centerY = y + (height / 2);
 				g.drawImage(this.image, centerX, centerY, Graphics.HCENTER | Graphics.VCENTER );
 			} else {
 				int imgWidth = this.image.getWidth();

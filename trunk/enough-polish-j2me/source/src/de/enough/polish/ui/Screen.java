@@ -132,8 +132,9 @@ extends Canvas
 			this.background = style.background;
 			this.border = style.border;
 			this.container.setStyle(style, true);
-			this.isLayoutVCenter = (( style.layout & Item.LAYOUT_VCENTER ) == Item.LAYOUT_VCENTER); 
+			this.isLayoutVCenter = (( style.layout & Item.LAYOUT_VCENTER ) == Item.LAYOUT_VCENTER);
 		} else {
+			this.isLayoutVCenter = false;
 			this.background = null;
 			this.border = null;
 		}
@@ -241,8 +242,12 @@ extends Canvas
 	 */
 	protected void paintScreen( int x, int y, int rightBorder, Graphics g ) {
 		if (this.isLayoutVCenter) {
-			int containerHeight = this.container.getItemHeight( rightBorder -x, rightBorder);
+			int containerHeight = this.container.getItemHeight( rightBorder, rightBorder);
 			int availableHeight = this.screenHeight - y - containerHeight;
+			//#ifdef tmp.menuFullScreen
+			availableHeight -= (this.menuFont.getHeight() + 1);
+			//#endif
+			
 			if (availableHeight > 0) {
 				y += (availableHeight / 2);
 			}
@@ -258,7 +263,11 @@ extends Canvas
 	 */
 	public String getTitle()
 	{
-		return this.title.getText();
+		if (this.title == null) {
+			return null;
+		} else {
+			return this.title.getText();
+		}
 	}
 
 	/**
@@ -274,10 +283,12 @@ extends Canvas
 	 */
 	public void setTitle( String s)
 	{
-		if (this.title == null && s != null) {
-			//#style title
-			this.title = new StringItem( null, s );
-		} else if ( s != null ) {
+		if (this.title == null ) {
+			if (s != null) {
+				//#style title, default
+				this.title = new StringItem( null, s );
+			}
+		} else {
 			this.title.setText(s);
 		}
 		if (isShown()) {

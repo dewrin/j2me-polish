@@ -749,6 +749,7 @@ public abstract class Item extends Object
 	 */
 	public void setStyle( Style style ) {
 		this.isInitialised = false;
+		this.isStyleInitialised = true;
 		this.style = style;
 		if (style != StyleSheet.defaultStyle) {
 			this.layout = style.layout;
@@ -1274,7 +1275,6 @@ public abstract class Item extends Object
 	protected final void init( int firstLineWidth, int lineWidth ) {
 		if (this.style != null && !this.isStyleInitialised) {
 			setStyle( this.style );
-			this.isStyleInitialised = true;
 		}
 		//#ifdef polish.useDynamicStyles
 		initStyle();
@@ -1349,8 +1349,6 @@ public abstract class Item extends Object
 			//#debug
 			System.out.println("getting style for item [" + this.cssSelector + "].");
 			setStyle( StyleSheet.getStyle( this ) );
-			//#debug
-			System.out.println("got style [" + this.style.name + "].");
 		} else {
 			//System.out.println("item has already style [" + this.style.name + "].");
 			this.cssSelector = this.style.name;
