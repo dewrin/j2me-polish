@@ -7,18 +7,19 @@
 package de.enough.polish.ant;
 
 import de.enough.polish.*;
-import de.enough.polish.ant.build.BuildSetting;
-import de.enough.polish.ant.build.Source;
+import de.enough.polish.ant.build.*;
 import de.enough.polish.ant.info.InfoSetting;
 import de.enough.polish.ant.requirements.Requirements;
 import de.enough.polish.exceptions.InvalidComponentException;
 import de.enough.polish.preprocess.PreprocessException;
 import de.enough.polish.preprocess.Preprocessor;
+import de.enough.polish.util.*;
+import de.enough.polish.util.PropertyUtil;
 import de.enough.polish.util.TextUtil;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
-import org.apache.tools.ant.taskdefs.Javac;
+import org.apache.tools.ant.taskdefs.*;
 import org.apache.tools.ant.types.Path;
 import org.jdom.JDOMException;
 
@@ -37,6 +38,8 @@ import java.util.Hashtable;
  * @author Robert Virkus, robert@enough.de
  */
 public class PolishTask extends ConditionalTask {
+
+	private static final String VERSION = "0.3.1";
 
 	private BuildSetting buildSetting;
 	private InfoSetting infoSetting;
@@ -82,7 +85,8 @@ public class PolishTask extends ConditionalTask {
 	 * @param setting the build settings.
 	 */
 	public void addConfiguredBuild( BuildSetting setting ) {
-		if (setting.getMidlets() == null || setting.getMidlets().length == 0) {
+		Midlet[] midlets = setting.getMidlets(); 
+		if (midlets == null || midlets.length == 0) {
 			throw new BuildException("Midlets need to be defined in the build section with either <midlets> or <midlet>.");
 		}
 		if (setting.getPreverify() == null) {
@@ -106,8 +110,7 @@ public class PolishTask extends ConditionalTask {
 			compile( device );
 			obfuscate( device );
 			preverify( device );
-			jar( device );
-			jad( device );
+			jarAndJad( device );
 		}
 		test();
 		deploy();
@@ -149,10 +152,10 @@ public class PolishTask extends ConditionalTask {
 		if (debugManager != null && this.buildSetting.getDebugSetting().isVisual()) {
 			this.polishProject.addFeature("debug.visual");
 		}
-		Capability[] variables = this.buildSetting.getVariables();
+		Variable[] variables = this.buildSetting.getVariables();
 		if (variables != null) {
 			for (int i = 0; i < variables.length; i++) {
-				Capability var = variables[i];
+				Variable var = variables[i];
 				this.polishProject.addDirectCapability( var );
 			}
 		}
@@ -182,8 +185,9 @@ public class PolishTask extends ConditionalTask {
 		DirectoryScanner dirScanner = new DirectoryScanner();
 		dirScanner.setIncludes( new String[]{"**/*.java"} );
 		Source source = this.buildSetting.getSource();
-		//TODO allow a different seperation of source-URLs as well
-		String[] urls = TextUtil.split( source.getUrl(), ':' );
+		String url = source.getUrl();
+		char splitChar = url.indexOf(':') != -1 ? ':' : ';';
+		String[] urls = TextUtil.splitAndTrim( url, splitChar );
 		if (source.getPolish() != null) {
 			this.sourceDirs = new File[ urls.length + 1];
 			this.sourceFiles = new String[ urls.length + 1][]; 
@@ -244,9 +248,10 @@ public class PolishTask extends ConditionalTask {
 	 */
 	private void preprocess( Device device ) {
 		try {
-			String targetDir = this.buildSetting.getTargetDir().getAbsolutePath() 
-				+ "/" + device.getIdentifier()
-				+ "/source";
+			String targetDir = this.buildSetting.getWorkDir().getAbsolutePath() 
+				+ File.separatorChar + device.getIdentifier();
+			device.setBaseDir( targetDir );
+			targetDir += File.separatorChar + "source";
 			device.setSourceDir(targetDir);
 			this.preprocessor.setTargetDir( targetDir );
 			this.preprocessor.setSymbols( device.getFeatures() );
@@ -282,14 +287,12 @@ public class PolishTask extends ConditionalTask {
 	private void compile( Device device ) {
 		Javac javac = new Javac();
 		javac.setProject( this.project );
-		javac.setTaskName(getTaskName() + "-" + device.getIdentifier() );
+		javac.setTaskName(getTaskName() + "-javac-" + device.getIdentifier() );
 		//TODO check if javac.target=1.1 is really needed
 		javac.setTarget("1.1");
 		
 		System.out.println("now compiling for device [" +  device.getIdentifier() + "]." );
-		String targetBase = this.buildSetting.getTargetDir().getAbsolutePath() 
-			+ "/" + device.getIdentifier();
-		String targetDirName = targetBase + "/classes";
+		String targetDirName = device.getBaseDir() + File.separatorChar + "classes";
 		device.setClassesDir( targetDirName );
 		File targetDir = new File( targetDirName );
 		if (!targetDir.exists()) {
@@ -374,7 +377,6 @@ public class PolishTask extends ConditionalTask {
 	 * @param device The device for which the preverification should be done.
 	 */
 	private void preverify( Device device ) {
-		// TODO enough implement preverify
 		System.out.println("preverifying for device [" + device.getIdentifier() + "].");
 		String preverify = this.buildSetting.getPreverify();
 		if (preverify == null ) {
@@ -438,6 +440,10 @@ public class PolishTask extends ConditionalTask {
      * 		   when it does not contain whitespace.
 	 */
 	private String addQuotes(String path) {
+		if (true) {
+			return path;
+		}
+		//TODO check if quotes are needed at all, since we give an array to Runtime.exec
 		if (path.indexOf(' ') != -1) {
 			return this.quote + path + this.quote;
 		} else {
@@ -450,19 +456,85 @@ public class PolishTask extends ConditionalTask {
 	 * 
 	 * @param device The device for which the code should be jared.
 	 */
-	private void jar( Device device ) {
-		// TODO enough implement jar
+	private void jarAndJad( Device device ) {
+		System.out.println("creating jar for device [" + device.getIdentifier() + "]." );
+		File classesDir = new File( device.getClassesDir() );
+		//TODO copy resources
+		File resourceDir = this.buildSetting.getResDir();
+		String resourcePath = resourceDir.getAbsolutePath() + File.separatorChar; 
 		
+		FileFilter cssFilter =  new CssFileFilter();
+		try {
+			// 1. copy general resources:
+			File[] files = resourceDir.listFiles( cssFilter );
+			FileUtil.copy( files, classesDir );
+			// 2. copy vendor resources:
+			resourceDir = new File( resourcePath + device.getVendor() );
+			files = resourceDir.listFiles( cssFilter );
+			FileUtil.copy( files, classesDir );
+			// 3.: copy group resources:
+			String[] groups = device.getGroups();
+			for (int i = 0; i < groups.length; i++) {
+				String group = groups[i];
+				resourceDir = new File( resourcePath + group );
+				files = resourceDir.listFiles( cssFilter );
+				FileUtil.copy( files, classesDir );
+			}
+			// 4.: copy device resources:
+			resourceDir = new File( resourcePath + device.getVendor() 
+								+ File.separatorChar + device.getName() );
+			files = resourceDir.listFiles( cssFilter );
+			FileUtil.copy( files, classesDir );
+		} catch (IOException e) {
+			throw new BuildException("Unable to copy resources from [" + resourceDir + "]: " + e.getMessage(), e );
+		}
+		
+		Jar jarTask = new Jar();
+		jarTask.setProject( this.project );
+		jarTask.setTaskName( getTaskName() + "-jar-" + device.getIdentifier() );
+		jarTask.setBasedir( classesDir );
+		// retrieve the name of the jar-file:
+		HashMap infoProperties = new HashMap();
+		infoProperties.put( "polish.identifier", device.getIdentifier() );
+		infoProperties.put( "polish.name", device.getName() );
+		infoProperties.put( "polish.vendor", device.getVendor() );
+		infoProperties.put( "polish.version", this.infoSetting.getVersion() );
+		String jarName = this.infoSetting.getJarName();
+		jarName = PropertyUtil.writeProperties(jarName, infoProperties);
+		infoProperties.put( "polish.jarName", jarName );
+		File jarFile = new File( this.buildSetting.getDestDir().getAbsolutePath() + File.separatorChar + jarName );
+		if (!jarFile.getParentFile().exists()) {
+			jarFile.getParentFile().mkdirs();
+		}
+		jarTask.setDestFile( jarFile );
+		//create manifest:
+		try {
+			Manifest manifest = new Manifest();
+			Manifest.Attribute polishVersion = new Manifest.Attribute("Polish-Version", VERSION );
+			manifest.addConfiguredAttribute( polishVersion  );
+			// add info attributes:
+			Variable[] attributes = this.infoSetting.getManifestAttributes();
+			for (int i = 0; i < attributes.length; i++) {
+				Variable var = attributes[i];
+				String value = PropertyUtil.writeProperties(var.getValue(), infoProperties);
+				Manifest.Attribute attribute = new Manifest.Attribute(var.getName(), value );
+				manifest.addConfiguredAttribute( attribute  );
+			}
+			// add build properties:
+			String[] midletClassNames = this.buildSetting.getMidletClassNames();
+			for (int i = 0; i < midletClassNames.length; i++) {
+				String name = midletClassNames[i];
+				Manifest.Attribute attribute = new Manifest.Attribute("Midlet-" + (i+1), name );
+				manifest.addConfiguredAttribute( attribute  );
+			}
+			jarTask.addConfiguredManifest( manifest );
+		} catch (ManifestException e) {
+			e.printStackTrace();
+			throw new BuildException("Unable to create manifest: " + e.getMessage(), e );
+		}
+		jarTask.execute();
 	}
 
-	/**
-	 * Creates the JAD file.
-	 * 
-	 * @param device The device for which a JAD file should be created. 
-	 */
-	private void jad( Device device ) {
-		// TODO implement jad()
-	}
 
 	/**
 	 * 
@@ -478,6 +550,38 @@ public class PolishTask extends ConditionalTask {
 	private void deploy() {
 		// TODO enough implement deploy
 		
+	}
+	
+	/**
+	 * <p>Accepts only non CSS-files.</p>
+	 *
+	 * <p>copyright enough software 2004</p>
+	 * <pre>
+	 * history
+	 *        19-Feb-2004 - rob creation
+	 * </pre>
+	 * @author Robert Virkus, robert@enough.de
+	 */
+	class CssFileFilter implements FileFilter {
+
+		/* (non-Javadoc)
+		 * @see java.io.FileFilter#accept(java.io.File)
+		 */
+		public boolean accept(File file) {
+			if (file.isDirectory()) {
+				return false;
+			}
+			String extension = file.getName();
+			int extPos = extension.lastIndexOf('.'); 
+			if ( extPos != -1) {
+				extension = extension.substring( extPos + 1 ); 
+			}
+			if ( ("css".equals( extension )) || ("CSS".equals(extension)) ) {
+				return false;
+			} else {
+				return true;
+			}
+		}
 	}
 	
 

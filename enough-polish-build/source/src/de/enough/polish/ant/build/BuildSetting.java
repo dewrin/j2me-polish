@@ -30,25 +30,29 @@ public class BuildSetting {
 	private DebugSetting debugSetting;
 	private MidletSetting midletSetting; 
 	private String version;
-	private File targetDir;
+	private File workDir;
 	private String symbols;
 	private String imageLoadStrategy;
 	private FullScreenSetting fullScreenSetting;
 	private File devices;
 	private File vendors;
 	private File groups;
-	private Capability[] variables;
+	private Variable[] variables;
 	private Source source;
 	private boolean usePolishGui;
 	private String midp1Path;
 	private String midp2Path;
 	private String preverify;
+	private File destDir;
+	private File resDir;
 	
 	/**
 	 * Creates a new build setting.
 	 */
 	public BuildSetting() {
-		this.targetDir = new File("./build");
+		this.workDir = new File("./build");
+		this.destDir = new File("./dist");
+		this.resDir = new File ("./resources");
 		this.devices = new File("./devices.xml");
 		this.vendors = new File("./vendors.xml");
 		this.groups = new File("./groups.xml");
@@ -84,7 +88,7 @@ public class BuildSetting {
 		this.variables = vars.getVariables();
 	}
 	
-	public Capability[] getVariables() {
+	public Variable[] getVariables() {
 		return this.variables;
 	}
 	
@@ -188,9 +192,12 @@ public class BuildSetting {
 	}
 	
 	/**
-	 * @return Returns the devices.
+	 * @return Returns the xml file containing the devices-data.
 	 */
 	public File getDevices() {
+		if (!this.devices.exists()) {
+			throw new BuildException("Did not find [devices.xml] in the default path [" + this.devices.getAbsolutePath() + "]. Please specify the [devices]-attribute of the <build> element or copy [devices.xml] to this path.");
+		}
 		return this.devices;
 	}
 	
@@ -205,23 +212,86 @@ public class BuildSetting {
 	}
 	
 	/**
-	 * @return Returns the targetDir.
+	 * Retrieves the working directory.
+	 * The default working directory is "./build".
+	 * If the working directory does not exist, it will be created now.
+	 * 
+	 * @return Returns the working directory.
 	 */
-	public File getTargetDir() {
-		return this.targetDir;
+	public File getWorkDir() {
+		if (!this.workDir.exists()) {
+			this.workDir.mkdirs();
+		}
+		return this.workDir;
 	}
 	
 	/**
-	 * @param targetDir The targetDir to set.
+	 * Sets the working directory. Defaults to "./build".
+	 * 
+	 * @param workDir The working directory to set.
 	 */
-	public void setTargetDir(File targetDir) {
-		this.targetDir = targetDir;
+	public void setWorkDir(File workDir) {
+		this.workDir = workDir;
+	}
+	
+	/**
+	 * Retrieves the directory to which the ready-to-distribute jars should be copied to.
+	 * Defaults to "./dist".
+	 * If the distribution directory does not exist, it will be created now.
+	 * 
+	 * @return The destination directory.
+	 */
+	public File getDestDir() {
+		if (! this.destDir.exists()) {
+			this.destDir.mkdirs();
+		}
+		return this.destDir;
+	}
+	
+	
+	/**
+	 * Sets the destination directory. Defaults to "./dist".
+	 * 
+	 * @param destDir The destination directory.
+	 */
+	public void setDestDir( File destDir ) {
+		this.destDir = destDir;
+	}
+	
+	/**
+	 * Retrieves the directory which contains the resources. Defaults to "./resources".
+	 * Resources include pictures, texts, etc. as well as the CSS-files 
+	 * containing the design information. 
+	 * If the resource directory does not exist, it will be created now.
+	 * 
+	 * @return The directory which contains the resources
+	 */
+	public File getResDir() {
+		if (!this.resDir.exists()) {
+			this.resDir.mkdirs();
+		}
+		return this.resDir;
+	}
+	
+	/**
+	 * Sets the directory containing the resources of this project.
+	 * Default resource directory is "./resources".
+	 * Resources include pictures, texts, etc. as well as the CSS-files 
+	 * containing the design information. 
+	 * 
+	 * @param resDir The directory containing the resources.
+	 */
+	public void setResDir( File resDir ) {
+		this.resDir = resDir;
 	}
 
 	/**
 	 * @return Returns the groups.
 	 */
 	public File getGroups() {
+		if (!this.groups.exists()) {
+			throw new BuildException("Did not find [groups.xml] in the default path [" + this.groups.getAbsolutePath() + "]. Please specify the [groups]-attribute of the <build> element or copy [groups.xml] to this path.");
+		}
 		return this.groups;
 	}
 	/**
@@ -238,6 +308,9 @@ public class BuildSetting {
 	 * @return Returns the vendors.
 	 */
 	public File getVendors() {
+		if (!this.vendors.exists()) {
+			throw new BuildException("Did not find [vendors.xml] in the default path [" + this.vendors.getAbsolutePath() + "]. Please specify the [vendors]-attribute of the <build> element or copy [vendors.xml] to this path.");
+		}
 		return this.vendors;
 	}
 	
@@ -266,8 +339,8 @@ public class BuildSetting {
 	 * @param midp1Path The path to the MIDP/1.0-api-file
 	 */
 	public void setMidp1Path( String midp1Path ) {
-		File zipFile = new File( midp1Path );
-		if (!zipFile.exists()) {
+		File file = new File( midp1Path );
+		if (!file.exists()) {
 			throw new BuildException("Invalid path to the MIDP/1.0-API: [" + midp1Path + "] (File not found).");
 		}
 		this.midp1Path = midp1Path;
@@ -283,16 +356,21 @@ public class BuildSetting {
 	}
 	
 	/**
-	 * Sets the path to the api-file of the MIDP/2.0 environment
+	 * Sets the path to the api-file of the MIDP/2.0 environment.
+	 * When the midp1Path is not defined, it will use the same
+	 * api-path as the given MIDP/2.0 environment.
 	 *  
 	 * @param midp2Path The path to the MIDP/2.0-api-file
 	 */
 	public void setMidp2Path( String midp2Path ) {
-		File zipFile = new File( midp2Path );
-		if (!zipFile.exists()) {
+		File file = new File( midp2Path );
+		if (!file.exists()) {
 			throw new BuildException("Invalid path to the MIDP/2.0-API: [" + midp2Path + "] (File not found).");
 		}
 		this.midp2Path = midp2Path;
+		if (this.midp1Path == null) {
+			this.midp1Path = midp2Path;
+		}
 	}
 
 	/**
@@ -308,5 +386,20 @@ public class BuildSetting {
 	
 	public String getPreverify() {
 		return this.preverify;
+	}
+
+	/**
+	 * Retrieves all the defined MIDlet-class-names.
+	 * 
+	 * @return The names of all midlet-classes in a String array. 
+	 * 		The first midlet is also the first element in the returned array.
+	 */
+	public String[] getMidletClassNames() {
+		Midlet[] midlets = this.midletSetting.getMidlets();
+		String[] midletClassNames = new String[ midlets.length ];
+		for (int i = 0; i < midlets.length; i++) {
+			midletClassNames[i] = midlets[i].getClassName();
+		}
+		return midletClassNames;
 	}
 }

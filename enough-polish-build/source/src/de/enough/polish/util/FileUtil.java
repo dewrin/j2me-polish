@@ -77,4 +77,77 @@ public final class FileUtil {
 		out.close();
 	}
 
+	/**
+	 * Copies the given files to the specified target directory.
+	 * 
+	 * @param files The files which should be copied.
+	 * @param targetDir The directory to which the given files should be copied to.
+	 * @throws FileNotFoundException when the source file was not found
+	 * @throws IOException when there is an error while copying the file.
+	 */
+	public static void copy(File[] files, File targetDir) 
+	throws FileNotFoundException, IOException 
+	{
+		String targetPath = targetDir.getAbsolutePath() + File.separatorChar;
+		byte[] buffer = new byte[ 1024 * 1024 ];
+		for (int i = 0; i < files.length; i++) {
+			File file = files[i];
+			copy( file, new File( targetPath + file.getName() ), buffer );
+		}
+	}
+
+	/**
+	 * Copies a file.
+	 * 
+	 * @param source The file which should be copied
+	 * @param target The file to which the source-file should be copied to.
+	 * @throws FileNotFoundException when the source file was not found
+	 * @throws IOException when there is an error while copying the file.
+	 */
+	private static void copy(File source, File target) 
+	throws FileNotFoundException, IOException 
+	{
+		byte[] buffer = new byte[ 1024 * 1024 ];
+		InputStream in = new FileInputStream( source );
+		OutputStream out = new FileOutputStream( target );
+		int read;
+		try {
+			while ( (read = in.read(buffer)) != -1) {
+				out.write(buffer, 0, read );
+			}
+		} catch (IOException e) {
+			throw e;
+		} finally {
+			in.close();
+			out.close();
+		}
+	}
+
+	/**
+	 * Copies a file.
+	 * 
+	 * @param source The file which should be copied
+	 * @param target The file to which the source-file should be copied to.
+	 * @param buffer A buffer used for the copying.
+	 * @throws FileNotFoundException when the source file was not found
+	 * @throws IOException when there is an error while copying the file.
+	 */
+	private static void copy(File source, File target, byte[] buffer ) 
+	throws FileNotFoundException, IOException 
+	{
+		InputStream in = new FileInputStream( source );
+		OutputStream out = new FileOutputStream( target );
+		int read;
+		try {
+			while ( (read = in.read(buffer)) != -1) {
+				out.write(buffer, 0, read );
+			}
+		} catch (IOException e) {
+			throw e;
+		} finally {
+			in.close();
+			out.close();
+		}
+	}
+	
 }

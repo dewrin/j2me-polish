@@ -16,7 +16,7 @@ package de.enough.polish;
  * </pre>
  * @author Robert Virkus, robert@enough.de
  */
-public class Capability {
+public class Variable {
 	
 	private String name;
 	private String value;
@@ -25,7 +25,7 @@ public class Capability {
 	/**
 	 * Creates new uninitialised Variable
 	 */
-	public Capability() {
+	public Variable() {
 		// no values are set here
 	}
 
@@ -34,7 +34,7 @@ public class Capability {
 	 * @param name (String) the name of this variable
 	 * @param value (String) the value of this variable
 	 */
-	public Capability(String name, String value) {
+	public Variable(String name, String value) {
 		this.name = name;
 		this.value = value;
 	}
