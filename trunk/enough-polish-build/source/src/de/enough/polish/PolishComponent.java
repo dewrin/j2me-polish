@@ -223,6 +223,7 @@ public class PolishComponent {
 				addSingleCapability( depth, values[1]);
 			}
 		}
+		
 		// add all capability-values as symbols/features:
 		String[] values = TextUtil.splitAndTrim( value, ',' );
 		for (int i = 0; i < values.length; i++) {
@@ -300,7 +301,11 @@ public class PolishComponent {
 	 * @return the value of the capability or null when the given capability is not defined.
 	 */
 	public String getCapability(String key) {
-		return (String) this.capabilities.get( key );
+		String capability = (String) this.capabilities.get( key );
+		if (capability == null) {
+			capability = (String) this.capabilities.get( "polish." + key );
+		}
+		return capability;
 	}
 
 	/**

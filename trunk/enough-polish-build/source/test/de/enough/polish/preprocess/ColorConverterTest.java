@@ -36,12 +36,9 @@ public class ColorConverterTest extends TestCase {
 		value = colors.parseColor(definition);
 		assertEquals("0xFF0000", value );
 		
-		if (false) {
-			//TODO include ARGB test
 		definition = "#99FF0055";
 		value = colors.parseColor(definition);
 		assertEquals("0x99FF0055", value );
-		}
 		
 		definition = "#DD99FF0055"; // too long
 		try {
@@ -66,7 +63,7 @@ public class ColorConverterTest extends TestCase {
 			colors.parseColor(definition);
 			fail("colors.parseColor(" + definition + ") should fail." ); 
 		} catch (BuildException e) {
-			System.out.println( e.getMessage() );
+			//System.out.println( e.getMessage() );
 			// expected behaviour
 		}
 	}
@@ -126,7 +123,16 @@ public class ColorConverterTest extends TestCase {
 		value = colors.parseColor(definition);
 		assertEquals("0x0000ff", value );
 		
-		definition = "rgb(0)";
+		definition = "rgb(0%,  0%,  100%   )  ";
+		value = colors.parseColor(definition);
+		assertEquals("0x0000ff", value );
+
+		definition = "rgb(0.00%,  0.00%,  100.00%   )  ";
+		value = colors.parseColor(definition);
+		assertEquals("0x0000ff", value );
+
+		
+		definition = "rgb(0)";		
 		try {
 			colors.parseColor(definition);
 			fail("colors.parseColor(" + definition + ") should fail." ); 
@@ -149,7 +155,7 @@ public class ColorConverterTest extends TestCase {
 			colors.parseColor(definition);
 			fail("colors.parseColor(" + definition + ") should fail." ); 
 		} catch (BuildException e) {
-			System.out.println( e.getMessage() );
+			//System.out.println( e.getMessage() );
 			// expected behaviour
 		}
 		
@@ -172,4 +178,73 @@ public class ColorConverterTest extends TestCase {
 		}
 	}
 
+	public void testArgbColors() {
+		ColorConverter colors = new ColorConverter();
+		String definition = "argb( 0, 0, 0, 0)";
+		String value = colors.parseColor(definition);
+		assertEquals("0x00000000", value );
+		
+		definition = "argb  (  128, 255, 0, 0 )";
+		value = colors.parseColor(definition);
+		assertEquals("0x80ff0000", value );
+		
+		definition = "argb( 255, 0, 128,    0   ) ";
+		value = colors.parseColor(definition);
+		assertEquals("0xff008000", value );
+				
+		definition = "argb(50%, 0%,  0%,  100%   )  ";
+		value = colors.parseColor(definition);
+		assertEquals("0x7f0000ff", value );
+
+		definition = "argb(50.00%, 0.00%,  0.00%,  100.00%   )  ";
+		value = colors.parseColor(definition);
+		assertEquals("0x7f0000ff", value );
+
+		
+		definition = "argb(0)";		
+		try {
+			colors.parseColor(definition);
+			fail("colors.parseColor(" + definition + ") should fail." ); 
+		} catch (BuildException e) {
+			//System.out.println( e.getMessage() );
+			// expected behaviour
+		}
+		
+		definition = "argb(0,10)";
+		try {
+			colors.parseColor(definition);
+			fail("colors.parseColor(" + definition + ") should fail." ); 
+		} catch (BuildException e) {
+			//System.out.println( e.getMessage() );
+			// expected behaviour
+		}
+		
+		definition = "argb(0,10,9)";
+		try {
+			colors.parseColor(definition);
+			fail("colors.parseColor(" + definition + ") should fail." ); 
+		} catch (BuildException e) {
+			//System.out.println( e.getMessage() );
+			// expected behaviour
+		}
+		
+		definition = "argb(0,10,256)";
+		try {
+			colors.parseColor(definition);
+			fail("colors.parseColor(" + definition + ") should fail." ); 
+		} catch (BuildException e) {
+			//System.out.println( e.getMessage() );
+			// expected behaviour
+		}
+		
+		definition = "argb(10, 0,-10,255)";
+		try {
+			colors.parseColor(definition);
+			fail("colors.parseColor(" + definition + ") should fail." ); 
+		} catch (BuildException e) {
+			//System.out.println( e.getMessage() );
+			// expected behaviour
+		}
+	}
+	
 }

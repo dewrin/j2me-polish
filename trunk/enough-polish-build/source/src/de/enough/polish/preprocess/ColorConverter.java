@@ -92,7 +92,7 @@ public class ColorConverter {
 				// an allowed shortcut in CSS is to use only one character
 				// for each color, when they are equal otherwise.
 				// blue is e.g. "#00F"
-				StringBuffer buffer = new StringBuffer(8);
+				StringBuffer buffer = new StringBuffer(10);
 				buffer.append("0x");
 				char[] chars = value.toCharArray();
 				for (int i = 0; i < chars.length; i++) {
@@ -107,15 +107,16 @@ public class ColorConverter {
 					throw new BuildException("Invalid color definition in CSS: [" + definition + "] is not a valid hexadecimal value (" + e.getMessage() + ").");
 				}
 				return value;
-			}
+			} // if value.length() == 3
 			if (value.length() < 6 || value.length() > 8) {
 				throw new BuildException("Invalid color definition in CSS: [" + definition + "] is not a valid hexadecimal value.");
 			}
 			value = "0x" + value;
+			// check number:
 			try {
-				Integer.decode(value);
+				Long.decode(value);
 			} catch (NumberFormatException e) {
-				throw new BuildException("Invalid color definition in CSS: [" + definition + "] is not a valid value (" + e.getMessage() + ").");
+				throw new BuildException("Invalid color definition in CSS: [" + definition + "] is not a valid hexadecimal value (" + e.getMessage() + ").");
 			}
 			return value;
 		}
@@ -130,30 +131,61 @@ public class ColorConverter {
 			if (numbers.length != 3) {
 				throw new BuildException("Invalid color definition in CSS: [" + definition + "] is not a valid RGB value. Allowed is [rgb(rrr,ggg,bbb)], e.g. [rgb(128, 255, 0)]." );
 			}
-			StringBuffer buffer = new StringBuffer( 8 );
-			buffer.append("0x");
-			for (int i = 0; i < numbers.length; i++) {
-				try {
-					int number = Integer.parseInt( numbers[i] );
-					if (number > 0xFF || number < 0 ) {
-						throw new BuildException("Invalid color definition in CSS: [" + definition + "] is not a valid RGB value. Allowed is [rgb(rrr,ggg,bbb)], e.g. [rgb(128, 255, 0)]." );
-					}
-					if ( number < 0x1F) {
-						buffer.append( '0' );
-					}
-					String hexNumber = Integer.toHexString(number) ;
-					buffer.append( hexNumber);
-				} catch (NumberFormatException e) {
-					throw new BuildException("Invalid color definition in CSS: [" + definition + "] is not a valid RGB value. Allowed is [rgb(rrr,ggg,bbb)], e.g. [rgb(128, 255, 0)]." );
-				}
-			}
-			return buffer.toString();
+			return parseColors( numbers, definition );
 		}
-		
-		//TODO allow procentual values
+		if (definition.startsWith("argb")) {
+			value = definition.substring(4).trim();
+			if ((!value.startsWith("(")) || (!value.endsWith(")")) ) {
+				throw new BuildException("Invalid color definition in CSS: [" + definition + "] is not a valid ARGB value. Allowed is [argb(aaa,rrr,ggg,bbb)], e.g. [rgb(128, 255, 0)]." );
+			}
+			value = value.substring( 1, value.length() - 1 );
+			String[] numbers = TextUtil.splitAndTrim( value, ',');
+			if (numbers.length != 4) {
+				throw new BuildException("Invalid color definition in CSS: [" + definition + "] is not a valid ARGB value. Allowed is [argb(aaa,rrr,ggg,bbb)], e.g. [argb(128, 128, 255, 0)]." );
+			}
+			return parseColors( numbers, definition );
+		}
+		// this is an invalid color declaration:
 		throw new BuildException("Invalid color definition in CSS: [" + definition + "] is not a valid value." );
 	}
 	
+	/**
+	 * Parses the given numbers and stores them into a hexadecimal string.
+	 * 
+	 * @param numbers String array with the numbers or percentage values
+	 * @param definition the complete definition
+	 * @return the parsed rgb or argb value as hex string
+	 */
+	private String parseColors(String[] numbers, String definition ) {
+		StringBuffer buffer = new StringBuffer( numbers.length * 2 + 2 );
+		buffer.append("0x");
+		for (int i = 0; i < numbers.length; i++) {
+			String numberStr = numbers[i];
+			boolean isPercentage = (numberStr.charAt( numberStr.length() - 1) == '%');
+			int number = -1;			
+			try {
+				if (isPercentage) {
+					String doubleStr = numberStr.substring( 0, numberStr.length() - 1);
+					double percentageValue = Double.parseDouble( doubleStr );
+					number = (int) ((255D * percentageValue) / 100D);
+				} else {
+					number = Integer.parseInt( numberStr );
+				}
+			} catch (NumberFormatException e) {
+				throw new BuildException("Invalid color definition in CSS: [" + definition + "] is not a valid RGB value. Allowed is [rgb(rrr,ggg,bbb)], e.g. [rgb(128, 255, 0)]. The value [" + numberStr + "] cannot be parsed: " + e.getMessage() );
+			}
+			if (number > 0xFF || number < 0 ) {
+				throw new BuildException("Invalid color definition in CSS: [" + definition + "] is not a valid RGB value. Allowed is [rgb(rrr,ggg,bbb)], e.g. [rgb(128, 255, 0)]. The value [" + numberStr + "] is invalid." );
+			}
+			if ( number < 0x1F) {
+				buffer.append( '0' );
+			}
+			String hexNumber = Integer.toHexString(number) ;
+			buffer.append( hexNumber);
+		}
+		return buffer.toString();
+	}
+
 	/**
 	 * Sets the temporary colors.
 	 * 

@@ -168,47 +168,28 @@ public class Device extends PolishComponent {
 		if (this.supportsPolishGui) {
 			addFeature( SUPPORTS_POLISH_GUI );
 		}
-		String bitsPerPixel = this.getCapability( BITS_PER_PIXEL );
-		if (bitsPerPixel != null ) {
-			if ("1".equals( bitsPerPixel)) {
-				groupNamesList.add( "BitsPerPixel.1" );
-				groupsList.add( groupManager.getGroup( "BitsPerPixel.1", true ) );
-			} else if ("4".equals( bitsPerPixel)) {
-				groupNamesList.add( "BitsPerPixel.4" );
-				groupsList.add( groupManager.getGroup( "BitsPerPixel.4", true ) );
-			} else if ("8".equals( bitsPerPixel)) {
-				groupNamesList.add( "BitsPerPixel.8" );
-				groupsList.add( groupManager.getGroup( "BitsPerPixel.8", true ) ); 
-				groupNamesList.add( "BitsPerPixel.4+" );
-				groupsList.add( groupManager.getGroup( "BitsPerPixel.4+", true ) ); 
-			} else if ("12".equals( bitsPerPixel)) {
-				groupNamesList.add( "BitsPerPixel.12" );
-				groupsList.add( groupManager.getGroup( "BitsPerPixel.12", true ) ); 
-				groupNamesList.add( "BitsPerPixel.8+" );
-				groupsList.add( groupManager.getGroup( "BitsPerPixel.8+", true ) ); 
-				groupNamesList.add( "BitsPerPixel.4+" );
-				groupsList.add( groupManager.getGroup( "BitsPerPixel.4+", true ) ); 
-			} else if ("16".equals( bitsPerPixel)) {
-				groupNamesList.add( "BitsPerPixel.16" );
-				groupsList.add( groupManager.getGroup( "BitsPerPixel.16", true ) ); 
-				groupNamesList.add( "BitsPerPixel.12+" );
-				groupsList.add( groupManager.getGroup( "BitsPerPixel.12+", true ) ); 
-				groupNamesList.add( "BitsPerPixel.8+" );
-				groupsList.add( groupManager.getGroup( "BitsPerPixel.8+", true ) ); 
-				groupNamesList.add( "BitsPerPixel.4+" );
-				groupsList.add( groupManager.getGroup( "BitsPerPixel.4+", true ) ); 
-			} else if ("24".equals( bitsPerPixel)) {
-				groupNamesList.add( "BitsPerPixel.24" );
-				groupsList.add( groupManager.getGroup( "BitsPerPixel.24", true ) ); 
-				groupNamesList.add( "BitsPerPixel.16+" );
-				groupsList.add( groupManager.getGroup( "BitsPerPixel.16+", true ) ); 
-				groupNamesList.add( "BitsPerPixel.12+" );
-				groupsList.add( groupManager.getGroup( "BitsPerPixel.12+", true ) ); 
-				groupNamesList.add( "BitsPerPixel.8+" );
-				groupsList.add( groupManager.getGroup( "BitsPerPixel.8+", true ) ); 
+		String bitsPerPixelStr = this.getCapability( BITS_PER_PIXEL );
+		if (bitsPerPixelStr != null ) {
+			int bitsPerPixel = Integer.parseInt(bitsPerPixelStr);
+			if (bitsPerPixel > 4) {
 				groupNamesList.add( "BitsPerPixel.4+" );
 				groupsList.add( groupManager.getGroup( "BitsPerPixel.4+", true ) ); 
 			}
+			if (bitsPerPixel > 8) {
+				groupNamesList.add( "BitsPerPixel.8+" );
+				groupsList.add( groupManager.getGroup( "BitsPerPixel.8+", true ) ); 
+			}
+			if (bitsPerPixel > 12) {
+				groupNamesList.add( "BitsPerPixel.12+" );
+				groupsList.add( groupManager.getGroup( "BitsPerPixel.12+", true ) ); 
+			}
+			if (bitsPerPixel > 16) {
+				groupNamesList.add( "BitsPerPixel.16+" );
+				groupsList.add( groupManager.getGroup( "BitsPerPixel.16+", true ) ); 
+			}
+			groupNamesList.add( "BitsPerPixel." + bitsPerPixelStr );
+			groupsList.add( groupManager.getGroup( "BitsPerPixel." + bitsPerPixelStr, true ) );
+
 		}
 		this.groupNames = (String[]) groupNamesList.toArray( new String[groupNamesList.size() ] );
 		this.groups = (DeviceGroup[]) groupsList.toArray( new DeviceGroup[groupsList.size() ] );
