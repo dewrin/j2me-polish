@@ -44,7 +44,7 @@ title {
 	layout: horizontal-center | horizontal-expand;
 }
 
-focussed {
+focused {
 	before: url(dot.png);
 	padding: 2;
 	padding-horizontal: 5;

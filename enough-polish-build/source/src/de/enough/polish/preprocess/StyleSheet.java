@@ -251,7 +251,7 @@ public class StyleSheet {
 				}
 			}
 		} else { // this is a style:
-			String parent = "default";
+			String parent = null;
 			int extendsPos = selector.indexOf(" extends ");
 			if (extendsPos != -1) {
 				parent = selector.substring( extendsPos + 9).trim();
@@ -259,9 +259,6 @@ public class StyleSheet {
 				if ("default".equals(selector ) ) {
 					throw new BuildException( "Invalid CSS code: The style [default] must not extend any other style.");
 				}
-			}
-			if ("default".equals(selector ) ) {
-				parent = null;
 			}
 			boolean isDynamicStyle = false;
 			// check if this style is dynamic:
