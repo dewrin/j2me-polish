@@ -23,7 +23,9 @@ import java.lang.reflect.InvocationTargetException;
  * </pre>
  * @author Robert Virkus, robert@enough.de
  */
-public abstract class Requirement {
+public abstract class Requirement
+implements DeviceFilter
+{
 	
 	private String value;
 	protected String propertyName;
@@ -99,6 +101,8 @@ public abstract class Requirement {
 				return new StringRequirement( name, value );
 			} else if (type.equalsIgnoreCase("Version")) {
 				return new VersionRequirement( name, value );
+			} else if (type.equalsIgnoreCase("Memory")) {
+				return new MemoryRequirement( name, value );
 			} else {
 				try {
 					reqClass = Class.forName( type );

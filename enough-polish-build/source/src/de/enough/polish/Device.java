@@ -6,6 +6,7 @@
  */
 package de.enough.polish;
 
+import de.enough.polish.ant.requirements.MemoryMatcher;
 import de.enough.polish.exceptions.InvalidDeviceException;
 import de.enough.polish.util.TextUtil;
 
@@ -33,12 +34,15 @@ public class Device extends PolishComponent {
 	public static final String SCREEN_SIZE= "ScreenSize";
 	public static final String BITS_PER_PIXEL = "BitsPerPixel";
 	public static final String CANVAS_SIZE= "CanvasSize";
-	public static final String FULL_CANVAS_SIZE= "FullCanvasSize";
 	public static final String JAVA_PLATFORM = "JavaPlatform";
 	public static final String JAVA_PROTOCOL = "JavaProtocol";
 	public static final String JAVA_PACKAGE= "JavaPackage";
 	public static final String HEAP_SIZE = "HeapSize";
+	public static final String USER_AGENT = "UserAgent";
 	public static final String SUPPORTS_POLISH_GUI = "supportsPolishGui";
+	
+	private static final int POLISH_GUI_MIN_BITS_PER_PIXEL = 8;
+	private static final MemoryMatcher POLISH_GUI_MIN_HEAP_SIZE = new MemoryMatcher("500+kb");
 	
 	private boolean supportsPolishGui;
 	private String name;
@@ -128,11 +132,20 @@ public class Device extends PolishComponent {
 			this.supportsPolishGui = "true".equals( supportsPolishGuiText ) 
 										   || "yes".equals( supportsPolishGuiText );
 		} else {
-			String bitsPerPixelDef = getCapability( BITS_PER_PIXEL );
+			// basically assume that any device supports the polish GUI:
 			this.supportsPolishGui = true;
+			// when a device has the BitsPerPixel capability defined,
+			// it needs to have at least 8 bits per pixel (= 2^8 == 256 colors)
+			String bitsPerPixelDef = getCapability( BITS_PER_PIXEL );
 			if (bitsPerPixelDef != null) {
 				int bitsPerPixel = Integer.parseInt( bitsPerPixelDef );
-				this.supportsPolishGui = bitsPerPixel >= 4;
+				this.supportsPolishGui = (bitsPerPixel >= POLISH_GUI_MIN_BITS_PER_PIXEL);
+			}
+			// when the device has the heap size defined,
+			// it needs to have a minimum heap size of 500 kb:
+			String heapSizeStr = getCapability( HEAP_SIZE );
+			if (heapSizeStr != null) {
+				this.supportsPolishGui = POLISH_GUI_MIN_HEAP_SIZE.matches(heapSizeStr);
 			}
 		}
 		if (this.supportsPolishGui) {
@@ -143,8 +156,8 @@ public class Device extends PolishComponent {
 	/**
 	 * Determines whether this device supports the polish-gui-framework.
 	 * Usually this is the case when the device meets some capabilities like
-	 * the possible size of the heap.
-	 * Devices can also define this directly by setting the attriubte [supportsPolishGui]. 
+	 * the bits per pixel and the possible size of the heap.
+	 * Devices can also define this directly by setting the attribute [supportsPolishGui]. 
 	 * 
 	 * @return true when this device supports the polish-gui.
 	 */

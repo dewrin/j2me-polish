@@ -1,5 +1,5 @@
 /*
- * Created on 10-Feb-2004 at 22:49:38.
+ * Created on 11-Feb-2004 at 20:27:56.
  * This source code is published under the GNU General Public Licence and
  * the enough-software-licence for commercial use.
  * Please refer to accompanying LICENSE.txt or visit www.enough.de for details.
@@ -9,27 +9,28 @@ package de.enough.polish.ant.requirements;
 import de.enough.polish.Device;
 
 /**
- * <p>Selects devices by the version of a specific capability.</p>
+ * <p>Selects a device by a memory capability.</p>
  *
  * <p>copyright enough software 2004</p>
  * <pre>
  * history
- *        10-Feb-2004 - rob creation
+ *        11-Feb-2004 - rob creation
  * </pre>
  * @author Robert Virkus, robert@enough.de
  */
-public class VersionRequirement extends Requirement {
+public class MemoryRequirement extends Requirement {
 
-	private VersionMatcher matcher;
+	private MemoryMatcher matcher;
 
 	/**
-	 * Creates a new Version requirement
-	 * @param value the value of this requirement, e.g. "2.3+.2+"
-	 * @param propertyName the name of the capability
+	 * Creates a new memory requirement.
+	 * 
+	 * @param value the needed memory, e.g. "120+ kb"
+	 * @param propertyName the name of the memory-capability, e.g. "HeapSize"
 	 */
-	public VersionRequirement(String value, String propertyName) {
+	public MemoryRequirement(String value, String propertyName) {
 		super(value, propertyName);
-		this.matcher = new VersionMatcher( value );
+		this.matcher = new MemoryMatcher( value ); 
 	}
 
 	/* (non-Javadoc)

@@ -6,8 +6,6 @@
  */
 package de.enough.polish.ant.requirements;
 
-import de.enough.polish.Device;
-import de.enough.polish.util.TextUtil;
 
 /**
  * <p>Selects a device by its support of specific software-APIs.</p>
@@ -19,9 +17,8 @@ import de.enough.polish.util.TextUtil;
  * </pre>
  * @author Robert Virkus, robert@enough.de
  */
-public class JavaPackageRequirement extends Requirement {
+public class JavaPackageRequirement extends StringRequirement {
 
-	private StringMatcher matcher;
 
 	/**
 	 * Creates a new java package requirement.
@@ -30,15 +27,6 @@ public class JavaPackageRequirement extends Requirement {
 	 */
 	public JavaPackageRequirement(String value) {
 		super(value, "JavaPackage");
-		String[] apis = TextUtil.split( value, ',');
-		this.matcher = new StringMatcher( apis, false );
-	}
-
-	/* (non-Javadoc)
-	 * @see de.enough.polish.ant.requirements.Requirement#isMet(de.enough.polish.build.Device, java.lang.String)
-	 */
-	protected boolean isMet(Device device, String property) {
-		return this.matcher.matches( property );
 	}
 
 }
