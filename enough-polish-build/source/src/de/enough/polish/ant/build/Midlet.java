@@ -20,12 +20,14 @@ public class Midlet {
 	
 	public int number;
 	public String className;
+	public String icon;
+	public String name;
 
 	/**
 	 * Creates a new midlet definition.
 	 */
 	public Midlet() {
-		// initialisation is done via the setter methods
+		this.icon = "";
 	}
 	
 	
@@ -62,6 +64,54 @@ public class Midlet {
 	 */
 	public void setClass(String className) {
 		this.className = className;
+	}
+
+	/**
+	 * @return Returns the icon.
+	 */
+	public String getIcon() {
+		return this.icon;
+	}
+
+	/**
+	 * @param icon The icon to set.
+	 */
+	public void setIcon(String icon) {
+		if (!icon.startsWith("/")) {
+			icon = "/" + icon;
+		}
+		this.icon = icon;
+	}
+
+	/**
+	 * @return Returns the name.
+	 */
+	public String getName() {
+		return this.name;
+	}
+	
+	/**
+	 * @param name The name to set.
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	/**
+	 * Retrieves the info for the manifest and JAD file of this midlet.
+	 * 
+	 * @return The info containing the name, icon and class of this midlet.
+	 */
+	public String getMidletInfo() {
+		if (this.name == null) {
+			String altName = this.className;
+			int dotPos = altName.lastIndexOf('.');
+			if (dotPos != -1) {
+				altName = altName.substring( dotPos + 1);
+			}
+			this.name = altName; 
+		}
+		return this.name + "," + this.icon + "," + this.className;
 	}
 
 }

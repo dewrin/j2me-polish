@@ -402,4 +402,21 @@ public class BuildSetting {
 		}
 		return midletClassNames;
 	}
+	
+	/**
+	 * Retrieves the infos for all midlets.
+	 * The infos contain the name, the icon and the class of the midlet
+	 * and are used for the JAD and the manifest.
+	 * 
+	 * @return The infos of all midlets in a String array.
+	 * 		The first midlet is also the first element in the returned array.
+	 */
+	public String[] getMidletInfos() {
+		Midlet[] midlets = this.midletSetting.getMidlets();
+		String[] midletInfos = new String[ midlets.length ];
+		for (int i = 0; i < midlets.length; i++) {
+			midletInfos[i] = midlets[i].getMidletInfo();
+		}
+		return midletInfos;
+	}
 }

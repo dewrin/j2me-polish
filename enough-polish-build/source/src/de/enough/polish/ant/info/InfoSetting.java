@@ -26,25 +26,26 @@ public class InfoSetting {
 	
 	// REQUIRED ATTRIBUTES
 	// J=Jad, M=Manifest
-	public static final String MIDLET_NAME = "Midlet-Name"; // J & M
-	public static final String MIDLET_VERSION = "Midlet-Version"; // J & M
-	public static final String MIDLET_VENDOR = "Midlet-Vendor"; // J & M
-	public static final String MIDLET_JAR_URL = "Midlet-Jar-Url"; // J
-	public static final String MIDLET_JAR_SIZE = "Midlet-Jar-Size"; // J
+	public static final String MIDLET_NAME = "MIDlet-Name"; // J & M
+	public static final String MIDLET_VERSION = "MIDlet-Version"; // J & M
+	public static final String MIDLET_VENDOR = "MIDlet-Vendor"; // J & M
+	public static final String MIDLET_JAR_URL = "MIDlet-Jar-Url"; // J
+	public static final String MIDLET_JAR_SIZE = "MIDlet-Jar-Size"; // J
 	public static final String MICRO_EDITION_PROFILE = "MicroEdition-Profile"; // M
 	public static final String MICRO_EDITION_CONFIGURATION = "MicroEdition-Configuration"; // M
 	
 	// OPTIONAL ATTRIBUTES
-	public static final String MIDLET_ICON = "Midlet-Icon"; // J & M
-	public static final String MIDLET_DESCRIPTION = "Midlet-Description"; // J & M
-	public static final String MIDLET_INFO_URL = "Midlet-Info-URL"; // J & M
-	public static final String MIDLET_DATA_SIZE = "Midlet-Data-Size"; // J & M
-	public static final String MIDLET_DELETE_CONFIRM = "Midlet-Delete-Confirm"; // M?
-	public static final String MIDLET_DELETE_NOTIFY = "Midlet-Delete-Notify"; // M?
-	public static final String MIDLET_INSTALL_NOTIFY = "Midlet-Install-Notify"; // M?
+	public static final String MIDLET_ICON = "MIDlet-Icon"; // J & M
+	public static final String MIDLET_DESCRIPTION = "MIDlet-Description"; // J & M
+	public static final String MIDLET_INFO_URL = "MIDlet-Info-URL"; // J & M
+	public static final String MIDLET_DATA_SIZE = "MIDlet-Data-Size"; // J & M
+	public static final String MIDLET_DELETE_CONFIRM = "MIDlet-Delete-Confirm"; // M?
+	public static final String MIDLET_DELETE_NOTIFY = "MIDlet-Delete-Notify"; // M?
+	public static final String MIDLET_INSTALL_NOTIFY = "MIDlet-Install-Notify"; // M?
 	
 	// For a list of Midlet-N attributes see 
 	// http://java.sun.com/j2me/docs/wtk2.0/user_html/Ap_Attributes.html#wp21956
+	public static final String NMIDLET = "MIDlet-";
 	
 	public static final String CLDC1 = "CLDC-1.0";
 	public static final String MIDP1 = "MIDP-1.0";
