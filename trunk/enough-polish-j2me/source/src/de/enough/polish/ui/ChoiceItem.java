@@ -65,6 +65,8 @@ implements ImageConsumer
 	private int choiceType;
 	protected Font preferredFont;
 	private int boxColor;
+	/** defines whether the plain image should be drawn at all */ 
+	private boolean drawNoPlain;
 	//#ifdef polish.images.backgroundLoad
 	private String selectedImgName;
 	private String plainImgName;
@@ -123,21 +125,22 @@ implements ImageConsumer
 			super.initContent(firstLineWidth, lineWidth);
 			return;
 		}
-		if (this.plain == null) {
-			this.plain = createPlain();
-		}
 		if (this.selected == null) {
 			this.selected = createSelected();
 		}
-		int maxWidth = this.plain.getWidth();
-		if (this.selected.getWidth() > maxWidth ) {
-			maxWidth = this.selected.getWidth();
+		if (this.plain == null && !this.drawNoPlain) {
+			this.plain = createPlain();
+		}
+		int maxWidth = this.selected.getWidth();
+		
+		if (!this.drawNoPlain && this.plain.getWidth() > maxWidth ) {
+			maxWidth = this.plain.getWidth();
 		}
 		maxWidth += this.paddingHorizontal;
 		this.boxWidth = maxWidth;
-		int maxHeight = this.plain.getHeight();
-		if (this.selected.getHeight() > maxHeight ) {
-			maxHeight = this.selected.getHeight();
+		int maxHeight = this.selected.getHeight();
+		if ( !this.drawNoPlain && this.plain.getHeight() > maxHeight ) {
+			maxHeight = this.plain.getHeight();
 		}
 		firstLineWidth -= maxWidth;
 		lineWidth -=  maxWidth;
@@ -223,7 +226,9 @@ implements ImageConsumer
 	public void paintContent(int x, int y, int leftBorder, int rightBorder,
 			Graphics g) {
 		if (this.drawBox) {
-			g.drawImage( this.boxImage, x, y, Graphics.TOP | Graphics.LEFT );
+			if ( this.boxImage != null) {
+				g.drawImage( this.boxImage, x, y, Graphics.TOP | Graphics.LEFT );
+			}
 			x += this.boxWidth;
 			leftBorder += this.boxWidth;
 			y += this.yAdjust;
@@ -252,14 +257,18 @@ implements ImageConsumer
 			}
 			String plainName = style.getProperty( type + "-plain");
 			if (plainName != null) {
-				//#ifdef polish.images.backgroundLoad
-					this.plainImgName = plainName;
-				//#endif
-				try {
-					this.plain = StyleSheet.getImage( plainName, this, true );
-				} catch (IOException e) {
-					//#debug error
-					Debug.debug("Unable to load image [" + plainName + "]: " + e.getMessage() , e );
+				if ("none".equals(plainName)) {
+					this.drawNoPlain = true;
+				} else {
+					//#ifdef polish.images.backgroundLoad
+						this.plainImgName = plainName;
+					//#endif
+					try {
+						this.plain = StyleSheet.getImage( plainName, this, true );
+					} catch (IOException e) {
+						//#debug error
+						Debug.debug("Unable to load image [" + plainName + "]: " + e.getMessage() , e );
+					}
 				}
 			}
 			String colorStr = style.getProperty("choice-color");
@@ -280,10 +289,8 @@ implements ImageConsumer
 		if (!this.drawBox) {
 			super.setImage( name, image );
 		} else if (name.equals(this.selectedImgName)) {
-			Debug.debug("setting selected image");
 			this.selected = image;
 		} else if (name.equals(this.plainImgName)) {
-			Debug.debug("setting plain image");
 			this.plain = image;
 		} else {
 			setImage( image );
