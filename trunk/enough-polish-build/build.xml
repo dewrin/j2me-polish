@@ -21,7 +21,7 @@
 
 <!-- task definitions -->
 
-<taskdef name="polish" classname="de.enough.polish.ant.PolishTask" classpath="bin/classes:/import/jdom.jar"/>
+<taskdef name="polish" classname="de.enough.polish.ant.PolishTask" classpath="bin/classes:import/jdom.jar"/>
 
 
 <!-- build targets, each target can be called via "ant [name]", e.g. "ant clean" -->
@@ -154,12 +154,9 @@
 </target>
 
 <target name="dist" depends="init">
-	<jar destfile="dist/doc2java.jar"
-	     basedir="classes"
+	<jar destfile="dist/enough-polish.jar"
+	     basedir="bin/classes"
 	     >
-	     <manifest>
-	     	<attribute name="Main-Class" value="de.enough.doc2java.Doc2Java"/>
-	     </manifest>
 	</jar>
 </target>
 

@@ -394,11 +394,11 @@ public class PolishTask extends ConditionalTask {
 		classPath += File.pathSeparatorChar + device.getClassPath();
 		
 		String[] commands = new String[] {
-			addQuotes( preverify ), 
-			"-classpath", addQuotes( classPath ),
-			"-d",   addQuotes( device.getClassesDir() ) , // destination-dir - default is ./output
+			preverify, 
+			"-classpath", classPath,
+			"-d",   device.getClassesDir() , // destination-dir - default is ./output
 			"-cldc",
-			addQuotes( device.getClassesDir() )
+			device.getClassesDir()
 		};
 		StringBuffer commandBuffer = new StringBuffer();
 		for (int i = 0; i < commands.length; i++) {
@@ -436,18 +436,17 @@ public class PolishTask extends ConditionalTask {
 	 * @param path The path
 	 * @return The path with quotes when it contains whitespace or without quotes
      * 		   when it does not contain whitespace.
-	 */
 	private String addQuotes(String path) {
 		if (true) {
 			return path;
 		}
-		//TODO check if quotes are needed at all, since we give an array to Runtime.exec
 		if (path.indexOf(' ') != -1) {
 			return this.quote + path + this.quote;
 		} else {
 			return path;
 		}
 	}
+	 */
 
 	/**
 	 * Jars the code.
@@ -516,6 +515,13 @@ public class PolishTask extends ConditionalTask {
 			Manifest manifest = new Manifest();
 			Manifest.Attribute polishVersion = new Manifest.Attribute("Polish-Version", VERSION );
 			manifest.addConfiguredAttribute( polishVersion  );
+			String midp = InfoSetting.MIDP1;
+			if (device.isMidp2()) {
+				midp = InfoSetting.MIDP2;
+			}
+			Manifest.Attribute meProfile = new Manifest.Attribute( InfoSetting.MICRO_EDITION_PROFILE, midp );
+			manifest.addConfiguredAttribute(meProfile);
+			
 			// add info attributes:
 			Variable[] attributes = this.infoSetting.getManifestAttributes();
 			for (int i = 0; i < attributes.length; i++) {
