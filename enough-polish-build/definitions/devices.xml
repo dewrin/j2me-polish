@@ -33,9 +33,8 @@ SonyEricsson T68i  SonyEricssonT68
 <!-- Motorola devices -->
 	<device>
 		<identifier>
-		    Motorola/i50sx
+		    Motorola/i50sx, Motorola/i55sr, Motorola/i85s
 		</identifier>
-		<!-- other identifiers: , Motorola/i55sr, Motorola/i85s -->
 		<user-agent>MOTi50sx</user-agent>
 		<capability name="SoftwarePlatform.JavaPlatform"
 					   value="MIDP/1.0" />

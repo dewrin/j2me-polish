@@ -6,14 +6,16 @@
  */
 package de.enough.polish.ant.build;
 
+import de.enough.polish.ant.ConditionalElement;
+
 import org.apache.tools.ant.BuildException;
 
 import java.util.ArrayList;
 
 /**
  * <p>Containts information about the obfuscator which should be used.</p>
- * <p>Can be used for a more detailed setting than just sing the 
- * &lt;build&gt;attributes "obfuscator" and "obsucate".</p>
+ * <p>Can be used for a more detailed setting than just using the 
+ * &lt;build&gt;attributes "obfuscator" and "obfuscate".</p>
  *
  * <p>copyright enough software 2004</p>
  * <pre>
@@ -22,7 +24,9 @@ import java.util.ArrayList;
  * </pre>
  * @author Robert Virkus, robert@enough.de
  */
-public class ObfuscatorSetting {
+public class ObfuscatorSetting 
+extends ConditionalElement 
+{
 	
 	private ArrayList keeps;
 	private boolean enable;
@@ -34,7 +38,6 @@ public class ObfuscatorSetting {
 	 */
 	public ObfuscatorSetting() {
 		this.keeps = new ArrayList();
-		this.enable = true;
 	}
 	
 	public void addConfiguredKeep( Keep keep ) {

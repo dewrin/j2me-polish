@@ -84,19 +84,13 @@ public class PolishTask extends ConditionalTask {
 	}
 	
 	/**
-	 * Adds the build settings for this project.
+	 * Creates and adds the build settings for this project.
 	 * 
-	 * @param setting the build settings.
+	 * @return the new build setting.
 	 */
-	public void addConfiguredBuild( BuildSetting setting ) {
-		Midlet[] midlets = setting.getMidlets(); 
-		if (midlets == null || midlets.length == 0) {
-			throw new BuildException("Midlets need to be defined in the build section with either <midlets> or <midlet>.");
-		}
-		if (setting.getPreverify() == null) {
-			throw new BuildException("Nested element [build] needs to define the attribute [preverify] which points to the preverify-executable of the wireless toolkit.");
-		}
-		this.buildSetting = setting;
+	public BuildSetting createBuild() {
+		this.buildSetting = new BuildSetting( this.project );
+		return this.buildSetting;
 	}
 	
 	public void execute() throws BuildException {
@@ -136,6 +130,14 @@ public class PolishTask extends ConditionalTask {
 		}
 		if (this.deviceRequirements == null) {
 			log("Nested element [deviceRequirements] is missing, now the project will be optimized for all known devices.");
+		}
+		// check the nested element of <build>:
+		Midlet[] midlets = this.buildSetting.getMidlets(); 
+		if (midlets == null || midlets.length == 0) {
+			throw new BuildException("Midlets need to be defined in the build section with either <midlets> or <midlet>.");
+		}
+		if (this.buildSetting.getPreverify() == null) {
+			throw new BuildException("Nested element [build] needs to define the attribute [preverify] which points to the preverify-executable of the wireless toolkit.");
 		}
 	}
 	
@@ -242,7 +244,7 @@ public class PolishTask extends ConditionalTask {
 		
 		// init obfuscator:
 		ObfuscatorSetting obfuscatorSetting = this.buildSetting.getObfuscatorSetting();
-		if (obfuscatorSetting.isEnabled()) {
+		if ((obfuscatorSetting != null) && (obfuscatorSetting.isEnabled())) {
 			String[] keepClasses = obfuscatorSetting.getPreserveClassNames();
 			String[] midletClasses = this.buildSetting.getMidletClassNames();
 			this.preserveClasses = new String[ keepClasses.length + midletClasses.length ];
