@@ -1611,7 +1611,9 @@ public abstract class Item extends Object
 	 * @param originalStyle the original style which will be restored.
 	 */
 	protected void defocus( Style originalStyle ) {
-		setStyle( originalStyle );
+		if (originalStyle != null) {
+			setStyle( originalStyle );
+		}
 		this.isFocused = false;
 	}
 	
