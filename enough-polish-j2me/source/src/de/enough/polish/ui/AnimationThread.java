@@ -52,9 +52,9 @@ import de.enough.polish.util.Debug;
 public class AnimationThread extends Thread {
 	
 	//#ifdef polish.animationInterval:defined
-	//#=public final static int ANIMATION_INTERVAL = ${polish.animationInterval};
+		//#=public final static int ANIMATION_INTERVAL = ${polish.animationInterval};
 	//#else
-	public final static int ANIMATION_INTERVAL = 100;
+		public final static int ANIMATION_INTERVAL = 100;
 	//#endif
 	
 	/**
@@ -74,7 +74,7 @@ public class AnimationThread extends Thread {
 			try {
 				Thread.sleep(sleeptime);
 				Screen screen = StyleSheet.currentScreen;
-				if (screen != null ) {
+				if (screen != null && screen.isShown()) {
 					if (screen.animate()) {
 						sleeptime = ANIMATION_INTERVAL;
 						animationCounter = 0;
@@ -85,26 +85,14 @@ public class AnimationThread extends Thread {
 							animationCounter = 0;
 						}
 					}
+				} else {
+					sleeptime = 1000;
 				}
-				/*
-				if (StyleSheet.gauge != null) {
-					//TODO rob double check if the StyleSheet.gauge is still visible
-					if (StyleSheet.gauge.animate()) {
-						sleeptime = ANIMATION_INTERVAL;
-						animationCounter = 0;
-						if (StyleSheet.currentScreen != null) {
-							StyleSheet.currentScreen.repaint();
-						}
-					} else {
-						StyleSheet.gauge = null;
-					}
-				}
-				*/
 			} catch (InterruptedException e) {
 				// ignore
 			} catch (Exception e) {
 				//#debug error
-				Debug.debug("unable to animate: " + e.getMessage(), e );
+				Debug.debug("unable to animate screen", e );
 			}
 		}
 	}

@@ -126,6 +126,8 @@ implements CommandListener
 		private int menuBarColor = 0xFFFFFF;
 		private int fullScreenHeight;
 	//#endif
+	/** The Gauge Item which should be animated by this screen */
+	protected Item gauge;
 
 	/**
 	 * Creates a new screen
@@ -189,7 +191,6 @@ implements CommandListener
 		if (this.style != null) {
 			setStyle( this.style );
 		}
-		StyleSheet.gauge = null;
 		// inform all root items that they belong to this screen:
 		if (this.container != null) {
 			this.container.screen = this;
@@ -269,6 +270,9 @@ implements CommandListener
 		}
 		if (this.container != null) {
 			animated = animated | this.container.animate();
+		}
+		if (this.gauge != null) {
+			animated = animated | this.gauge.animate();
 		}
 		//#if polish.useFullScreen && polish.api.nokia-ui 
 		if (animated || this.repaintRequested) {

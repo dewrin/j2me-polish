@@ -284,7 +284,7 @@ public class Container extends Item {
 			if (itemYBottom > this.yBottom) {
 				// this item is too low:
 				this.yOffset -= ( itemYBottom - this.yBottom );
-				System.out.println("adjusting yOffset: itemYBottom=" + itemYBottom + "  container.yBottom=" + this.yBottom );
+				//System.out.println("adjusting yOffset: itemYBottom=" + itemYBottom + "  container.yBottom=" + this.yBottom );
 			} else if (itemYTop < this.yTop) {
 				// this item is too high:
 				this.yOffset += ( this.yTop - itemYTop ); 
@@ -645,7 +645,6 @@ public class Container extends Item {
 	 * @see de.enough.polish.ui.Item#focus(de.enough.polish.ui.Style)
 	 */
 	protected Style focus(Style focusStyle) {
-		System.out.println( this.getClass().getName() + ": focusing container with style ");
 		if ( this.itemsList.size() == 0) {
 			return super.focus( this.focusedStyle );
 		} else {

@@ -362,35 +362,58 @@ implements ImageConsumer
 	{
 		super( label, Item.LAYOUT_DEFAULT, Item.PLAIN, style );
 		// check values:
-		if (interactive) {
-			if (maxValue < 0 ) {
-				throw new IllegalArgumentException("Invalid maxValue for Gauge: " + maxValue );
-			}
-			if (initialValue < 0 || initialValue > maxValue) {
-				throw new IllegalArgumentException("Invalid initialValue for Gauge: " + initialValue );
-			}
-		} else {
-			if (maxValue == INDEFINITE) {
-				this.isIndefinite = true;
-				this.maxValue = 20;
-				if ( !( initialValue == CONTINUOUS_IDLE 
-						|| initialValue == CONTINUOUS_RUNNING
-						|| initialValue == INCREMENTAL_IDLE
-						|| initialValue == INCREMENTAL_UPDATING ) ) {
-					throw new IllegalArgumentException("Invalid initialValue for Gauge: " + initialValue );
+		//#ifndef polish.skipArgumentCheck
+			if (interactive) {
+				if (maxValue < 0 ) {
+					//#ifdef polish.debugVerbose
+						throw new IllegalArgumentException("Invalid maxValue for Gauge: " + maxValue );
+					//#else
+						//# throw new IllegalArgumentException();
+					//#endif
 				}
-			} else if (maxValue < 0 ) {
-				throw new IllegalArgumentException("Invalid maxValue for Gauge: " + maxValue );
-			} else if (initialValue < 0 || initialValue > maxValue) {
-				throw new IllegalArgumentException("Invalid initialValue for Gauge: " + initialValue );
-			}			
-		}
+				if (initialValue < 0 || initialValue > maxValue) {
+					//#ifdef polish.debugVerbose
+						throw new IllegalArgumentException("Invalid initialValue for Gauge: " + initialValue );
+					//#else
+						//# throw new IllegalArgumentException();
+					//#endif
+				}
+			} else {
+				if (maxValue == INDEFINITE) {
+					this.isIndefinite = true;
+					this.maxValue = 20;
+					if ( !( initialValue == CONTINUOUS_IDLE 
+							|| initialValue == CONTINUOUS_RUNNING
+							|| initialValue == INCREMENTAL_IDLE
+							|| initialValue == INCREMENTAL_UPDATING ) ) {
+						//#ifdef polish.debugVerbose
+							throw new IllegalArgumentException("Invalid initialValue for Gauge: " + initialValue );
+						//#else
+							//# throw new IllegalArgumentException();
+						//#endif
+					}
+				} else if (maxValue < 0 ) {
+					//#ifdef polish.debugVerbose
+						throw new IllegalArgumentException("Invalid maxValue for Gauge: " + maxValue );
+					//#else
+						//# throw new IllegalArgumentException();
+					//#endif
+				} else if (initialValue < 0 || initialValue > maxValue) {
+					//#ifdef polish.debugVerbose
+						throw new IllegalArgumentException("Invalid initialValue for Gauge: " + initialValue );
+					//#else
+						//# throw new IllegalArgumentException();
+					//#endif
+				}			
+			}
+		//#endif
 		// set values
 		this.isInteractive = interactive;
 		if (interactive) {
 			this.appearanceMode = Item.INTERACTIVE;
 		}
 		this.maxValue = maxValue;
+		this.isIndefinite = (maxValue == INDEFINITE);
 		setValue( initialValue );
 	}
 
@@ -436,12 +459,18 @@ implements ImageConsumer
 			if (this.value == CONTINUOUS_RUNNING ) {
 				// when the value WAS continuous-running, remove this gauge from 
 				// the animations:
-				//StyleSheet.gauge = null;
+				Screen scr = getScreen();
+				if (scr != null) {
+					scr.gauge = null;
+				}
 			}
 			if (value == CONTINUOUS_IDLE) {
 				this.indefinitePos = 0;
-			} else if (value == CONTINUOUS_RUNNING) {
-				//StyleSheet.gauge = this;
+			} else if (value == CONTINUOUS_RUNNING){
+				Screen scr = getScreen();
+				if (scr != null) {
+					scr.gauge = this;
+				}
 			} else if ( value == INCREMENTAL_IDLE ) {
 				this.indefinitePos = 0;
 			} else if ( value == INCREMENTAL_UPDATING ) {
@@ -449,7 +478,11 @@ implements ImageConsumer
 				if (this.indefinitePos > this.maxValue ) {
 					this.indefinitePos = 0;				}
 			} else {
-				throw new IllegalArgumentException("Invalid value for indefinite Gauge: " + value );
+				//#ifdef polish.debugVerbose
+					throw new IllegalArgumentException("Invalid value for indefinite Gauge: " + value );
+				//#else
+					//# throw new IllegalArgumentException();
+				//#endif
 			}
 		} else if (value < 0  ) {
 			value = 0;
@@ -629,9 +662,14 @@ implements ImageConsumer
 		this.isInitialised = false;
 		if (maxValue == INDEFINITE) {
 			this.isIndefinite = true;
-			this.isInitialised = false;
-		} else if (maxValue < 0) {
-			throw new IllegalArgumentException("Invalid maxValue for Gauge: " + maxValue );
+			//#ifndef polish.skipArgumentCheck
+				} else if (maxValue < 0) {
+					//#ifdef polish.verboseDebug
+						throw new IllegalArgumentException("Invalid maxValue for Gauge: " + maxValue );
+					//#else
+						//# throw new IllegalArgumentException();
+					//#endif
+			//#endif
 		}
 		this.maxValue = maxValue;
 		//#ifdef polish.midp2
@@ -639,6 +677,7 @@ implements ImageConsumer
 			this.midpGauge.setMaxValue( maxValue );
 		}
 		//#endif		
+		this.isInitialised = false;
 	}
 
 	/**
@@ -648,8 +687,7 @@ implements ImageConsumer
 	 * integer.  If this gauge is non-interactive, the maximum value will be a
 	 * positive integer (indicating that the gauge has definite range)
 	 * or the special value <code>INDEFINITE</code> (indicating that
-	 * the gauge has
-	 * indefinite range).</p>
+	 * the gauge has indefinite range).</p>
 	 * 
 	 * @return the maximum value of the Gauge, or INDEFINITE
 	 * @see #INDEFINITE, #setMaxValue(int)
@@ -701,6 +739,15 @@ implements ImageConsumer
 		}
 		// update other settings:
 		if (this.isIndefinite) {
+			if (this.value == CONTINUOUS_RUNNING) {
+				Screen scr = getScreen();
+				if (scr != null) {
+					// register this gauge at the current screen:
+					scr.gauge = this;
+				} else {
+					System.out.println("unable to register gauge");
+				}
+			}
 			if (this.image != null ) {
 				if (this.value == CONTINUOUS_IDLE  || this.value == CONTINUOUS_RUNNING ) {
 					this.maxValue = this.contentWidth;
