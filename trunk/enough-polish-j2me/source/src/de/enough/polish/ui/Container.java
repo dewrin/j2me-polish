@@ -680,4 +680,16 @@ public class Container extends Item {
 			this.isFocused = false;
 		}
 	}
+	
+	/* (non-Javadoc)
+	 * @see de.enough.polish.ui.Item#animate()
+	 */
+	public boolean animate() {
+		// just animate the currently focused item:
+		if (this.focusedItem != null) {
+			return this.focusedItem.animate();
+		} else {
+			return false;
+		}
+	}
 }

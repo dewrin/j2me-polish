@@ -43,9 +43,9 @@ import javax.microedition.lcdui.Graphics;
  */
 public class StringItem extends Item
 {
-	private String text;
+	protected String text;
 	private String[] textLines;
-	private int textColor;
+	protected int textColor;
 	protected Font font;
 	//private boolean isSingleLine;
 
