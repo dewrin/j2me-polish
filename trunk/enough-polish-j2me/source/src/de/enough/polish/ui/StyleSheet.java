@@ -32,6 +32,7 @@ public final class StyleSheet {
 	private static Hashtable imagesByName;
 	//#ifdef polish.images.backgroundLoad
 	private static Hashtable scheduledImagesByName;
+	private static final Boolean TRUE = new Boolean( true );
 	private static Timer timer;
 	//#endif
 	private static Style defaultStyle;
@@ -149,7 +150,7 @@ public final class StyleSheet {
 			}
 			if (scheduledImagesByName == null ) {
 				scheduledImagesByName = new Hashtable();
-				scheduledImagesByName.put( name, Boolean.TRUE );
+				scheduledImagesByName.put( name, TRUE );
 			}
 			if (imagesByName == null ) {
 				imagesByName = new Hashtable();
