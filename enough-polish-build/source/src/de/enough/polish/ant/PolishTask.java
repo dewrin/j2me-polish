@@ -14,8 +14,6 @@ import de.enough.polish.exceptions.InvalidComponentException;
 import de.enough.polish.preprocess.PreprocessException;
 import de.enough.polish.preprocess.Preprocessor;
 import de.enough.polish.util.*;
-import de.enough.polish.util.PropertyUtil;
-import de.enough.polish.util.TextUtil;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
@@ -459,7 +457,7 @@ public class PolishTask extends ConditionalTask {
 	private void jarAndJad( Device device ) {
 		System.out.println("creating jar for device [" + device.getIdentifier() + "]." );
 		File classesDir = new File( device.getClassesDir() );
-		//TODO copy resources
+		//copy resources:
 		File resourceDir = this.buildSetting.getResDir();
 		String resourcePath = resourceDir.getAbsolutePath() + File.separatorChar; 
 		
@@ -470,21 +468,27 @@ public class PolishTask extends ConditionalTask {
 			FileUtil.copy( files, classesDir );
 			// 2. copy vendor resources:
 			resourceDir = new File( resourcePath + device.getVendor() );
-			files = resourceDir.listFiles( cssFilter );
-			FileUtil.copy( files, classesDir );
+			if (resourceDir.exists()) {
+				files = resourceDir.listFiles( cssFilter );
+				FileUtil.copy( files, classesDir );
+			}
 			// 3.: copy group resources:
 			String[] groups = device.getGroups();
 			for (int i = 0; i < groups.length; i++) {
 				String group = groups[i];
 				resourceDir = new File( resourcePath + group );
-				files = resourceDir.listFiles( cssFilter );
-				FileUtil.copy( files, classesDir );
+				if (resourceDir.exists()) {
+					files = resourceDir.listFiles( cssFilter );
+					FileUtil.copy( files, classesDir );
+				}
 			}
 			// 4.: copy device resources:
 			resourceDir = new File( resourcePath + device.getVendor() 
 								+ File.separatorChar + device.getName() );
-			files = resourceDir.listFiles( cssFilter );
-			FileUtil.copy( files, classesDir );
+			if (resourceDir.exists()) {
+				files = resourceDir.listFiles( cssFilter );
+				FileUtil.copy( files, classesDir );
+			}
 		} catch (IOException e) {
 			throw new BuildException("Unable to copy resources from [" + resourceDir + "]: " + e.getMessage(), e );
 		}
@@ -533,6 +537,28 @@ public class PolishTask extends ConditionalTask {
 			throw new BuildException("Unable to create manifest: " + e.getMessage(), e );
 		}
 		jarTask.execute();
+		
+		
+		// now create the JAD file:
+		//TODO create JAD
+		System.out.println("Now creating JAD file for device [" + device.getIdentifier() + "].");
+		Jad jad = new Jad();
+		Variable[] jadAttributes = this.infoSetting.getJadAttributes();
+		for (int i = 0; i < jadAttributes.length; i++) {
+			Variable var =jadAttributes[i];
+			jad.addAttribute( var.getName() , PropertyUtil.writeProperties( var.getValue(), infoProperties) );
+		}
+		// add size of jar:
+		long size = jarFile.length();
+		jad.addAttribute(  InfoSetting.MIDLET_JAR_SIZE, "" + size );
+		
+		String jadName = PropertyUtil.writeProperties( jarName.substring(0, jarName.lastIndexOf('.') ) + ".jad", infoProperties );
+		File jadFile = new File( this.buildSetting.getDestDir().getAbsolutePath() + File.separatorChar + jadName );
+		try {
+			FileUtil.writeTextFile(jadFile, jad.getContent() );
+		} catch (IOException e) {
+			throw new BuildException("Unable to create JAD file [" + jadFile.getAbsolutePath() +"] for device [" + device.getIdentifier() + "]: " + e.getMessage() );
+		}
 	}
 
 
