@@ -56,7 +56,7 @@ import java.util.regex.Pattern;
  */
 public class PolishTask extends ConditionalTask {
 
-	private static final String VERSION = "1.0.0-RC1";
+	private static final String VERSION = "1.0.0-RC2";
 
 	private BuildSetting buildSetting;
 	private InfoSetting infoSetting;
@@ -85,6 +85,10 @@ public class PolishTask extends ConditionalTask {
 		Pattern.compile("\\s*void\\s+startApp\\s*\\(\\s*\\)");
 
 	private LibraryManager libraryManager;
+
+	private File errorLock;
+
+	private boolean lastRunFailed;
 	
 	/**
 	 * Creates a new empty task 
@@ -136,12 +140,12 @@ public class PolishTask extends ConditionalTask {
 		checkSettings();
 		initProject();
 		selectDevices();
-		int devCount = this.devices.length;
-		if (devCount > 1) {
-			System.out.println("Processing [" + devCount + "] devices...");
+		int numberOfDevices = this.devices.length;
+		if (numberOfDevices > 1) {
+			System.out.println("Processing [" + numberOfDevices + "] devices...");
 		}
 		boolean obfuscate = this.buildSetting.doObfuscate();
-		for ( int i=0; i<devCount; i++) {
+		for ( int i=0; i<numberOfDevices; i++) {
 			Device device = this.devices[i];
 			preprocess( device );
 			compile( device );
@@ -154,6 +158,18 @@ public class PolishTask extends ConditionalTask {
 		}
 		test();
 		deploy();
+		finishProject();
+		if (numberOfDevices > 1) {
+			System.out.println("Successfully processed [" + numberOfDevices + "] devices.");
+		}
+	}
+
+	/**
+	 * Finishes this project.
+	 * Basically removes the error-lock:
+	 */
+	private void finishProject() {
+		this.errorLock.delete();
 	}
 
 	/**
@@ -378,6 +394,20 @@ public class PolishTask extends ConditionalTask {
 		for (int i = 0; i < midletClasses.length; i++) {
 			this.midletClassesByName.put( midletClasses[i], Boolean.TRUE );			
 		}
+		
+		//check if there has been an error at the last run:
+		this.errorLock = new File( this.buildSetting.getWorkDir().getAbsolutePath()
+				+ File.separator + "error.lock");
+		if (this.errorLock.exists()) {
+			this.lastRunFailed = true;
+		} else {
+			this.lastRunFailed = false;
+			try {
+				this.errorLock.createNewFile();
+			} catch (IOException e) {
+				System.err.println("Warning: unable to create temporary lock file: " + e.toString() );
+			}
+		}
 	}
 
 	/**
@@ -419,7 +449,7 @@ public class PolishTask extends ConditionalTask {
 		for (int i = 0; i < fileNames.length; i++) {
 			String fileName = fileNames[i];
 			TextFile file = new TextFile( baseDir, fileName, lastModificationTime, this.resourceUtil );
-			if ("de/enough/polish/ui/StyleSheet.java".equals(fileName)) {
+			if ( fileName.endsWith("StyleSheet.java") && fileName.startsWith("de")) {
 				this.styleSheetFile = file;
 			}
 			files[i] = file;
@@ -533,6 +563,8 @@ public class PolishTask extends ConditionalTask {
 						String className = file.getFileName();
 						if (className.endsWith(".java")) {
 							className = className.substring(0, className.length() - 5 );
+							// in a jarfile the files always have a '/' as a path-seperator:
+							className = TextUtil.replace(className, '/', '.' );
 						}
 						className = TextUtil.replace(className, File.separatorChar, '.' );
 						// set the StyleSheet.display variable in all MIDlets
@@ -797,7 +829,7 @@ public class PolishTask extends ConditionalTask {
 		String targetDirName = device.getBaseDir() + File.separatorChar + "classes";
 		device.setClassesDir( targetDirName );
 		
-		if (device.getNumberOfChangedFiles() == 0) {
+		if (device.getNumberOfChangedFiles() == 0 && !this.lastRunFailed) {
 			System.out.println("nothing to compile for device [" +  device.getIdentifier() + "]." );
 			return;			
 		}
@@ -858,7 +890,7 @@ public class PolishTask extends ConditionalTask {
 		} catch (IOException e) {
 			throw new BuildException("Unable to prepare the obfuscation-jar: " + e.getMessage(), e );
 		}
-		System.out.println("Jaring took " + ( System.currentTimeMillis() - time) + " ms.");
+		//System.out.println("Jaring took " + ( System.currentTimeMillis() - time) + " ms.");
 		File destFile = new File( this.buildSetting.getWorkDir().getAbsolutePath()
 				+ File.separatorChar + "dest.jar");
 		this.obfuscator.obfuscate(device, sourceFile, destFile, this.preserveClasses, bootPath );
@@ -1010,12 +1042,24 @@ public class PolishTask extends ConditionalTask {
 			manifest.addConfiguredAttribute(meProfile);
 			
 			// add info attributes:
-			Variable[] attributes = this.infoSetting.getManifestAttributes();
-			for (int i = 0; i < attributes.length; i++) {
-				Variable var = attributes[i];
+			Variable[] jadAttributes = this.infoSetting.getManifestAttributes();
+			for (int i = 0; i < jadAttributes.length; i++) {
+				Variable var = jadAttributes[i];
 				String value = PropertyUtil.writeProperties(var.getValue(), infoProperties);
 				Manifest.Attribute attribute = new Manifest.Attribute(var.getName(), value );
 				manifest.addConfiguredAttribute( attribute  );
+			}
+			// add user-defined attributes:
+			Attribute[] attributes = this.buildSetting.getJadAttributes();
+			BooleanEvaluator evaluator = this.preprocessor.getBooleanEvaluator();
+			for (int i = 0; i < attributes.length; i++) {
+				Attribute var = attributes[i];
+				String condition = var.getIf();
+				if (condition == null || evaluator.evaluate( condition, "build.xml", 0)) {
+					String value = PropertyUtil.writeProperties(var.getValue(), infoProperties);
+					Manifest.Attribute attribute = new Manifest.Attribute(var.getName(), value );
+					manifest.addConfiguredAttribute( attribute  );
+				}
 			}
 			// add build properties - midlet infos:
 			String[] midletInfos = this.buildSetting.getMidletInfos( this.infoSetting.getIcon() );
@@ -1056,6 +1100,18 @@ public class PolishTask extends ConditionalTask {
 			Variable var =jadAttributes[i];
 			jad.addAttribute( var.getName() , PropertyUtil.writeProperties( var.getValue(), infoProperties) );
 		}
+		
+		// add user-defined attributes:
+		Attribute[] attributes = this.buildSetting.getJadAttributes();
+		BooleanEvaluator evaluator = this.preprocessor.getBooleanEvaluator();
+		for (int i = 0; i < attributes.length; i++) {
+			Attribute attribute = attributes[i];
+			String condition = attribute.getIf();
+			if (condition == null || evaluator.evaluate( condition, "build.xml", 0)) {
+				jad.addAttribute( attribute.getName(), PropertyUtil.writeProperties( attribute.getValue(), infoProperties) );
+			}
+		}
+
 		// add build properties - midlet infos:
 		String[] midletInfos = this.buildSetting.getMidletInfos( this.infoSetting.getIcon() );
 		for (int i = 0; i < midletInfos.length; i++) {
