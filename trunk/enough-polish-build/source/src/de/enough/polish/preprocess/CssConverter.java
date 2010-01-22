@@ -171,7 +171,7 @@ public class CssConverter extends Converter {
 		String test = preprocessor.getVariable("polish.license");
 		if ( "GPL".equals(test) ) {
 			// GPL license is fine.
-		} else if (test == null || test.length() != 7) {
+		} else if (test == null || test.length() != 12) {
 			throw new BuildException("Encountered invalid license.");
 		} else {
 			try {
