@@ -1,0 +1,1 @@
+J2ME Polish is aimed at Java and web developers who want to create applications for several mobile operating systems with a single source code project. J2ME Polish is licensed under the Open Source GPL as well as proprietary commercial licenses for companies.
